@@ -20,7 +20,7 @@
 
 **Æon** (`aeon-core`) is a **neuro-symbolic runtime** designed to address the **Stochastic Problem** in Enterprise AI deployment.
 
-While modern Large Language Models (System 1) offer unprecedented reasoning capabilities, they lack the determinism required for critical industries such as Banking, Aerospace, and Defense. **Æon enforces a strict Axiomatic Layer over probabilistic models**, ensuring that agents operate within defined logic contracts and safety guardrails.
+While modern Large Language Models (System 1) offer unprecedented reasoning capabilities, they lack the determinism required for critical industries such as Intensive Care Unit, Aerospace, and Defense. **Æon enforces a strict Axiomatic Layer over probabilistic models**, ensuring that agents operate within defined logic contracts and safety guardrails.
 
 > **"We move beyond chatbots to agents that can be trusted with critical logic."**
 
@@ -307,6 +307,6 @@ git commit -m "feat: implement dual-approval axiom for something"
 **Legal notice:**
 
 > Æon is a personal and academic open-source initiative focused on AI safety research.
-It is not affiliated with, endorsed by, or owned by any financial institution, bank, company, or employer.
+It is not affiliated with, endorsed by, or owned by any institution, company, or employer.
 Use in production environments during the *Research Preview* phase is entirely at the user's own risk.
 There is no warranty of correct operation, security, or fitness for any particular purpose.
