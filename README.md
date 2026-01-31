@@ -94,7 +94,9 @@ This is a natural language command sent by an on-site engineer via a terminal or
 **Processing the Inputs**
 Once these raw events are ingested, they are normalized and fed into the Cortex for Multi-Intent Analysis.
 **In the human example above, Aeon identifies two distinct intents:**
+
 **- Diagnostic Intent:** Investigate the "unusual vibration" in a specific mechanical domain.
+
 **- Operational Intent:** Execute a "pressure increase" in the thermodynamic domain.
 
 The **Orchestrator** then builds a mission **plan** that addresses both, while the Axiomatic Layer ensures the pressure never crosses the **850 PSI** safety threshold, even though the operator requested 900 PSI. This deterministic override is what ensures industrial safety in the face of human error or LLM over-optimization.
