@@ -164,7 +164,7 @@ class IndustrialSafetyAxiom(Axiom):
 # 3. SOCIAL LAYER: AGENT DISCOVERY & HIVE ROUTING (hive/router.py)
 # -------------------------------------------------------------------------
 
-# The DiscoveryService abstracts the Global Agent Directory (A2A/ACP Standards)
+# The DiscoveryService abstracts the Core Agent Directory (A2A/ACP Standards)
 registry = DiscoveryService()
 registry.register(AgentCard(
     id="robotic-swarm-01",
