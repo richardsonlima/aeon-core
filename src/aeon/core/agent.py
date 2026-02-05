@@ -1,13 +1,15 @@
 """
 Core Layer: The Agent Runtime.
-Integrates Cortex (Reasoning), Executive (Safety), and Synapse (Tools).
+Refactored for v0.2.0-alpha to support unified protocol initialization.
+Integrates Cortex (Reasoning), Executive (Safety), Hive (A2A), and Synapse (MCP).
 """
 import json
-from typing import Callable, Dict, Any, Optional
+from typing import List, Union, Callable, Dict, Any, Optional
 
 from aeon.cortex.reasoning import Cortex, CortexConfig
-from aeon.synapse.adapter import SynapseAdapter
 from aeon.executive.safety import ExecutiveRegistry
+from aeon.hive.protocol import HiveAdapter, A2AConfig
+from aeon.synapse.adapter import SynapseAdapter, MCPConfig
 
 class Agent:
     """
@@ -15,19 +17,38 @@ class Agent:
     Orchestrates the flow between LLM reasoning (Cortex), Tool use (Synapse),
     and Deterministic Control (Executive).
     """
-    def __init__(self, name: str, mcp_server_path: str):
+    def __init__(
+        self, 
+        name: str, 
+        model: str, 
+        protocols: List[Union[A2AConfig, MCPConfig]]
+    ):
+        """
+        Initializes the agent with a name, a specific LLM model, and 
+        a list of supported communication and capability protocols.
+        """
         self.name = name
         
-        # Initialize Architecture Layers
-        self.cortex = Cortex(CortexConfig())
-        self.synapse = SynapseAdapter(mcp_server_path)
+        # 1. Initialize Cortex with the selected model (System 1)
+        self.cortex = Cortex(CortexConfig(model=model))
+        
+        # 2. Initialize Executive Registry for safety axioms (System 2)
         self.executive = ExecutiveRegistry()
         
-        # System Prompt defines the Identity
+        # 3. Initialize Adapters based on protocols
+        self.hive: Optional[HiveAdapter] = None
+        self.synapse: Optional[SynapseAdapter] = None
+        
+        for protocol in protocols:
+            if isinstance(protocol, A2AConfig):
+                self.hive = HiveAdapter(protocol)
+            elif isinstance(protocol, MCPConfig):
+                self.synapse = SynapseAdapter(protocol)
+
         self.system_prompt = f"""
         You are {name}, an industrial safety controller.
-        You have access to hardware sensors via tools.
-        Use them to fulfill user requests efficiently.
+        You have access to hardware sensors and actuators via tools.
+        Fulfill user requests while strictly adhering to safety constraints.
         """
 
     def axiom(self, on_violation: str = "OVERRIDE") -> Callable:
@@ -38,78 +59,79 @@ class Agent:
 
     async def start(self):
         """
-        Boot sequence for the agent runtime.
+        Boot sequence: Activates Hive (A2A) and Synapse (MCP) neural links.
         """
-        print(f"AEON KERNEL v0.1.0 | {self.name}")
+        print(f"AEON KERNEL v0.2.0-alpha | {self.name}")
         print("-" * 40)
-        await self.synapse.connect()
+        
+        if self.hive:
+            self.hive.start_server()
+            self.hive.broadcast_availability()
+            
+        if self.synapse:
+            await self.synapse.connect()
 
     async def stop(self):
         """
-        Graceful shutdown sequence.
-        Closes connections to prevent asyncio errors.
+        Graceful shutdown sequence to cleanly close neural links.
         """
         if self.synapse:
             await self.synapse.disconnect()
         print("-" * 40)
         print("AEON KERNEL SHUTDOWN")
 
-    async def process(self, user_input: str):
+    async def process(self, user_input: str) -> Optional[Dict[str, Any]]:
         """
         The Neuro-Symbolic Loop:
-        1. Tool Discovery (Synapse)
-        2. Reasoning (Cortex)
-        3. Safety Check (Executive Axioms)
-        4. Execution (Synapse)
+        1. Discovery: Fetch available tools from Synapse.
+        2. Reasoning: Cortex decides the best action.
+        3. Governance: Executive validates and potentially overrides the action.
+        4. Action: Synapse executes the safe command.
         """
         print(f"\n [>] User Input: {user_input}")
 
-        # 1. Get Tools from Synapse (MCP)
+        # 1. Discovery phase (Synapse/MCP)
+        if not self.synapse:
+            print(" [!] Error: No Synapse/MCP protocol configured.")
+            return None
+
         try:
             tools = await self.synapse.get_tool_definitions()
         except Exception as e:
-            print(f" [!] Error fetching tools from Synapse: {e}")
-            return
+            print(f" [!] Error fetching tools: {e}")
+            return None
 
-        # 2. Cortex Reasoning (LLM)
-        # The LLM decides WHICH tool to call based on input and available tools
+        # 2. Reasoning phase (Cortex/LLM)
         llm_decision = self.cortex.plan_action(self.system_prompt, user_input, tools)
 
-        # Check if the LLM actually wants to call a tool or just chat
         if not hasattr(llm_decision, 'function'):
-            print(f" [i] Cortex Response (No Action): {llm_decision}")
-            return
+            print(f" [i] Cortex Response: {llm_decision}")
+            return {"type": "text", "content": llm_decision}
 
-        # Parse the intended action
+        # Parse proposed tool and arguments
         tool_name = llm_decision.function.name
-        
-        # Robust JSON Parsing (LLMs often make mistakes here)
         try:
             tool_args = json.loads(llm_decision.function.arguments)
         except json.JSONDecodeError:
-            print(" [!] Cortex Error: Invalid JSON generated by LLM.")
-            return
+            print(" [!] Cortex Error: Generated invalid JSON arguments.")
+            return None
         
         print(f" [i] Cortex Intent: Call {tool_name} with {tool_args}")
 
-        # 3. EXECUTIVE CONTROL (The Axiom Layer)
-        # This is the "Prefrontal Cortex" intervening before action.
-        # We validate the ARGUMENTS before the tool is executed.
+        # 3. Governance phase (Executive/Axioms)
+        # Deterministic override happens here before any external impact.
         try:
             safe_args = self.executive.validate_output(tool_args)
         except Exception as e:
-            # If the axiom blocked execution completely (raised AxiomViolationError)
             print(f" [!] BLOCKED by Executive: {e}")
-            return
+            return {"type": "error", "content": str(e)}
 
-        # 4. Synapse Execution (Action)
-        # Execute with safe_args (which might have been modified by the Axiom/Override)
+        # 4. Action phase (Synapse/Execution)
         try:
             result = await self.synapse.execute_tool(tool_name, safe_args)
-            
-            # Extract text content from MCP result for display
             output_text = result.content[0].text if result.content else "No output"
             print(f" [<] Tool Output: {output_text}")
-            
+            return {"type": "action_result", "content": output_text}
         except Exception as e:
-            print(f" [!] Synapse Error during tool execution: {e}")
+            print(f" [!] Synapse Execution Error: {e}")
+            return None

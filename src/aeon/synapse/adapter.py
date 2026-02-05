@@ -1,90 +1,110 @@
 """
 Synapse Layer: Nervous System.
-Handles MCP Client connections to local or remote tools.
+Refactored to support protocol-based configuration (MCPConfig).
+Responsible for managing neural links to external tools and sensors.
 """
-import asyncio
-from contextlib import AsyncExitStack
 from typing import List, Dict, Any, Optional
+from contextlib import AsyncExitStack
+from pydantic import BaseModel
 
-# Official SDK imports
+# Official MCP SDK imports
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
+class MCPConfig(BaseModel):
+    """
+    Configuration model for the Model Context Protocol.
+    In v0.2.0, it supports local server scripts via stdio.
+    """
+    servers: List[str]
+
 class SynapseAdapter:
     """
-    Manages the lifecycle of MCP tool connections using the official SDK.
+    Adapter for Anthropic's Model Context Protocol (MCP).
+    Manages sub-process lifecycles and tool discovery for the Cortex.
     """
-    def __init__(self, server_script_path: str):
+    def __init__(self, config: MCPConfig):
         """
-        Initialize the adapter with server parameters.
-        We use 'uv run' to ensure the sub-process has the correct environment.
+        Initialize the adapter with a standard MCP configuration.
         """
-        self.server_params = StdioServerParameters(
-            command="uv", 
-            args=["run", server_script_path], 
-        )
+        self.config = config
         self.session: Optional[ClientSession] = None
         self.exit_stack = AsyncExitStack()
 
     async def connect(self):
         """
-        Establishes the stdio connection to the MCP server.
+        Establishes neural links to the configured MCP servers.
+        Currently handles the primary server in the cluster.
         """
-        print(" [+] Synapse: Establishing neural link to MCP tools...")
+        print(" [+] Synapse: Establishing neural links to MCP servers...")
         
-        # Connect to stdio transport
-        transport = await self.exit_stack.enter_async_context(
-            stdio_client(self.server_params)
+        # In v0.2.0-alpha, we initialize the first server in the config
+        # Multi-server multiplexing is scheduled for v0.3.0
+        if not self.config.servers:
+            print(" [!] Synapse Error: No MCP servers provided in configuration.")
+            return
+
+        server_script = self.config.servers[0]
+        
+        server_params = StdioServerParameters(
+            command="uv", 
+            args=["run", server_script], 
         )
-        self.read, self.write = transport
-        
-        # Start the client session
-        self.session = await self.exit_stack.enter_async_context(
-            ClientSession(self.read, self.write)
-        )
-        
-        await self.session.initialize()
-        
-        # Verify connection by listing tools
-        tools = await self.session.list_tools()
-        tool_names = [t.name for t in tools.tools]
-        print(f" [+] Synapse: Connected. Available Tools: {tool_names}")
+
+        try:
+            # Enter the stdio communication context
+            transport = await self.exit_stack.enter_async_context(
+                stdio_client(server_params)
+            )
+            self.read, self.write = transport
+            
+            # Initialize the official MCP Client Session
+            self.session = await self.exit_stack.enter_async_context(
+                ClientSession(self.read, self.write)
+            )
+            
+            await self.session.initialize()
+            
+            # Discovery phase
+            tools = await self.session.list_tools()
+            tool_names = [t.name for t in tools.tools]
+            print(f" [+] Synapse: Connected. Available Tools: {tool_names}")
+            
+        except Exception as e:
+            print(f" [!] Synapse Connection Error: {e}")
+            await self.exit_stack.aclose()
 
     async def disconnect(self):
         """
-        Cleanly closes the MCP connection and exit stack.
-        Critical to avoid asyncio RuntimeErrors on shutdown.
+        Gracefully closes all neural links and sub-processes.
         """
         print(" [-] Synapse: Closing neural link...")
         await self.exit_stack.aclose()
 
     async def get_tool_definitions(self) -> List[Dict[str, Any]]:
         """
-        Converts MCP tools to OpenAI Tool format for the Cortex layer.
+        Maps MCP capabilities to the Cortex (LLM) tool format.
         """
         if not self.session:
             return []
             
         result = await self.session.list_tools()
-        openai_tools = []
         
-        for tool in result.tools:
-            openai_tools.append({
-                "type": "function",
-                "function": {
-                    "name": tool.name,
-                    "description": tool.description,
-                    "parameters": tool.inputSchema
-                }
-            })
-        return openai_tools
+        # Convert to OpenAI/OpenRouter functional calling format
+        return [{
+            "type": "function",
+            "function": {
+                "name": tool.name,
+                "description": tool.description,
+                "parameters": tool.inputSchema
+            }
+        } for tool in result.tools]
 
     async def execute_tool(self, name: str, arguments: Dict[str, Any]) -> Any:
         """
-        Executes a tool call via the MCP session.
+        Executes a deterministic action via the established link.
         """
         if not self.session:
-            raise RuntimeError("Synapse not connected.")
+            raise RuntimeError("Synapse: neural link not established.")
             
-        result = await self.session.call_tool(name, arguments)
-        return result
+        return await self.session.call_tool(name, arguments)
