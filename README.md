@@ -25,19 +25,18 @@ While other frameworks focus on making agents *autonomous*, Æon focuses on maki
 
 It unifies the fragmented agent ecosystem by implementing the industry's winning standards natively:
 
-1. **Connectivity:** **A2A Protocol** (Linux Foundation Standard) for standardized agent-to-agent negotiation.
-2. **Capabilities:** **MCP** (Anthropic Model Context Protocol) for universal tool integration.
-3. **Governance:** **Æon Axioms** for deterministic, code-level guardrails that LLMs cannot bypass.
+1. **Connectivity:** **A2A Protocol** (Unified Linux Foundation Standard).
+2. **Capabilities:** **MCP** (Anthropic Model Context Protocol).
+3. **Governance:** **Æon Axioms** for deterministic, code-level guardrails.
 
-> **"Anthropic's Tools. Linux Foundation's Communication. Enterprise Safety."**  
+> **"Anthropic's Tools. The Combined IBM/Google Communication Standard. Enterprise Safety."**  
 > *All in one lightweight Python runtime.*
 
 ---
 
 ## 🚀 Quick Start (The "Agno-Style" Experience)
 
-Æon removes the boilerplate.  
-No complex classes. Just secure, interoperable agents in pure Python.
+Æon removes the boilerplate. No complex classes. Just secure, interoperable agents in pure Python.
 
 ### Installation
 
@@ -47,10 +46,13 @@ pip install aeon-core
 
 ---
 
-## Hello World: The Unbreakable Agent
+## 🧪 Hello World: The Unbreakable Agent
 
-This example creates an **Industrial Controller Agent** that is discoverable on the network via **A2A**,  
-uses **Hardware Sensors via MCP**, and is enforced by an **Unbreakable Axiom** preventing physical safety violations.
+This example creates an **Industrial Controller Agent** that:
+
+- Is discoverable via the **Unified A2A Standard**
+- Uses **Hardware Sensors via MCP**
+- Enforces an **Unbreakable Axiom** preventing physical safety violations
 
 ```python
 from aeon import Agent
@@ -61,7 +63,7 @@ controller = Agent(
     role="Industrial Automation Monitor",
     model="gemini-1.5-flash",
     protocols=[
-        A2A(port=8000, role="server"),
+        A2A(port=8000, role="server", version="unified-1.0"),
         MCP(servers=["https://github.com/mcp/industrial-sensors-mock"])
     ]
 )
@@ -69,14 +71,14 @@ controller = Agent(
 @controller.axiom(on_violation="OVERRIDE")
 def enforce_thermal_limits(command: dict) -> dict | bool:
     """
-    SAFETY RULE: Core temperature cannot exceed 400°C under any circumstance.
+    SAFETY RULE: Core temperature cannot exceed 400°C.
     """
     target_temp = command.get("set_temperature", 0)
 
     if target_temp > 400:
         return {
             "set_temperature": 400,
-            "alert": "AXIOM_VIOLATION: Request exceeded safety cap. Clamped to 400°C."
+            "alert": "AXIOM_VIOLATION: Request exceeded safety cap."
         }
 
     return True
@@ -87,50 +89,25 @@ if __name__ == "__main__":
 
 ---
 
-## Terminal Output (Visual Feedback)
+## 🖥️ Terminal Output (Visual Feedback)
 
 ```plaintext
 🚀 Æon Core v0.1.0 initialized
-├── 📡 A2A Server: Online at http://localhost:8000/messages
+├── 📡 A2A Server: Online at http://localhost:8000/messages (Unified Std)
 ├── 🔌 MCP Client: Connected to Sensor Array (4 tools loaded)
 └── 🛡️ Axioms: 1 Active (Enforce Thermal Limits)
-
-[OPERATOR]: "Increase core temperature to 500°C to speed up the process."
-[LLM THOUGHT]: "User requested speed up. Setting temp to 500°C..."
-[AXIOM GATE]: 🛑 VIOLATION DETECTED. INTERCEPTING.
-[AGENT]: "Command Executed: Set Temperature to 400°C."
 ```
 
 ---
 
 ## 🧠 Cognitive Architecture
 
-| Layer      | Biological Analogy | Function                                  | Technology Standard             |
-|-----------|--------------------|-------------------------------------------|---------------------------------|
-| Executive | Prefrontal Cortex  | Control & safety gates                    | Æon Axioms (Python)             |
-| Cortex    | Temporal Cortex    | Reasoning & planning                      | LLMs                            |
-| Hive      | Social Cognition   | Agent communication                       | A2A Protocol                    |
-| Synapse   | Nervous System     | Tools & actions                           | MCP                             |
-
----
-
-## 🏆 Why Æon?
-
-| Feature | Standard Frameworks | Æon |
-|-------|---------------------|-----|
-| Goal | Autonomy | Determinism |
-| Safety | Prompts | Code |
-| Interop | Low | High |
-
----
-
-## 🗺️ Roadmap
-
-- [x] v0.1.0 Core Runtime
-- [ ] v0.2.0 Full A2A Spec
-- [ ] v0.3.0 MCP Wrapper
-- [ ] v0.4.0 Observability
-- [ ] v1.0.0 Stable Release
+| Layer      | Biological Analogy     | Function                 | Standard |
+|-----------|------------------------|--------------------------|----------|
+| Executive | Prefrontal Cortex      | Control & safety         | Axioms   |
+| Cortex    | Temporal Cortex        | Reasoning                | LLMs     |
+| Hive      | Social Cognition       | Agent Communication      | A2A      |
+| Synapse   | Nervous System         | Tools & Actions          | MCP      |
 
 ---
 
