@@ -357,3 +357,17 @@ There is no warranty of correct operation, security, or fitness for any particul
 
 **License:** Apache 2.0 (commercial-friendly, attribution required)
 
+---
+
+## 📃 Citation
+
+```bibtex
+@misc{Aeon Framework,
+  author = {LIMA, Richardson Edson de},
+  title = {Aeon Framework - The Neuro-Symbolic Runtime for Deterministic AI Agents. "Standards-First. Safety-Native."},
+  year = {2026},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/richardsonlima/aeon-core.git}}
+}
+```
