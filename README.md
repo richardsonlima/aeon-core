@@ -263,28 +263,6 @@ mypy src/aeon/
 
 ---
 
-## 📜 License
-
-Apache 2.0 - See [LICENSE](LICENSE) for details.
-
----
-
-## 🤝 Contributing
-
-Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
----
-
-## 🙏 Acknowledgments
-
-Æon combines the best practices from:
-- Anthropic's Model Context Protocol (MCP)
-- IBM/Google's Agent-to-Agent Protocol (A2A)
-- Enterprise safety patterns
-- Distributed systems design
-
-Built for production-grade agent applications.
-
 ### Installation
 
 ```bash
