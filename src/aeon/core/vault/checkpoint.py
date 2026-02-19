@@ -9,7 +9,7 @@ class SwarmCheckpoint:
     Solves LangGraph's complexity by capturing periodic 'Reality Snapshots'.
     """
     
-    def __init__(self, vault_path: str = "/Users/richardsonlima/Git/aeon-core/src/aeon/core/vault"):
+    def __init__(self, vault_path: str = "src/aeon/core/vault"):
         self.checkpoint_dir = os.path.join(vault_path, "checkpoints")
         os.makedirs(self.checkpoint_dir, exist_ok=True)
 
