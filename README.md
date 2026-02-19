@@ -1,283 +1,174 @@
 # Æon Framework (Core)
 
 <div align="center">
-  <h3>The Neuro-Symbolic Runtime for Distributed Agents</h3>
+
+[![Version](https://img.shields.io/badge/version-v0.4.0--ULTRA-blue.svg)](https://github.com/richardsonlima/aeon-core)
+[![Python Versions](https://img.shields.io/badge/python-3.10+-blue.svg)](https://github.com/richardsonlima/aeon-core)
+[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/status-research--preview-orange.svg)](https://github.com/richardsonlima/aeon-core)
+[![Architecture](https://img.shields.io/badge/architecture-neuro--symbolic-purple.svg)](https://github.com/richardsonlima/aeon-core)
+[![UV Compatible](https://img.shields.io/badge/UV-Compatible-5C63FF.svg)](https://github.com/astral-sh/uv)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
   <p>
-    <em>"Safety-Native. Protocol-First. Extensible by Design."</em>
+      <a href="README.md">English</a> | <a href="README_pt.md">Português</a>
   </p>
+  
+**The Deterministic Runtime for Safety-Critical AI Agents with Autonomous Native Capabilities**
+
 </div>
 
-<p align="center">
-  <a href="LICENSE">
-    <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License">
-  </a>
-  <img src="https://img.shields.io/badge/python-3.10+-blue.svg" alt="Python Version">
-  <img src="https://img.shields.io/badge/status-experimental%20research-orange.svg" alt="Status">
-  <img src="https://img.shields.io/badge/architecture-neuro--symbolic-purple.svg" alt="Architecture">
-</p>
+## 🌟 Overview
 
----
+Æon is a comprehensive, production-ready framework for building **Neuro-Symbolic AI agents**. Unlike stochastic-only systems, Æon combines the intuitive reasoning of LLMs (**System 1**) with the deterministic safety and control of code-level axioms (**System 2**).
 
-## ⚡ The "Trust Stack" for Advanced Agents
+It establishes a standard "Trust Stack" that enables agents to be **Safety-Native**, **Protocol-First**, and **Extensible by Design**. With deep integration of the **Agent-to-Agent (A2A)** and **Model Context Protocol (MCP)**, Æon allows you to build interoperable agent ecosystems that can collaborate safely in high-stakes environments.
 
-**Æon v0.3.0** is a comprehensive framework that solves the **Extensibility Problem** in agent systems.  
-While other frameworks focus on quick wins, Æon focuses on building **production-grade, extensible agents**.
+## 📋 What's New in v0.4.0 (ULTRA)
 
-### Core Philosophy
+- **🔌 Autonomous Native Engine**: Built-in support for browser automation (Playwright), persistent event-sourced memory (SQLite), and granular Trust Levels.
+- **🏗️ Developer First CLI**: Transform from scripts to projects with the new `aeon` command. Scaffold, run, and serve agents in seconds.
+- **🚀 Declarative Runtime**: Define agents via `aeon.yaml` and launch a full **Gateway Server** for production deployments.
+- **🛡️ Enhanced Safety executive**: Improved SIL-4 compliant axioms with TMR (Triple Modular Redundancy) reasoning for mission-critical reliability.
+- **🔄 Deep Persistence**: Event-sourced memory system that survives reboots and provides a complete audit trail of agent thoughts and actions.
+- **⏰ Temporal Capabilities**: Native scheduling for cron jobs and delayed tasks, enabling agents to act autonomously over time.
 
-**Æon separates cognitive reasoning from practical integration**, enabling:
+## 📋 What's New in v0.3.0 (ULTRA Phase)
 
-1. **Cognitive Stack**: LLM-based reasoning with deterministic safety validation
-2. **Integration Stack**: Multi-platform communication, modular capabilities, event routing
-3. **Safety Stack**: Axiom-based control, safety validation before action
-4. **Scalability Stack**: Event-driven architecture for distributed coordination
+- **Routing Layer**: Intelligent pattern-based message routing with 5 distinct strategies (Priority, Weighted, etc.).
+- **Gateway Layer**: Centralized communication hub with session management and TTL support.
+- **Security Layer**: Policy-based access control, AES encryption, and multi-provider authentication.
+- **Health Layer**: Real-time system monitoring, metrics collection (Counter, Gauge, etc.), and diagnostics.
 
----
+## ✨ Why Choose Æon?
 
-## 🏗️ Architecture
+- **Deterministic Safety**: Stop begging the model to be safe. Enforce safety at the runtime level with **Axioms**.
+- **Neuro-Symbolic Core**: The perfect balance between LLM intuition and hard-coded rules.
+- **Protocol-First**: Native support for **A2A** (Agent-to-Agent) and **MCP** (Model Context Protocol).
+- **Enterprise Ready**: Built with observability, economics (cost tracking), and health monitoring from the ground up.
+- **Local-First & Private**: Run entirely on your hardware with Ollama or connect to premium cloud providers.
+- **Stark visual Feedback**: Terminal-native UI components for monitoring agent execution in real-time.
 
-### 16 Integrated Subsystems (4 Layers)
+## 📦 Installation
 
-```
-Æon Agent v0.3.0-ULTRA
-├── CORE (4 subsystems)
-│   ├── Cortex (System 1: Intuitive Reasoning via LLM)
-│   ├── Executive (System 2: Deterministic Safety & Axioms)
-│   ├── Hive (Agent-to-Agent Communication via A2A Protocol)
-│   └── Synapse (Tool Integration & MCP Support)
-│
-├── INTEGRATION (5 subsystems)
-│   ├── Integrations (Multi-Platform Providers)
-│   ├── Extensions (Pluggable Capabilities)
-│   ├── Dialogue (Conversation Context Management)
-│   ├── Dispatcher (Event-Driven Pub/Sub Hub)
-│   └── Automation (Temporal Task Scheduling)
-│
-├── ADVANCED (3 subsystems)
-│   ├── Observability (Lifecycle Hooks & Token Tracking)
-│   ├── Economics (Cost Tracking & Dynamic Pricing)
-│   └── CLI (Command Interface & History)
-│
-└── ULTRA (5 subsystems) ← NEW v0.3.0
-    ├── Routing (Intelligent Message Routing with Strategies & Filters)
-    ├── Gateway (Central Communication Hub & Session Management)
-    ├── Security (Authentication, Authorization & Encryption)
-    ├── Health (System Monitoring, Metrics & Diagnostics)
-    └── Cache (Performance Optimization with LRU & Distributed Strategies)
-```
+### Using UV (Recommended)
 
----
+[UV](https://github.com/astral-sh/uv) is the fastest way to manage Æon dependencies:
 
-## 🚀 Quick Start
-
-```python
-from aeon import Agent
-from aeon.protocols import A2A, MCP
-
-# Initialize agent
-agent = Agent(
-    name="SentinelBot",
-    model="google/gemini-2.0-flash-001",
-    protocols=[A2A(port=8000), MCP(servers=["tools.py"])]
-)
-
-# Register integration provider
-from aeon.integrations.provider import IntegrationProvider
-
-class TelegramProvider(IntegrationProvider):
-    async def dispatch(self, packet):
-        # Send to Telegram
-        return True
-    
-    async def receive(self):
-        # Poll Telegram
-        return None
-
-telegram = TelegramProvider(config)
-agent.integrations.register("telegram", telegram)
-
-# Load extension capability
-from aeon.extensions.capability import Capability
-
-class WeatherCapability(Capability):
-    metadata = CapabilityMetadata(name="weather", ...)
-    
-    async def invoke(self, **kwargs):
-        return await fetch_weather(kwargs["location"])
-
-agent.extensions.register(WeatherCapability())
-await agent.extensions.activate("weather")
-
-# Create conversation context
-from aeon.dialogue.context import DialogueContext, ActorRole
-
-context = DialogueContext(context_id="conv_1", origin_platform="telegram", participant_id="user_42")
-context.add_turn(ActorRole.USER, "What's the weather?")
-agent.dialogue.store(context)
-
-# Emit event
-from aeon.dispatcher.event import Event, EventType
-
-event = Event(
-    event_type=EventType.COMMUNICATION_RECEIVED,
-    source="telegram",
-    payload={"user": "user_42", "text": "Weather in SP?"}
-)
-await agent.dispatcher.emit(event)
-
-# Schedule task
-from aeon.automation.temporal import ScheduledTask, TemporalPattern
-
-async def health_check():
-    print("System OK")
-
-agent.automation.define_handler("check", health_check)
-task = ScheduledTask(
-    task_id="hc_1",
-    label="Health Check",
-    temporal_pattern=TemporalPattern(hour="*/6"),
-    handler_id="check"
-)
-agent.automation.schedule(task)
-```
-
----
-
-## 📚 Documentation
-
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Complete system design and integration guide
-- **[examples/](examples/)** - Working demonstrations
-- **[docs/](docs/)** - Detailed API documentation
-
----
-
-## 🎯 Key Features
-
-### Integrations Layer
-- **Multi-Platform**: Telegram, Slack, Discord, WhatsApp, Email, HTTP, Custom
-- **Provider Pattern**: Abstract transport handlers
-- **Packet Format**: Unified data structure across platforms
-- **Lifecycle Management**: Activation, health checks, graceful shutdown
-
-### Extensions Layer
-- **Pluggable Capabilities**: Load/unload features dynamically
-- **Dependency Resolution**: Automatic dependency chain resolution
-- **Lazy Loading**: Activate only what you need
-- **Isolation**: Each capability operates independently
-
-### Dialogue Layer
-- **Event-Sourced**: Full conversation history with metadata
-- **Retention Policies**: Automatic cleanup after N days
-- **Queryable**: Search conversations by participant or platform
-- **Thread-Safe**: Concurrent dialogue management
-
-### Dispatcher Layer
-- **Type-Safe Events**: Structured event hierarchy
-- **Observer Pattern**: Decoupled pub/sub
-- **Priority Handling**: Process critical events first
-- **Async/Sync Support**: Mixed handler types
-
-### Automation Layer
-- **Temporal Patterns**: Cron-like scheduling expressions
-- **Task Persistence**: Track execution history
-- **Manual Triggers**: Execute tasks on-demand
-- **Dependency-Free**: Handlers don't require full dependency chain
-
-### Observability Layer
-- **Lifecycle Hooks**: Monitor execution start/end, events, tool calls, errors
-- **Token Tracking**: Measure input/output/reasoning/cached tokens
-- **Event Logging**: Audit trail of all events with timestamps
-- **Execution Context**: Rich context information per execution
-
-### Economics Layer
-- **Dynamic Pricing**: Multi-provider pricing registry (OpenAI, Anthropic, Ollama)
-- **Cost Calculation**: Accurate cost tracking with cache discounts
-- **Token Metrics**: Input, output, reasoning, cached token tracking
-- **Cost Reports**: Summary statistics and breakdowns by model/provider
-
-### CLI Layer
-- **Command Interface**: Extensible command registry
-- **Rich Formatting**: Tables, costs, durations, percentages
-- **Command History**: Track all executed commands
-- **Async Support**: Non-blocking command execution
-
-### Routing Layer (ULTRA v0.3.0)
-- **Intelligent Routing**: Pattern-based message routing with priorities
-- **5 Strategies**: Priority, LoadBalanced, WeightedRandom, RoundRobin, ContextAware
-- **6 Filters**: Pattern, Type, Predicate, Attribute, Range, FilterChain composition
-- **Distribution**: 6 policies for intelligent message distribution (Broadcast, Fanout, Scatter, etc.)
-
-### Gateway Layer (ULTRA v0.3.0)
-- **Central Hub**: Unified communication management across all integrations
-- **Session Management**: Full lifecycle from creation to expiration with TTL
-- **State Machine**: 6-state gateway lifecycle (INITIALIZING → READY → RUNNING → DEGRADED → MAINTENANCE → SHUTDOWN)
-- **Transport Abstraction**: WebSocket, HTTP, and custom protocol support
-
-### Security Layer (ULTRA v0.3.0)
-- **Authentication**: Multi-provider auth system with API Key support
-- **Token Management**: Full token lifecycle with expiration, refresh, and scope-based access
-- **Authorization**: Policy-based access control with role-based and rule-based permissions
-- **Encryption**: AES encryption provider with pluggable cipher implementations
-
-### Health Layer (ULTRA v0.3.0)
-- **Health Checking**: Component-level health checks with aggregation
-- **Metrics Collection**: 4 metric types (Counter, Gauge, Histogram, Timer)
-- **System Diagnostics**: Comprehensive error tracking and diagnostic reporting
-- **Real-time Monitoring**: Continuous health status updates with alerts
-
-### Cache Layer (ULTRA v0.3.0)
-- **Multiple Strategies**: SimpleCache, LRUCache, DistributedCache
-- **TTL Support**: Automatic expiration of cached items
-- **Function Caching**: Decorator-based result caching with flexible TTL
-- **Distributed Replication**: Multi-node cache with fallback strategies
-
----
-
-## 🔒 Safety & Governance
-
-Æon implements **deterministic safety** through:
-
-1. **Axioms**: Code-level safety rules defined in Executive layer
-2. **Validation**: All outputs validated before dispatch
-3. **Isolation**: Events are processed with error isolation
-4. **Logging**: Full audit trail of all agent actions
-
----
-
-## 🔧 Development
-
-### Install Dependencies
 ```bash
-pip install -r requirements.txt
+# Clone the repository
+git clone https://github.com/richardsonlima/aeon-core.git
+cd aeon-core
+
+# Create environment and install
+uv sync
 ```
 
-### Run Example
-```bash
-python examples/advanced_integration_demo.py
-```
-
-### Type Checking
-```bash
-mypy src/aeon/
-```
-
----
-
-### Installation
+### Using pip
 
 ```bash
 pip install aeon-core
 ```
 
----
+## 🚀 Quick Start Examples
 
-## 🧪 Hello World: The Unbreakable Agent
+### 1. Developer Workflow (CLI)
 
-This example creates an **Industrial Controller Agent** that:
+From zero to agent in three commands:
 
-- Is discoverable via the **Unified A2A Standard**
-- Uses **Hardware Sensors via MCP**
-- Enforces an **Unbreakable Axiom** preventing physical safety violations
+```bash
+# Initialize a new project
+aeon init my-safety-agent
+
+# Configure your model in aeon.yaml
+# (Default: google/gemini-2.0-flash-001)
+
+# Run a task interactively
+aeon run "Check reactor thermal status"
+
+# Start the production gateway
+aeon serve --port 8000
+```
+
+### 2. Create a Safety-Native Agent (Code)
+
+```python
+from aeon import Agent
+from aeon.protocols import A2A, MCP
+
+# Initialize the agent with the Trust Stack
+agent = Agent(
+    name="Sentinel",
+    model="google/gemini-2.0-flash-001",
+    protocols=[A2A(port=8000), MCP(servers=["industrial_tools.py"])]
+)
+
+# Define an Unbreakable Axiom (System 2)
+@agent.axiom(on_violation="OVERRIDE")
+def safety_limit(command: dict) -> bool | dict:
+    """SAFETY RULE: Power output cannot exceed 100%."""
+    if command.get("power", 0) > 100:
+        return {"power": 100, "warning": "AXIOM_LIMIT_REACHED"}
+    return True
+
+if __name__ == "__main__":
+    agent.start()
+```
+
+### 3. Autonomous Browser Workflow
+
+```python
+from aeon import Agent
+from aeon.core.config import TrustLevel
+
+agent = Agent(name="Researcher", trust_level=TrustLevel.FULL)
+
+async def main():
+    # Agent can autonomously browse and remember
+    response = await agent.run("Find the latest paper on SIL-4 safety and save the summary.")
+    print(f"Agent Action: {response.last_thought}")
+
+# Run via CLI: aeon run ...
+```
+
+## 🔌 Enhanced MCP (Model Context Protocol) v2.0
+
+Æon now features a completely redesigned MCP implementation that provides robust, production-ready integration with external tools:
+
+- **Synapse Layer**: Unified tool discovery and invocation.
+- **Standard Support**: Full compliance with the latest MCP specification.
+- **Multi-Server**: Connect to multiple MCP servers simultaneously (Stdio, SSE).
+- **Type Safety**: Automatic parameter validation for tool calls.
+
+## 📖 Architecture: The 16 Subsystems
+
+Æon is organized into 4 distinct layers, each providing critical functionality for advanced agents:
+
+### 1. CORE (System 1 & 2)
+- **Cortex**: Neuro-reasoning via LLMs.
+- **Executive**: Deterministic control via Axioms.
+- **Hive**: Standardized communication (A2A).
+- **Synapse**: Tool integration (MCP).
+
+### 2. INTEGRATION
+- **Integrations**: Multi-platform connectivity (Telegram, Discord, Slack).
+- **Extensions**: Dynamic capability loading.
+- **Dialogue**: Persistent, event-sourced conversation history.
+- **Dispatcher**: Event-driven pub/sub architecture.
+- **Automation**: Temporal task scheduling (Cron/Interval).
+
+### 3. ADVANCED
+- **Observability**: Life-cycle hooks and audit trails.
+- **Economics**: Real-time token tracking and cost calculation.
+- **CLI**: Premium developer interface.
+
+### 4. ULTRA (Enterprise)
+- **Routing**: High-performance message distribution.
+- **Gateway**: Centralized session and transport management.
+- **Security**: Authentication, authorization, and encryption.
+- **Health**: System diagnostics and metrics.
+
+## 🧪 Hello World: Industrial Overseer
 
 ```python
 from aeon import Agent
@@ -288,86 +179,63 @@ controller = Agent(
     role="Industrial Automation Monitor",
     model="gemini-1.5-flash",
     protocols=[
-        A2A(port=8000, role="server", version="unified-1.0"),
-        MCP(servers=["https://github.com/mcp/industrial-sensors-mock"])
+        A2A(port=8000),
+        MCP(servers=["mcp-server-industrial"])
     ]
 )
 
-@controller.axiom(on_violation="OVERRIDE")
-def enforce_thermal_limits(command: dict) -> dict | bool:
-    """
-    SAFETY RULE: Core temperature cannot exceed 400°C.
-    """
-    target_temp = command.get("set_temperature", 0)
-
-    if target_temp > 400:
-        return {
-            "set_temperature": 400,
-            "alert": "AXIOM_VIOLATION: Request exceeded safety cap."
-        }
-
+@controller.axiom(on_violation="REJECT")
+def enforce_safety(command: dict):
+    # Any command attempting to disable cooling is rejected
+    if command.get("action") == "DISABLE_COOLING":
+        return False
     return True
 
 if __name__ == "__main__":
     controller.start()
 ```
 
----
-
-## 🖥️ Terminal Output (Visual Feedback)
+## 🖥 Terminal Output (Visual Feedback)
 
 ```plaintext
-🚀 Æon Core v0.1.0 initialized
-├── 📡 A2A Server: Online at http://localhost:8000/messages (Unified Std)
-├── 🔌 MCP Client: Connected to Sensor Array (4 tools loaded)
-└── 🛡️ Axioms: 1 Active (Enforce Thermal Limits)
+🚀 Æon Core v0.4.0-ULTRA initialized
+├── 📡 A2A Server: Online at http://0.0.0.0:8000 (Unified Standard)
+├── 🔌 MCP Client: Connected (4 tools loaded: read_sensor, adjust_valve...)
+├── 🛡️ Axioms: 2 Active (enforce_safety, thermal_limit)
+└── 🧠 Brain: Gemini-2.0-Flash (Ready)
 ```
 
----
+## 🤝 Community & Support
 
-## 🧠 Cognitive Architecture
+- **[GitHub Issues](https://github.com/richardsonlima/aeon-core/issues)**: Report bugs or request features.
+- **[Aeon Landing Page](https://www.richardsonlima.com.br/aeon/)**: Visit our landing page for deep dives.
+- **[Contributing Guide](CONTRIBUTING.md)**: Learn how to join the mission.
 
-| Layer      | Biological Analogy     | Function                 | Standard |
-|-----------|------------------------|--------------------------|----------|
-| Executive | Prefrontal Cortex      | Control & safety         | Axioms   |
-| Cortex    | Temporal Cortex        | Reasoning                | LLMs     |
-| Hive      | Social Cognition       | Agent Communication      | A2A      |
-| Synapse   | Nervous System         | Tools & Actions          | MCP      |
+## 📝 Citing this Project
 
----
-
-## 🤝 Contributing
-
-Fork → Branch → Commit → PR
-
----
-## ⚠️ License & Important Disclaimer
-
-Æon is an academic open-source research project.  
-Use at your own risk.
-
-<p align="center"><em>"Stop begging the model to be safe. Code it to be safe."</em></p>
-
-**Legal notice:**
-
-> Æon is a personal and academic open-source initiative focused on AI safety research.
-It is not affiliated with, endorsed by, or owned by any institution, company, or employer.
-Use in production environments during the *Research Preview* phase is entirely at the user's own risk.
-There is no warranty of correct operation, security, or fitness for any particular purpose.
-
-**License:** Apache 2.0 (commercial-friendly, attribution required)
-
----
-
-## 📃 Citation
+If you use Æon in your research, please cite it as:
 
 ```bibtex
-@misc{Aeon Framework,
+@software{richardsonlima-aeon-framework,
   author = {LIMA, Richardson Edson de},
-  title = {Aeon Framework - The Neuro-Symbolic Runtime for Deterministic AI Agents. "Standards-First. Safety-Native."},
+  title = {Aeon Framework: The Neuro-Symbolic Runtime for Deterministic AI Agents},
+  url = {https://github.com/richardsonlima/aeon-core},
+  version = {0.4.0-ULTRA},
   year = {2026},
-  publisher = {GitHub},
-  journal = {GitHub repository},
-  howpublished = {\url{https://github.com/richardsonlima/aeon-core.git}}
 }
 ```
+
+## 👨💻 Author
+
+**Richardson Lima (Rick) **
+
+- GitHub: [richardsonlima](https://github.com/richardsonlima)
+- LinkedIn: [richardsonlima](https://www.linkedin.com/in/richardsonlima)
+
+## 📄 License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+---
+
+Made with ❤️ for AI Safety by Richardson Lima.

@@ -3,7 +3,7 @@ Capability Loader: Dynamic extension discovery and resolution.
 Implements dependency resolution for modular capability loading.
 """
 
-from typing import Dict, Optional, List, Type
+from typing import Any, Dict, Optional, List, Type
 from aeon.extensions.capability import Capability, CapabilityMetadata
 
 

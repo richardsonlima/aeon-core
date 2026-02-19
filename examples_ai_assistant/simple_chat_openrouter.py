@@ -11,7 +11,7 @@ Setup:
 Available models:
     - anthropic/claude-opus-4-6
     - openai/gpt-4o
-    - google/gemini-2.0-flash
+    - google/gemini-2.0-flash-001
     - mistralai/mistral-large
     - meta-llama/llama-3-70b
 """
@@ -27,22 +27,20 @@ async def main():
         raise ValueError("OPENROUTER_API_KEY environment variable not set")
 
     # You can switch between models easily
-    model = "anthropic/claude-opus-4-6"  # Change to any supported model
+    model = "google/gemini-2.0-flash-001"  # Change to any supported model
     
     # Initialize agent with OpenRouter
     agent = Agent(
         name="OpenRouterChatBot",
-        model_provider="openrouter",
-        model_name=model,
-        api_key=api_key
+        model=model,  # OpenRouter format: provider/model-name
+        protocols=[]
     )
 
     print("=" * 60)
     print(f"Æon Framework - Simple Chat with OpenRouter")
     print(f"Model: {model}")
     print("=" * 60)
-    print("\nType 'quit' to exit")
-    print("Type 'model <name>' to switch models\n")
+    print("\nType 'quit' to exit\n")
 
     # Interactive chat loop
     while True:
@@ -53,18 +51,16 @@ async def main():
                 print("\nGoodbye!")
                 break
 
-            if user_input.lower().startswith("model "):
-                model = user_input[6:].strip()
-                agent.model_name = model
-                print(f"\nSwitched to: {model}\n")
-                continue
-
             if not user_input:
                 continue
 
             # Get response from agent
             print("Thinking...", end="", flush=True)
-            response = await agent.cortex.reason(prompt=user_input)
+            response = agent.cortex.plan_action(
+                system_prompt=agent.system_prompt,
+                user_input=user_input,
+                tools=[]
+            )
             print("\r           \r", end="")
 
             print(f"\nBot: {response}\n")

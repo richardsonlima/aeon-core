@@ -79,15 +79,15 @@ async def main():
     # Initialize agent
     agent = Agent(
         name="LocationAssistant",
-        model_provider="ollama",
-        model_name="mistral"
+        model="ollama/phi3.5",
+        protocols=[]
     )
 
     # Initialize Google Maps helper
     maps = GoogleMapsHelper(api_key=api_key)
 
     # Example 1: Get directions
-    print("\n[1] Getting Directions")
+    print("\\n[1] Getting Directions")
     print("-" * 60)
     directions = await maps.get_directions("New York", "Boston")
     print(f"Distance: {directions['distance']}")
@@ -98,14 +98,14 @@ async def main():
         print(f"  {i}. {step}")
 
     # Example 2: Find nearby places
-    print("\n[2] Finding Nearby Coffee Shops")
+    print("\\n[2] Finding Nearby Coffee Shops")
     print("-" * 60)
     coffee_shops = await maps.find_nearby("New York", "coffee")
     for shop in coffee_shops:
         print(f"  {shop['name']}: {shop['distance']} away (★{shop['rating']})")
 
     # Example 3: Get location info
-    print("\n[3] Location Information")
+    print("\\n[3] Location Information")
     print("-" * 60)
     info = await maps.get_location_info("New York")
     print(f"Coordinates: {info['coordinates']}")
@@ -113,7 +113,7 @@ async def main():
     print(f"Country: {info['country']}")
 
     # Example 4: AI-powered recommendation
-    print("\n[4] AI Travel Recommendation")
+    print("\\n[4] AI Travel Recommendation")
     print("-" * 60)
     
     prompt = """Based on these nearby places:
@@ -123,11 +123,15 @@ async def main():
     
     Which coffee shop would you recommend and why?"""
     
-    recommendation = await agent.cortex.reason(prompt=prompt)
+    recommendation = agent.cortex.plan_action(
+        system_prompt=agent.system_prompt,
+        user_input=prompt,
+        tools=[]
+    )
     print(recommendation)
 
     # Example 5: Multi-step travel planning
-    print("\n[5] Travel Planning with AI")
+    print("\\n[5] Travel Planning with AI")
     print("-" * 60)
     
     directions_info = f"""
@@ -148,7 +152,11 @@ async def main():
     
     Keep it practical and friendly."""
     
-    travel_plan = await agent.cortex.reason(prompt=prompt)
+    travel_plan = agent.cortex.plan_action(
+        system_prompt=agent.system_prompt,
+        user_input=prompt,
+        tools=[]
+    )
     print(travel_plan)
 
 
