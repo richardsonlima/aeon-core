@@ -21,18 +21,18 @@ async def main():
     if not api_key:
         raise ValueError("OPENAI_API_KEY environment variable not set")
 
-    # Initialize agent with OpenAI
+    # Initialize agent with OpenAI via OpenRouter
+    # Note: Æon uses OpenRouter as the unified API gateway
     agent = Agent(
         name="OpenAIChatBot",
-        model_provider="openai",
-        model_name="gpt-4o",
-        api_key=api_key
+        model="openai/gpt-4o",  # OpenRouter format: provider/model
+        protocols=[]
     )
 
     print("=" * 60)
     print("Æon Framework - Simple Chat with OpenAI")
     print("=" * 60)
-    print("\nType 'quit' to exit\n")
+    print("\\nType 'quit' to exit\\n")
 
     # Interactive chat loop
     while True:
@@ -40,7 +40,7 @@ async def main():
             user_input = input("You: ").strip()
 
             if user_input.lower() in ["quit", "exit", "q"]:
-                print("\nGoodbye!")
+                print("\\nGoodbye!")
                 break
 
             if not user_input:
@@ -48,16 +48,20 @@ async def main():
 
             # Get response from agent
             print("Thinking...", end="", flush=True)
-            response = await agent.cortex.reason(prompt=user_input)
-            print("\r           \r", end="")  # Clear "Thinking..."
+            response = agent.cortex.plan_action(
+                system_prompt=agent.system_prompt,
+                user_input=user_input,
+                tools=[]
+            )
+            print("\\r           \\r", end="")  # Clear "Thinking..."
 
-            print(f"\nBot: {response}\n")
+            print(f"\\nBot: {response}\\n")
 
         except KeyboardInterrupt:
-            print("\n\nGoodbye!")
+            print("\\n\\nGoodbye!")
             break
         except Exception as e:
-            print(f"\nError: {e}\n")
+            print(f"\\nError: {e}\\n")
 
 
 if __name__ == "__main__":

@@ -14,10 +14,16 @@ class EventType(str, Enum):
     LIFECYCLE_BOOT = "lifecycle.boot"
     LIFECYCLE_SHUTDOWN = "lifecycle.shutdown"
     COMMUNICATION_RECEIVED = "communication.received"
-    COMMUNICATION_SENT = "communication.sent"
-    PROCESSING_START = "processing.start"
-    PROCESSING_COMPLETE = "processing.complete"
-    ERROR_OCCURRED = "error.occurred"
+    # Competitive Recovery types
+    JOB_FAILED = "job_failed"
+    RECOVERY_REQUIRED = "recovery_required"
+    
+    # HITL (Human-in-the-loop) types
+    HITL_REQUIRED = "hitl.required"
+    HITL_APPROVED = "hitl.approved"
+    HITL_REJECTED = "hitl.rejected"
+
+    ERROR_OCCURRED = "error.occurs"
     CAPABILITY_LOADED = "capability.loaded"
     CAPABILITY_FAILED = "capability.failed"
 

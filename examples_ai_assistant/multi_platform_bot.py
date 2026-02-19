@@ -11,9 +11,8 @@ This example shows how one agent can:
 """
 
 import asyncio
-from aeon import Agent
-from aeon.integrations.provider import IntegrationProvider
-from aeon.dialogue.context import DialogueContext, ActorRole
+from aeon import Agent, IntegrationProvider
+from aeon.dialogue import DialogueContext, Turn
 
 
 class UniversalIntegration(IntegrationProvider):
@@ -54,12 +53,12 @@ async def main():
     # Initialize agent
     agent = Agent(
         name="UniversalBot",
-        model_provider="ollama",
-        model_name="mistral"
+        model="ollama/phi3.5",
+        protocols=[]
     )
 
     # Register integrations for 3 platforms
-    print("\nRegistering Platforms:")
+    print("\\nRegistering Platforms:")
     platforms = {}
     for platform in ["telegram", "discord", "slack"]:
         provider = UniversalIntegration(platform)
@@ -76,7 +75,7 @@ async def main():
         for platform in platforms.keys()
     }
 
-    print("\n" + "=" * 60)
+    print("\\n" + "=" * 60)
     print("Demo: Messages from Multiple Platforms")
     print("=" * 60)
 
@@ -105,11 +104,15 @@ async def main():
                 text = message["text"]
                 platform_display = platform_name.title()
 
-                print(f"\n[{platform_display}] {user_id}:")
+                print(f"\\n[{platform_display}] {user_id}:")
                 print(f"  Message: {text}")
 
                 # Get response
-                response = await agent.cortex.reason(prompt=text)
+                response = agent.cortex.plan_action(
+                    system_prompt=agent.system_prompt,
+                    user_input=text,
+                    tools=[]
+                )
 
                 # Add platform-specific prefix (e.g., emoji)
                 emojis = {
@@ -119,20 +122,21 @@ async def main():
                 }
                 emoji = emojis.get(platform_name, "")
 
-                print(f"  {emoji} Bot: {response[:80]}...")
+                response_str = str(response)
+                print(f"  {emoji} Bot: {response_str[:80]}...")
 
                 # Send to platform
                 await provider.dispatch({
                     "recipient": user_id,
-                    "text": response
+                    "text": response_str
                 })
 
                 # Store in platform-specific context
-                contexts[platform_name].add_turn(ActorRole.USER, text)
-                contexts[platform_name].add_turn(ActorRole.ASSISTANT, response)
+                contexts[platform_name].add_turn(Turn(actor="user", content=text))
+                contexts[platform_name].add_turn(Turn(actor="assistant", content=response_str))
 
     # Summary
-    print("\n" + "=" * 60)
+    print("\\n" + "=" * 60)
     print("Platform Statistics")
     print("=" * 60)
 
@@ -141,7 +145,7 @@ async def main():
         emoji = {"telegram": "📱", "discord": "🎮", "slack": "💼"}.get(platform_name, "")
         print(f"{emoji} {platform_name.title()}: {turns} messages")
 
-    print("\n✓ Multi-platform bot demo complete!")
+    print("\\n✓ Multi-platform bot demo complete!")
 
 
 if __name__ == "__main__":

@@ -20,13 +20,12 @@ Setup:
 import asyncio
 import json
 from aeon import Agent
-from aeon.synapse.mcp import MCPClient
 
 
 class MCPToolIntegration:
     """Generic MCP server integration"""
     
-    def __init__(self, agent: Agent, mcp_servers: list[str]):
+    def __init__(self, agent: Agent, mcp_servers: list):
         self.agent = agent
         self.mcp_servers = mcp_servers
         self.tools = {}
@@ -109,12 +108,12 @@ async def main():
     # Initialize agent
     agent = Agent(
         name="MCPAgent",
-        model_provider="ollama",
-        model_name="mistral"
+        model="ollama/phi3.5",
+        protocols=[]
     )
 
     # Initialize MCP tools
-    print("\nInitializing MCP Servers:")
+    print("\\nInitializing MCP Servers:")
     mcp_servers = [
         "brave_search",
         "google_maps",
@@ -126,19 +125,19 @@ async def main():
     mcp_integration = MCPToolIntegration(agent, mcp_servers)
     await mcp_integration.initialize()
 
-    print("\nAvailable Tools:")
+    print("\\nAvailable Tools:")
     for server, data in mcp_integration.tools.items():
         tools = data["tools"]
         tool_names = ", ".join([t["name"] for t in tools])
         print(f"  {server}: {tool_names}")
 
     # Example usage
-    print("\n" + "=" * 60)
+    print("\\n" + "=" * 60)
     print("Example: Using MCP Tools")
     print("=" * 60)
 
     # Use Brave Search
-    print("\n[1] Searching with Brave Search:")
+    print("\\n[1] Searching with Brave Search:")
     result = await mcp_integration.call_tool(
         "brave_search",
         "search",
@@ -147,7 +146,7 @@ async def main():
     print(f"  Result: {result}")
 
     # Use Google Maps
-    print("\n[2] Getting directions with Google Maps:")
+    print("\\n[2] Getting directions with Google Maps:")
     result = await mcp_integration.call_tool(
         "google_maps",
         "get_directions",
@@ -156,7 +155,7 @@ async def main():
     print(f"  Result: {result}")
 
     # Use YouTube
-    print("\n[3] Getting transcript with YouTube:")
+    print("\\n[3] Getting transcript with YouTube:")
     result = await mcp_integration.call_tool(
         "youtube",
         "get_transcript",
@@ -165,7 +164,7 @@ async def main():
     print(f"  Result: {result}")
 
     # Use SQLite
-    print("\n[4] Querying database with SQLite:")
+    print("\\n[4] Querying database with SQLite:")
     result = await mcp_integration.call_tool(
         "sqlite",
         "query",
@@ -174,19 +173,21 @@ async def main():
     print(f"  Result: {result}")
 
     # AI-powered tool selection
-    print("\n" + "=" * 60)
+    print("\\n" + "=" * 60)
     print("AI-Powered Tool Selection")
     print("=" * 60)
 
     prompt = "Find me a good coffee shop near New York and search for their reviews"
-    print(f"\nUser: {prompt}")
-    print("\nAgent thinking about which tools to use...")
+    print(f"\\nUser: {prompt}")
+    print("\\nAgent thinking about which tools to use...")
     
-    response = await agent.cortex.reason(
-        prompt=f"Given these tools available: {', '.join(mcp_servers)}, "
-               f"which would be best for: {prompt}"
+    response = agent.cortex.plan_action(
+        system_prompt=agent.system_prompt,
+        user_input=f"Given these tools available: {', '.join(mcp_servers)}, "
+                   f"which would be best for: {prompt}",
+        tools=[]
     )
-    print(f"\nAgent recommendation: {response}")
+    print(f"\\nAgent recommendation: {response}")
 
 
 if __name__ == "__main__":

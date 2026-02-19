@@ -49,7 +49,7 @@ else
     echo "Ollama not found. To install:"
     echo "  Mac/Linux: brew install ollama"
     echo "  Then: ollama serve (in another terminal)"
-    echo "  Then: ollama pull mistral"
+    echo "  Then: ollama pull phi3.5"
 fi
 
 # Step 5: Verify installation

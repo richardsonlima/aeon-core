@@ -6,7 +6,7 @@ This is the fastest way to get started. Run Ollama locally and chat with a model
 Setup:
     1. brew install ollama
     2. ollama serve (in another terminal)
-    3. ollama pull mistral
+    3. ollama pull phi3.5
     4. python simple_chat_ollama.py
 
 That's it! No API keys needed, runs completely offline.
@@ -20,9 +20,8 @@ async def main():
     # Initialize agent with local Ollama
     agent = Agent(
         name="LocalChatBot",
-        model_provider="ollama",
-        model_name="mistral",
-        base_url="http://localhost:11434"
+        model="ollama/phi3.5",  # Format: ollama/model-name
+        protocols=[]
     )
 
     print("=" * 60)
@@ -43,7 +42,11 @@ async def main():
                 continue
 
             # Get response from agent
-            response = await agent.cortex.reason(prompt=user_input)
+            response = agent.cortex.plan_action(
+                system_prompt=agent.system_prompt,
+                user_input=user_input,
+                tools=[]
+            )
             print(f"\nBot: {response}\n")
 
         except KeyboardInterrupt:

@@ -1,0 +1,11 @@
+{
+  "active_agents": [
+    "Manager",
+    "Researcher"
+  ],
+  "current_task": "Research LangGraph vs \u00c6on",
+  "pending_packets": 2,
+  "history": [
+    "Handshake complete"
+  ]
+}

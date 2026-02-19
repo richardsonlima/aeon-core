@@ -14,9 +14,8 @@ Your bot will start polling for messages and respond in real-time.
 
 import asyncio
 import os
-from aeon import Agent
-from aeon.integrations.provider import IntegrationProvider
-from aeon.dialogue.context import DialogueContext, ActorRole
+from aeon import Agent, IntegrationProvider
+from aeon.dialogue import DialogueContext, Turn
 
 
 class TelegramProvider(IntegrationProvider):
@@ -55,13 +54,13 @@ async def main():
     token = os.getenv("TELEGRAM_BOT_TOKEN")
     if not token:
         token = "DEMO_TOKEN"
-        print("⚠ TELEGRAM_BOT_TOKEN not set. Running in demo mode.\n")
+        print("⚠ TELEGRAM_BOT_TOKEN not set. Running in demo mode.\\n")
 
     # Initialize agent
     agent = Agent(
         name="TelegramBot",
-        model_provider="ollama",
-        model_name="mistral"
+        model="ollama/phi3.5",
+        protocols=[]
     )
 
     # Initialize Telegram provider
@@ -71,7 +70,7 @@ async def main():
     print("=" * 60)
     print("Æon Framework - Telegram Bot")
     print("=" * 60)
-    print("\nBot is running. Send messages to test.\n")
+    print("\\nBot is running. Send messages to test.\\n")
 
     # Simulate incoming messages
     async def simulate_messages():
@@ -94,18 +93,22 @@ async def main():
                 user_id = message["user_id"]
                 text = message["text"]
 
-                print(f"\n📨 From Telegram ({user_id}):")
+                print(f"\\n📨 From Telegram ({user_id}):")
                 print(f"   {text}")
 
                 # Get response
-                response = await agent.cortex.reason(prompt=text)
-                print(f"\n🤖 Bot Response:")
+                response = agent.cortex.plan_action(
+                    system_prompt=agent.system_prompt,
+                    user_input=text,
+                    tools=[]
+                )
+                print(f"\\n🤖 Bot Response:")
                 print(f"   {response}")
 
                 # Send back to Telegram
                 await telegram.dispatch({
                     "chat_id": chat_id,
-                    "text": response
+                    "text": str(response)
                 })
 
                 # Store in dialogue
@@ -114,15 +117,15 @@ async def main():
                     origin_platform="telegram",
                     participant_id=user_id
                 )
-                context.add_turn(ActorRole.USER, text)
-                context.add_turn(ActorRole.ASSISTANT, response)
+                context.add_turn(Turn(actor="user", content=text))
+                context.add_turn(Turn(actor="assistant", content=str(response)))
 
             else:
                 # No message, wait a bit
                 await asyncio.sleep(0.5)
 
     except KeyboardInterrupt:
-        print("\n\n🛑 Bot stopped")
+        print("\\n\\n🛑 Bot stopped")
 
 
 if __name__ == "__main__":
