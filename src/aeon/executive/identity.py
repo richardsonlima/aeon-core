@@ -7,7 +7,7 @@ class IdentityAxiom:
     Ensures that the agent's actions are consistent with the SOUL.md.
     """
     
-    def __init__(self, vault_path: str = "/Users/richardsonlima/Git/aeon-core/src/aeon/core/vault"):
+    def __init__(self, vault_path: str = "src/aeon/core/vault"):
         self.vault_path = vault_path
         self.soul_content = self._load_manifest("SOUL.md")
         self.user_content = self._load_manifest("USER.md")

@@ -7,7 +7,7 @@ class CitationAxiom:
     Ensures the agent is not alucinating citations and is actually referencing the Vault.
     """
     
-    def __init__(self, vault_path: str = "/Users/richardsonlima/Git/aeon-core/src/aeon/core/vault"):
+    def __init__(self, vault_path: str = "src/aeon/core/vault"):
         self.vault_path = vault_path
 
     def validate_response(self, response_text: str, source_context: str) -> bool:
