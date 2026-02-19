@@ -56,7 +56,11 @@ class YouTubeTranscriptExtractor:
 
 Focus on the key insights."""
         
-        return await agent.cortex.reason(prompt=prompt)
+        return agent.cortex.plan_action(
+            system_prompt=agent.system_prompt,
+            user_input=prompt,
+            tools=[]
+        )
 
     async def extract_key_topics(self, agent: Agent, transcript: str) -> list:
         """Extract key topics from transcript"""
@@ -66,8 +70,12 @@ Focus on the key insights."""
 
 Return as a comma-separated list."""
         
-        response = await agent.cortex.reason(prompt=prompt)
-        return [topic.strip() for topic in response.split(",")]
+        response = agent.cortex.plan_action(
+            system_prompt=agent.system_prompt,
+            user_input=prompt,
+            tools=[]
+        )
+        return [topic.strip() for topic in str(response).split(",")]
 
 
 async def main():
@@ -80,8 +88,8 @@ async def main():
     # Initialize agent
     agent = Agent(
         name="YouTubeAnalyzer",
-        model_provider="ollama",
-        model_name="mistral"
+        model="ollama/phi3.5",
+        protocols=[]
     )
 
     # Initialize YouTube extractor
@@ -94,22 +102,22 @@ async def main():
     ]
 
     for video_id, title in videos:
-        print(f"\n[Processing] {title}")
+        print(f"\\n[Processing] {title}")
         print("-" * 60)
 
         # Get transcript
         transcript = await youtube.get_transcript(video_id)
-        print(f"Transcript preview: {transcript[:100]}...\n")
+        print(f"Transcript preview: {transcript[:100]}...\\n")
 
         # Summarize
         print("Generating summary...")
         summary = await youtube.summarize_transcript(agent, transcript)
-        print(f"Summary:\n{summary}\n")
+        print(f"Summary:\\n{summary}\\n")
 
         # Extract topics
         print("Extracting key topics...")
         topics = await youtube.extract_key_topics(agent, transcript)
-        print(f"Topics: {', '.join(topics)}\n")
+        print(f"Topics: {', '.join(topics)}\\n")
 
 
 if __name__ == "__main__":

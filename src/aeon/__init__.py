@@ -13,7 +13,7 @@ from aeon.routing import Router, Route, RoutingStrategy, RoutingContext, Message
 from aeon.gateway import Gateway, GatewayConfig, GatewayState, Session, SessionManager
 from aeon.security import AuthProvider, Token, TokenManager, Credentials, Permission, PermissionSet, PolicyEvaluator, EncryptionProvider
 from aeon.health import HealthChecker, HealthStatus, ComponentHealth, Metrics, MetricCollector, MetricType, Diagnostics
-from aeon.cache import Cache, CacheEntry, LRUCache, DistributedCache, CacheDecorator
+from aeon.cache import Cache, CacheEntry, LRUCache, DistributedCache
 
 __all__ = [
     "Agent",
@@ -75,5 +75,4 @@ __all__ = [
     "CacheEntry",
     "LRUCache",
     "DistributedCache",
-    "CacheDecorator",
 ]

@@ -54,7 +54,7 @@ pip install -r requirements.txt
 
 # Install Ollama (optional, for local models)
 brew install ollama
-ollama pull mistral
+ollama pull phi3.5
 ```
 
 ### Environment Variables
@@ -143,7 +143,7 @@ from aeon import Agent
 agent = Agent(
     name="MyBot",
     model_provider="ollama",
-    model_name="mistral"
+    model_name="phi3.5"
 )
 ```
 

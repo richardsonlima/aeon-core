@@ -215,7 +215,7 @@ Run LLMs locally without any cloud service. Perfect for development and privacy-
 ollama serve
 
 # 3. In another terminal, download a model
-ollama pull mistral        # ~4GB - Fast and capable
+ollama pull phi3.5        # ~1.9GB - Fast and capable (Recommended for M1)
 # or
 ollama pull neural-chat    # Optimized for chat
 # or
@@ -229,7 +229,7 @@ from aeon import Agent
 agent = Agent(
     name="MyAssistant",
     model_provider="ollama",
-    model_name="mistral",
+    model_name="phi3.5",
     base_url="http://localhost:11434"  # Default Ollama address
 )
 ```
@@ -238,7 +238,7 @@ agent = Agent(
 
 | Model | Size | Speed | Quality | Best For |
 |-------|------|-------|---------|----------|
-| mistral | 4.1GB | ⚡⚡⚡ | ⭐⭐⭐⭐ | Balanced (recommended) |
+| qwen2.5-coder | 1.9GB | ⚡⚡⚡⚡⚡ | ⭐⭐⭐⭐⭐ | Coding & Reason (M1 optimized) |
 | neural-chat | 4.1GB | ⚡⚡⚡ | ⭐⭐⭐ | Chat-optimized |
 | llama2 | 3.8GB | ⚡⚡⚡ | ⭐⭐⭐ | General purpose |
 | phi | 1.6GB | ⚡⚡⚡⚡ | ⭐⭐⭐ | Lightweight |
@@ -327,7 +327,7 @@ import datetime
 agent = Agent(
     name="JournalAssistant",
     model_provider="ollama",  # Using local Ollama for privacy
-    model_name="mistral"
+    model_name="phi3.5"
 )
 
 # 2. Create a Journal Capability
@@ -401,7 +401,7 @@ from aeon import Agent
 agent = Agent(
     name="SafeAssistant",
     model_provider="ollama",
-    model_name="mistral"
+    model_name="phi3.5"
 )
 
 # Define safety rules (axioms)
@@ -617,7 +617,7 @@ curl http://localhost:11434/api/tags  # Should return model list
 ```bash
 # Test Ollama
 curl http://localhost:11434/api/generate \
-  -d '{"model":"mistral","prompt":"test"}'
+  -d '{"model":"phi3.5","prompt":"test"}'
 
 # Test OpenAI
 curl https://api.openai.com/v1/chat/completions \
@@ -763,7 +763,7 @@ from aeon import Agent
 agent = Agent(
     name="ChatBot",
     model_provider="ollama",
-    model_name="mistral"
+    model_name="phi3.5"
 )
 
 async def main():
@@ -781,7 +781,7 @@ if __name__ == "__main__":
 ```bash
 pip install aeon-core
 brew install ollama
-ollama pull mistral
+ollama pull phi3.5
 python chat_agent.py
 ```
 

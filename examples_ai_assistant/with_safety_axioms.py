@@ -7,7 +7,7 @@ Axioms are rules that are ALWAYS enforced before action.
 This example shows:
 - Content filtering (no harmful content)
 - Rate limiting (max requests per hour)
-- Cost limiting (max spend per day)
+- Response length limiting
 - Data validation
 """
 
@@ -48,8 +48,8 @@ async def main():
     # Initialize agent
     agent = Agent(
         name="SafeBot",
-        model_provider="ollama",
-        model_name="mistral"
+        model="ollama/phi3.5",
+        protocols=[]
     )
 
     rate_limiter = RateLimiter(max_per_hour=5)  # 5 requests/hour for demo
@@ -119,23 +119,28 @@ async def main():
         print("   Thinking...", end="", flush=True)
         
         try:
-            response = await agent.cortex.reason(prompt=prompt)
+            response = agent.cortex.plan_action(
+                system_prompt=agent.system_prompt,
+                user_input=prompt,
+                tools=[]
+            )
             
             # Check axioms
-            if not no_harmful_content(response):
+            if not no_harmful_content(str(response)):
                 print("\r❌ AXIOM VIOLATION: Response blocked (harmful content)")
                 continue
             
-            if not enforce_response_length(response):
-                response = response[:500] + "..."
+            if not enforce_response_length(str(response)):
+                response = str(response)[:500] + "..."
                 print(f"\r✓ Response truncated (max 500 chars)")
             
-            if not no_personal_data(response):
+            if not no_personal_data(str(response)):
                 print("\r❌ AXIOM VIOLATION: Response blocked (contains personal data)")
                 continue
             
             print(f"\r✓ APPROVED")
-            print(f"   Bot: {response[:100]}..." if len(response) > 100 else f"   Bot: {response}")
+            response_str = str(response)
+            print(f"   Bot: {response_str[:100]}..." if len(response_str) > 100 else f"   Bot: {response_str}")
             
         except Exception as e:
             print(f"\r❌ Error: {e}")

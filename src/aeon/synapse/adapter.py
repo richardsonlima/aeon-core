@@ -8,8 +8,15 @@ from contextlib import AsyncExitStack
 from pydantic import BaseModel
 
 # Official MCP SDK imports
-from mcp import ClientSession, StdioServerParameters
-from mcp.client.stdio import stdio_client
+try:
+    from mcp import ClientSession, StdioServerParameters
+    from mcp.client.stdio import stdio_client
+    MCP_AVAILABLE = True
+except ImportError:
+    MCP_AVAILABLE = False
+    ClientSession = Any
+    StdioServerParameters = Any
+    stdio_client = None
 
 class MCPConfig(BaseModel):
     """
