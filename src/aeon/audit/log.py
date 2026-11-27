@@ -78,6 +78,7 @@ class AuditLog:
         self._q: queue.Queue[Any] = queue.Queue(maxsize=maxsize)
         self._pending: list[tuple[float, str, str, dict[str, Any]]] = []
         self._reported_dropped = 0
+        self._abandoned = False
         self._pending_max = maxsize
         self._batch = batch
         self._retry_max = retry_max_s
@@ -122,7 +123,12 @@ class AuditLog:
     def _seal(self, ts: str, kind: str, data: Mapping[str, Any]) -> dict[str, Any]:
         if self._seq is None:
             raise RuntimeError("audit chain head was not initialised")
-        rec = seal(self._seq, ts, kind, dict(data), self._prev)
+        try:
+            rec = seal(self._seq, ts, kind, dict(data), self._prev)
+        except (TypeError, ValueError, RecursionError):
+            # keep the chain moving: record that the event could not be serialised
+            safe = {"unserialisable": True, "repr": repr(data)[:2000]}
+            rec = seal(self._seq, ts, kind, safe, self._prev)
         self._seq += 1
         self._prev = rec["hash"]
         return rec
@@ -153,6 +159,9 @@ class AuditLog:
         backoff = 0.05
         stopping = False
         while True:
+            if self._abandoned:
+                self.backend.close()
+                return
             stopping = self._collect(stopping)
             if not self._pending:
                 if stopping:
@@ -277,12 +286,15 @@ class AuditLog:
         with contextlib.suppress(queue.Full):
             self._q.put(_STOP, timeout=timeout)
         self._thread.join(timeout)
+        alive = self._thread.is_alive()
+        self._abandoned = alive  # a writer still retrying stops before its next write
         with self._lock:
             if self._unflushed:  # could not be written before shutdown
                 self.stats.dropped += self._unflushed
                 self.stats.last_error = self.stats.last_error or "closed with unwritten events"
                 self._unflushed = 0
-        self.backend.close()
+        if not alive:
+            self.backend.close()
 
     def __enter__(self) -> AuditLog:
         return self
