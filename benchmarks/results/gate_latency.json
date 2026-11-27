@@ -1,0 +1,120 @@
+{
+  "benchmark": "gate_latency",
+  "aeon_version": "0.5.0.dev0",
+  "date": "2026-11-27T13:33:14Z",
+  "machine": {
+    "python": "3.12.14",
+    "implementation": "CPython",
+    "system": "Darwin",
+    "release": "25.6.0",
+    "machine": "arm64",
+    "cpu_count": 8,
+    "cpu": "Apple M1"
+  },
+  "description": "Latency of one Gate.decide call (decision path only, audit off).",
+  "parameters": {
+    "samples": 20000,
+    "warmup_excluded": 2000,
+    "action": "read_file, every axiom passes"
+  },
+  "rows": [
+    {
+      "axioms": 1,
+      "mode": "shadow",
+      "monitor": true,
+      "latency_us": {
+        "n": 20000,
+        "p50": 10.0,
+        "p90": 10.625,
+        "p99": 11.291,
+        "max": 80.708,
+        "mean": 10.17470785,
+        "min": 9.583
+      }
+    },
+    {
+      "axioms": 1,
+      "mode": "enforce",
+      "monitor": true,
+      "latency_us": {
+        "n": 20000,
+        "p50": 10.25,
+        "p90": 10.667,
+        "p99": 12.208,
+        "max": 139.917,
+        "mean": 10.3986193,
+        "min": 9.708
+      }
+    },
+    {
+      "axioms": 10,
+      "mode": "shadow",
+      "monitor": true,
+      "latency_us": {
+        "n": 20000,
+        "p50": 11.5,
+        "p90": 11.875,
+        "p99": 12.625,
+        "max": 125.375,
+        "mean": 11.63646185,
+        "min": 11.125
+      }
+    },
+    {
+      "axioms": 10,
+      "mode": "enforce",
+      "monitor": true,
+      "latency_us": {
+        "n": 20000,
+        "p50": 11.417,
+        "p90": 11.791,
+        "p99": 12.542,
+        "max": 76.333,
+        "mean": 11.54246405,
+        "min": 11.125
+      }
+    },
+    {
+      "axioms": 100,
+      "mode": "shadow",
+      "monitor": true,
+      "latency_us": {
+        "n": 20000,
+        "p50": 27.25,
+        "p90": 28.958,
+        "p99": 41.875,
+        "max": 115.25,
+        "mean": 27.84967115,
+        "min": 26.083
+      }
+    },
+    {
+      "axioms": 100,
+      "mode": "enforce",
+      "monitor": true,
+      "latency_us": {
+        "n": 20000,
+        "p50": 28.666,
+        "p90": 29.333,
+        "p99": 41.333,
+        "max": 462.583,
+        "mean": 29.030446,
+        "min": 26.417
+      }
+    },
+    {
+      "axioms": 1,
+      "mode": "enforce",
+      "monitor": false,
+      "latency_us": {
+        "n": 20000,
+        "p50": 10.5,
+        "p90": 10.791,
+        "p99": 13.459,
+        "max": 117.791,
+        "mean": 10.59165965,
+        "min": 9.583
+      }
+    }
+  ]
+}
