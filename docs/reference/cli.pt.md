@@ -276,6 +276,40 @@ usage: aeon docs mcp [-h] [--docs-dir DOCS_DIR]
 |---|---|---|
 | `--docs-dir` |  | docs directory (default: bundled docs) |
 
+## `aeon agent`
+
+run a real LLM agent with its tools behind the gate
+
+```text
+usage: aeon agent [-h] <subcommand> ...
+```
+
+### `aeon agent run`
+
+run one prompt through the agent loop
+
+```text
+usage: aeon agent run [-h] [--json] --tools TOOLS [--model MODEL]
+                      [--provider {anthropic,compatible,groq,ollama,openai,openrouter}]
+                      [--base-url BASE_URL] [--system SYSTEM] [--agent AGENT]
+                      [--max-steps MAX_STEPS] [--max-tokens MAX_TOKENS] [--mode {shadow,enforce}]
+                      prompt
+```
+
+| Opção | Padrão | Descrição |
+|---|---|---|
+| `--json` |  | print JSON |
+| `prompt` |  | the user prompt |
+| `--tools` |  | Python file with the tool functions |
+| `--model` |  | model name (default: $AEON_LLM_MODEL) |
+| `--provider` {anthropic,compatible,groq,ollama,openai,openrouter} |  | default: the first of OPENROUTER_API_KEY, ANTHROPIC_API_KEY, OPENAI_API_KEY set |
+| `--base-url` |  | override the provider's API URL |
+| `--system` |  | system prompt |
+| `--agent` | `cli-agent` | agent name in the gate and audit |
+| `--max-steps` | `10` |  |
+| `--max-tokens` |  | output token cap per model call |
+| `--mode` {shadow,enforce} |  | override the configured mode |
+
 ## `aeon version`
 
 print version information

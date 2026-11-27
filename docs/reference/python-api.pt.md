@@ -28,6 +28,10 @@ Nível superior: `from aeon import axiom, enforce, Gate, Action, Level, Mode, Bu
 
 ::: aeon.adapters
 
+## `aeon.agents`
+
+::: aeon.agents
+
 ## `aeon.config`
 
 ::: aeon.config

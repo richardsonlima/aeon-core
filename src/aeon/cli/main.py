@@ -719,6 +719,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
     sp.add_argument("--docs-dir", help="docs directory (default: bundled docs)")
 
+    from aeon.cli.agent import add_parser as add_agent
+
+    add_agent(sub, add)
+
     add("version", cmd_version, "print version information")
     return p
 

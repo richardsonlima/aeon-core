@@ -1,8 +1,8 @@
 # Æon Core
 
-[English](README.md) | [Português](README.pt.md)
+[English](https://github.com/richardsonlima/aeon-core/blob/main/README.md) | [Português](https://github.com/richardsonlima/aeon-core/blob/main/README.pt.md)
 
-![version](https://img.shields.io/badge/version-0.5.0-blue) ![license](https://img.shields.io/badge/license-Apache--2.0-green) ![python](https://img.shields.io/badge/python-3.10%2B-blue)
+![version](https://img.shields.io/badge/version-0.5.1-blue) ![license](https://img.shields.io/badge/license-Apache--2.0-green) ![python](https://img.shields.io/badge/python-3.10%2B-blue)
 
 Æon is a free, open-source Python runtime that **gates the actions of LLM agents** and **injects controlled faults** to check that they fail safe.
 
@@ -12,16 +12,17 @@ Inspired by the MECADE framework (chaos engineering for dependability); an indep
 
 ## Status
 
-**Alpha.** Install with `pip install aeon-core`. This is a ground-up rewrite of v0.4 (see [`CHANGELOG.md`](CHANGELOG.md) and the [audit](https://www.richardsonlima.com.br/aeon/docs/audit/)).
+**Alpha.** Install with `pip install aeon-core`. This is a ground-up rewrite of v0.4 (see [`CHANGELOG.md`](https://github.com/richardsonlima/aeon-core/blob/main/CHANGELOG.md) and the [audit](https://www.richardsonlima.com.br/aeon/docs/audit/)).
 
 | Implemented and tested | Not built |
 |---|---|
 | Gate, axioms, autonomy levels, Safe State, kill-switch, shadow mode | Signed audit records and an external anchor for the chain |
 | Hash-chained audit log (JSONL, SQLite) and `aeon audit verify` | A Postgres audit backend |
-| Behavioural baseline, deviation score, CUSUM and envelope | Any test against a real LLM, and any field data |
+| Behavioural baseline, deviation score, CUSUM and envelope | Field data, and a measured rate of anything on a real LLM |
 | Eight faults with a blast-radius guard, pre-registered campaigns | Multi-process audit writers |
 | Adapters for plain Python, OpenAI, Anthropic and LangGraph (duck-typed) | Certification of any kind (IEC 61508, DO-178C and similar are inspiration and roadmap only) |
 | Local HTTP runtime, control plane UI, MCP servers for the gate and the docs | A published container image |
+| Agent SDK: `Agent`, `Team`, `Workflow`, sessions, memory, approval, structured output; runs on real models (OpenRouter, OpenAI, Anthropic, Ollama) | Token streaming, async runs, RAG ([roadmap](https://www.richardsonlima.com.br/aeon/docs/roadmap/agent-sdk/)) |
 
 **Read [Known limits](https://www.richardsonlima.com.br/aeon/docs/known-limits/) before you rely on it.** The short version: the gate only covers actions that pass through the wrapped executor, axioms do not judge the meaning of free text, and on the committed campaigns the default budget raised false positives in up to 70% of clean control runs of a simulated agent (eight of nine pre-registered hypotheses were not supported).
 
@@ -85,18 +86,18 @@ uv sync --group dev --extra runtime
 uv run --no-sync pytest
 ```
 
-[`CONTRIBUTING.md`](CONTRIBUTING.md) has every check CI runs (lint, types, tests, package smoke test, dependency audit, docs), the benchmarks, how to run the control plane on port 8787, and the rules for branches, commits and claims.
+[`CONTRIBUTING.md`](https://github.com/richardsonlima/aeon-core/blob/main/CONTRIBUTING.md) has every check CI runs (lint, types, tests, package smoke test, dependency audit, docs), the benchmarks, how to run the control plane on port 8787, and the rules for branches, commits and claims.
 
 ## Documentation
 
-- Docs: <https://www.richardsonlima.com.br/aeon/docs/> (English and Portuguese; also `docs/` in this repository, `aeon docs mcp` to serve it to a coding agent, and [`llms.txt`](llms.txt))
+- Docs: <https://www.richardsonlima.com.br/aeon/docs/> (English and Portuguese; also `docs/` in this repository, `aeon docs mcp` to serve it to a coding agent, and [`llms.txt`](https://github.com/richardsonlima/aeon-core/blob/main/llms.txt))
 - [5-minute quickstart](https://www.richardsonlima.com.br/aeon/docs/get-started/quickstart/) and a [prompt for a coding agent](https://www.richardsonlima.com.br/aeon/docs/get-started/coding-agent/)
 - [Claims](https://www.richardsonlima.com.br/aeon/docs/claims/): every claim with its evidence status
 - [Known limits](https://www.richardsonlima.com.br/aeon/docs/known-limits/)
-- [Benchmarks](benchmarks/README.md): how to reproduce, what they do not mean, and the unfavourable results. Every number describes one machine only.
-- [Security](https://www.richardsonlima.com.br/aeon/docs/security/) and [`SECURITY.md`](SECURITY.md)
-- [Contributing](CONTRIBUTING.md), [Release guide](RELEASE.md), [Changelog](CHANGELOG.md)
+- [Benchmarks](https://github.com/richardsonlima/aeon-core/blob/main/benchmarks/README.md): how to reproduce, what they do not mean, and the unfavourable results. Every number describes one machine only.
+- [Security](https://www.richardsonlima.com.br/aeon/docs/security/) and [`SECURITY.md`](https://github.com/richardsonlima/aeon-core/blob/main/SECURITY.md)
+- [Contributing](https://github.com/richardsonlima/aeon-core/blob/main/CONTRIBUTING.md), [Release guide](https://github.com/richardsonlima/aeon-core/blob/main/RELEASE.md), [Changelog](https://github.com/richardsonlima/aeon-core/blob/main/CHANGELOG.md)
 
 ## License
 
-Apache-2.0. See [`LICENSE`](LICENSE).
+Apache-2.0. See [`LICENSE`](https://github.com/richardsonlima/aeon-core/blob/main/LICENSE).

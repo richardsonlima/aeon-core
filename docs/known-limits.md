@@ -28,5 +28,6 @@ Read this before you rely on Æon. The first five are structural. The rest are t
 21. **Axiom files are trusted Python.** `aeon.toml` axiom files are imported and run. Starting `aeon runtime start` or `aeon runtime mcp` in an untrusted checkout runs that checkout's code. Both print the axiom file paths at startup, and there is no trust prompt for configs found by walking up from the working directory yet.
 22. **The runtime only sees its own decisions.** Its decisions page, stream and counters cover decisions made through that runtime process. Decisions made in other processes (an agent using the library directly, say) appear only in the audit log.
 23. **The public site's earlier claims were wrong.** See [Site changes](site-changes.md).
+24. **Agent runs on real models are single runs, not rates.** The agent loop was run against five models through OpenRouter on 2026-11-27 and blocked every delete the models attempted, but that is a handful of runs on one day. Whether a given model calls a tool, obeys an injected instruction or returns valid JSON varies between runs and model versions. The session database stores prompts and answers in plain text.
 
 Measurements are from one machine (Apple M1, Python 3.10.21, 2026-11-27) and describe that machine only. See [Benchmarks](evidence/benchmarks.md).

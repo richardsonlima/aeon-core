@@ -13,6 +13,7 @@ EXAMPLES = ROOT / "examples"
 
 EXPECTED: dict[str, list[str]] = {
     "quickstart": ["-- shadow mode", "-- enforce mode", "denied=1"],
+    "agent_sdk": ["needs approval", "prod.db was deleted.", "status: completed"],
     "openai_agent": ["Æon blocked this action:", "decisions: 2 denied: 1"],
     "anthropic_agent": ["is_error=True", "decisions: 2 denied: 1"],
     "langgraph_agent": ["Æon blocked 'delete_file'", "decisions: 2 denied: 1"],

@@ -4,6 +4,24 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-11-27
+
+### Added
+
+- `aeon.agents`: an agent SDK with every tool call behind the gate. `Agent` takes a `provider:model` string (OpenRouter, OpenAI, Anthropic, Groq, Ollama, any Chat Completions server) and plain functions as tools, and adds instructions, sessions and user memory in SQLite (`SqliteDb`), human approval (`require_approval` pauses the run, `continue_run` resumes it), structured output from a dataclass, Pydantic model or JSON schema, step events with `run(stream=True)`, `print_response`, `cli_app` and a debug mode. The loop stops before the next model call on the kill-switch or Safe State.
+- `Team` (members are gated tools of a coordinator) and `Workflow` (steps over agents, teams and functions, stopping at the first step that does not complete).
+- `OpenAICompatible` and `AnthropicClient`: provider clients on the standard library, so the core install stays dependency-free.
+- `aeon agent run`: run a prompt through a real model with tools from a Python file and the gate from `aeon.toml`.
+- `examples/agent_sdk`, the [Build an agent](https://www.richardsonlima.com.br/aeon/docs/guides/agents/) guide and the agent SDK roadmap.
+
+### Fixed
+
+- README links are absolute, so they work on the PyPI page.
+
+### Evidence
+
+- The agent loop ran against real models through OpenRouter on 2026-11-27 (`openai/gpt-4o-mini`, `anthropic/claude-haiku-5.5`, `qwen/qwen3-32b`, `meta-llama/llama-3.1-8b-instruct`, `google/gemini-2.5-flash-lite`, and `openai/gpt-5-nano` with reasoning). Single runs, not rates: see Known limits.
+
 ## [0.5.0] - 2026-11-27
 
 The v0.5.0 rewrite, published to PyPI as `aeon-core` 0.5.0. The previous code is kept at tag `v0.4.0-ULTRA`.
@@ -58,7 +76,8 @@ Tag `v0.2.0-alpha`.
 
 Tag `v0.1.0`. First tagged version.
 
-[Unreleased]: https://github.com/richardsonlima/aeon-core/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/richardsonlima/aeon-core/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/richardsonlima/aeon-core/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/richardsonlima/aeon-core/releases/tag/v0.5.0
 [0.4.0-ULTRA]: https://github.com/richardsonlima/aeon-core/releases/tag/v0.4.0-ULTRA
 [0.3.0-ULTRA]: https://github.com/richardsonlima/aeon-core/releases/tag/v0.3.0-ULTRA
