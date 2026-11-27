@@ -127,7 +127,10 @@ def load_config(path: Path | None = None) -> Config:
         cfg.max_blast_radius = env["AEON_MAX_BLAST_RADIUS"]
     if "AEON_AXIOMS" in env:
         cfg.axioms = [p for p in env["AEON_AXIOMS"].split(os.pathsep) if p]
-    Mode.parse(cfg.mode)  # validate early
+    try:
+        Mode.parse(cfg.mode)  # validate early
+    except ValueError as exc:
+        raise ConfigError(f"{cfg.source or 'AEON_MODE'}: {exc}") from None
     return cfg
 
 
