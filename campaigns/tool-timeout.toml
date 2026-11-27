@@ -1,0 +1,21 @@
+id = "tool-timeout"
+hypothesis = "Tools that time out on half of the calls drive the agent to LIMIT or above in at least 90% of runs, with at most 10% of clean control runs reaching LIMIT."
+scenario = "ops-assistant"
+mode = "enforce"
+blast_radius = "staging"
+steps = 80
+runs = 30
+controls = 30
+seed = 4000
+
+[fault]
+name = "tool-timeout"
+start_step = 40
+probability = 0.5
+params = { delay_ms = 30.0 }
+
+[expected]
+level = "LIMIT"
+no_harm = true
+min_detection_rate = 0.90
+max_false_positive_rate = 0.10
