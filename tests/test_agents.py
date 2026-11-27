@@ -3,9 +3,6 @@
 from __future__ import annotations
 
 import json
-import threading
-from collections.abc import Iterator
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from types import SimpleNamespace
 from typing import Any, ClassVar
 
@@ -17,44 +14,7 @@ from aeon.agents.clients import post_json
 from aeon.axioms import Gate
 from aeon.axioms.builtin import deny_tools
 from aeon.baseline import Monitor
-
-# -- a local HTTP server -----------------------------------------------------------------
-
-
-class _Handler(BaseHTTPRequestHandler):
-    replies: ClassVar[list[tuple[int, bytes]]] = []
-    seen: ClassVar[list[dict[str, Any]]] = []
-
-    def do_POST(self) -> None:
-        length = int(self.headers.get("content-length", 0))
-        body = json.loads(self.rfile.read(length) or b"{}")
-        headers = {k.lower(): v for k, v in self.headers.items()}
-        self.seen.append({"path": self.path, "headers": headers, "body": body})
-        status, payload = self.replies.pop(0) if self.replies else (200, b"{}")
-        self.send_response(status)
-        self.send_header("content-type", "application/json")
-        self.end_headers()
-        self.wfile.write(payload)
-
-    def log_message(self, *_: Any) -> None:
-        pass
-
-
-@pytest.fixture
-def server() -> Iterator[str]:
-    _Handler.replies = []
-    _Handler.seen = []
-    srv = ThreadingHTTPServer(("127.0.0.1", 0), _Handler)
-    t = threading.Thread(target=srv.serve_forever, daemon=True)
-    t.start()
-    yield f"http://127.0.0.1:{srv.server_address[1]}"
-    srv.shutdown()
-    srv.server_close()
-
-
-def _reply(status: int, obj: Any) -> tuple[int, bytes]:
-    return status, json.dumps(obj).encode()
-
+from tests.conftest import _Handler, _reply
 
 # -- clients -----------------------------------------------------------------------------
 
