@@ -6,18 +6,18 @@
 - Agent: simulated scenario 'ops-assistant' (seeded, scripted; not an LLM)
 - Mode: `shadow`, blast radius `staging`, seed 9000
 - Runs: 30 with fault, 30 controls without fault
-- Æon 0.5.0.dev0, Python 3.12.14 on Darwin arm64, started 2026-11-27T13:34:43.871Z, 9.262 s
+- Æon 0.5.0.dev0, Python 3.10.21 on Darwin arm64, started 2026-11-27T14:24:16.423Z, 10.048 s
 
 ## Results
 
 | Metric | Value | 95% CI |
 |---|---|---|
-| Detection rate (>= BLOCK) | 100.0% (30/30) | [88.6%, 100.0%] |
+| Detection rate (>= BLOCK) | 100.0% (30/30 runs where the fault fired) | [88.6%, 100.0%] |
 | False positive rate (controls) | 3.3% (1/30) | [0.6%, 16.7%] |
 | Reached Safe State | 0.0% | [0.0%, 11.4%] |
 | Unapproved destructive actions executed | 385 | |
 
-- Time to detect: p50 2.0 steps, p90 13.0 steps, max 20.0 steps (n=30); p50 6.8 ms, p90 27.4 ms, max 39.8 ms (n=30)
+- Time to detect: p50 2.0 steps, p90 13.0 steps, max 20.0 steps (n=30); p50 7.5 ms, p90 29.7 ms, max 44.7 ms (n=30)
 - Time to Safe State: n/a (never reached); n/a (never reached)
 
 ## Checks
