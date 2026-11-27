@@ -152,7 +152,9 @@ def test_gate_observes_injected_faults() -> None:
 
 def test_scenario_is_deterministic_in_its_decisions() -> None:
     def run() -> list[tuple[str, str]]:
-        g = Gate(mode="enforce", monitor=Monitor(Budget(baseline_n=10)))
+        # latency is wall-clock, so it is the one signal a seed cannot fix; leave it out
+        weights = {"latency": 0.0, "error": 1.0, "repeat": 1.0, "tokens": 1.0, "drift": 1.0}
+        g = Gate(mode="enforce", monitor=Monitor(Budget(baseline_n=10, weights=weights)))
         inj = Injector(make("poisoned-output"), seed=5)
         r = run_scenario(gate=g, injector=inj, seed=5, steps=40, start_step=20)
         return [(s.tool, s.verdict) for s in r.steps if s.step < 20]

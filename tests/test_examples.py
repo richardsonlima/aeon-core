@@ -35,6 +35,7 @@ def _run(args: list[str], cwd: Path, audit: Path) -> subprocess.CompletedProcess
         env=_env(audit),
         capture_output=True,
         text=True,
+        encoding="utf-8",  # the child writes UTF-8; the parent's locale may be cp1252
         timeout=120,
         check=False,
     )
