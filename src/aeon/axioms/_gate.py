@@ -17,7 +17,7 @@ from collections.abc import Awaitable, Callable, Iterable, Iterator, Mapping
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Protocol, TypeVar, cast, overload
 
-from aeon._util import utc_now_iso
+from aeon._util import new_id, utc_now_iso
 from aeon.axioms._types import (
     Action,
     ActionBlocked,
@@ -250,27 +250,44 @@ class Gate:
         mode = self.mode
         try:
             decision = self._decide(action, mode, t0)
-        except Exception as exc:  # the gate itself failed: fail closed in enforce mode
-            self.counters["gate_errors"] += 1
-            logger.warning("gate error while deciding %r: %r", action.tool, exc, exc_info=True)
-            enforce = mode is Mode.ENFORCE
-            decision = Decision(
-                action=action,
-                verdict=Level.BLOCK,
-                mode=mode,
-                findings=(Finding("gate", Level.BLOCK, f"gate error: {exc!r}"),),
-                allowed=not enforce,
-                enforced=enforce,
-                safe_state=False,
-                gate_error=repr(exc),
-                decided_ns=time.perf_counter_ns() - t0,
-            )
-        self._publish(decision)
+        except Exception as exc:  # the gate itself failed: fail closed when enforcing
+            decision = self._failed_decision(action, mode, t0, exc)
         entered: SafeState | None = getattr(self._pending_safe, "entered", None)
-        if entered is not None:
-            self._pending_safe.entered = None
-            self._emit("safe_state", {"entered": True, **entered.to_dict()})
+        self._pending_safe.entered = None
+        try:
+            self._publish(decision)
+            if entered is not None:
+                self._emit("safe_state", {"entered": True, **entered.to_dict()})
+        except Exception:  # observation must never turn a decision into an exception
+            self._count("gate_errors")
+            logger.warning("could not publish decision for %r", action.tool, exc_info=True)
         return decision
+
+    def _failed_decision(self, action: Action, mode: Mode, t0: int, exc: Exception) -> Decision:
+        """BLOCK decision for an internal gate error; enforced when enforcing or killed."""
+        self._count("gate_errors")
+        logger.warning("gate error while deciding %r: %r", action.tool, exc, exc_info=True)
+        enforce = mode is Mode.ENFORCE or self.kill_switch.engaged
+        findings = [Finding("gate", Level.BLOCK, f"gate error: {exc!r}")]
+        decision_id = new_id()
+        if enforce:
+            self._pending_safe.entered = self._enter_safe_state(action, findings, decision_id)
+        return Decision(
+            action=action,
+            verdict=Level.BLOCK,
+            mode=mode,
+            findings=tuple(findings),
+            allowed=not enforce,
+            enforced=enforce,
+            safe_state=enforce,
+            gate_error=repr(exc),
+            decided_ns=time.perf_counter_ns() - t0,
+            id=decision_id,
+        )
+
+    def _count(self, key: str) -> None:
+        with self._lock:
+            self.counters[key] += 1
 
     def _decide(self, action: Action, mode: Mode, t0: int) -> Decision:
         findings: list[Finding] = []
@@ -284,7 +301,7 @@ class Gate:
             try:
                 finding = spec.check(action)
             except Exception as exc:
-                self.counters["gate_errors"] += 1
+                self._count("gate_errors")
                 logger.debug("axiom %s raised; failing closed", spec.name, exc_info=True)
                 gate_error = gate_error or f"{spec.name}: {exc!r}"
                 finding = Finding(spec.name, Level.BLOCK, f"axiom raised {exc!r}")
@@ -359,7 +376,7 @@ class Gate:
         try:
             return bool(self.approver(decision))
         except Exception:
-            self.counters["gate_errors"] += 1
+            self._count("gate_errors")
             logger.debug("approval hook raised; treating as not approved", exc_info=True)
             return False  # an approval hook that fails does not approve
 
@@ -372,7 +389,7 @@ class Gate:
             try:
                 cb(decision)
             except Exception:
-                self.counters["subscriber_errors"] += 1
+                self._count("subscriber_errors")
                 logger.debug("decision subscriber raised", exc_info=True)
 
     def _emit(self, kind: str, data: Mapping[str, Any]) -> None:
@@ -381,7 +398,7 @@ class Gate:
         try:
             self.audit.emit(kind, data)
         except Exception:  # the observation path must never break a decision
-            self.counters["gate_errors"] += 1
+            self._count("gate_errors")
             logger.debug("audit sink failed for a %s event", kind, exc_info=True)
 
     # -- observation path ---------------------------------------------------------------
