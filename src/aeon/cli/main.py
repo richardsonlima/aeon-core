@@ -502,7 +502,8 @@ def cmd_audit_tail(args: argparse.Namespace) -> int:
 
 def _fmt_record(r: dict[str, Any]) -> str:
     """One line per audit record; tolerant of records with missing fields."""
-    d = r.get("data") if isinstance(r.get("data"), dict) else {}
+    raw = r.get("data")
+    d: dict[str, Any] = raw if isinstance(raw, dict) else {}
     head = f"{r.get('seq', '?'):>6} {r.get('ts', '?')}"
     if r.get("type") == "decision":
         findings = d.get("findings") or []
@@ -537,7 +538,8 @@ def cmd_audit_export(args: argparse.Namespace) -> int:
         w = csv.writer(buf)
         w.writerow(["seq", "ts", "type", "agent", "tool", "verdict", "allowed", "mode", "hash"])
         for r in recs:
-            d = r.get("data") if isinstance(r.get("data"), dict) else {}
+            raw = r.get("data")
+            d: dict[str, Any] = raw if isinstance(raw, dict) else {}
             row = [r.get("seq"), r.get("ts"), r.get("type")]
             row += [d.get(k, "") for k in ("agent", "tool", "verdict", "allowed", "mode")]
             w.writerow([_csv_safe(v) for v in [*row, r.get("hash")]])
