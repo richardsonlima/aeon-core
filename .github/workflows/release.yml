@@ -133,7 +133,7 @@ jobs:
           path: sbom
       - name: Release notes from CHANGELOG.md
         run: python3 scripts/release_notes.py "$GITHUB_REF_NAME" CHANGELOG.md > release-notes.md
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           body_path: release-notes.md
           prerelease: ${{ contains(github.ref_name, 'a') || contains(github.ref_name, 'b') || contains(github.ref_name, 'rc') || contains(github.ref_name, 'dev') }}
