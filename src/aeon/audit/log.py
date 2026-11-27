@@ -10,6 +10,7 @@ counted and reported in an ``audit.gap`` record.
 
 from __future__ import annotations
 
+import contextlib
 import os
 import queue
 import threading
@@ -22,7 +23,6 @@ from typing import Any
 from aeon._util import utc_now_iso
 from aeon.audit.backends import Backend, open_backend
 from aeon.audit.chain import GENESIS, VerifyReport, seal, verify_records
-import contextlib
 
 
 @dataclass
