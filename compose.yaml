@@ -1,0 +1,25 @@
+# Example. Copy aeon.env.example to aeon.env and set a long random token:
+#   AEON_RUNTIME_TOKEN=<output of: python -c "import secrets;print(secrets.token_urlsafe(32))">
+# Build context is the repo root, so the image is built from source.
+services:
+  aeon:
+    build: .
+    image: aeon-core:local
+    command: ["runtime", "start", "--host", "0.0.0.0", "--port", "8787"]
+    env_file: aeon.env          # holds AEON_RUNTIME_TOKEN; never commit it
+    environment:
+      AEON_RUNTIME_ALLOW_REMOTE: "1"   # container-internal bind; host side stays loopback below
+    ports:
+      - "127.0.0.1:8787:8787"   # loopback on the host only
+    volumes:
+      - aeon-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+volumes:
+  aeon-data:
