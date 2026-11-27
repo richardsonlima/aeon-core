@@ -34,10 +34,10 @@ You wrap the function through which your agent runs tools. Before each call, a s
 
 ## Evidence, with the bad news
 
-Every number in these docs comes from committed results of one machine (Apple M1, Python 3.12.14, 2026-11-27), and each page says so. They describe that machine only.
+Every number in these docs comes from committed results of one machine (Apple M1, Python 3.10.21, 2026-11-27), and each page says so. They describe that machine only.
 
-- One gate decision: p99 12.6 µs with 10 axioms, but the worst single call in the run was 462.6 µs and the audit queue dropped 3,856 of 20,000 events in a burst test.
-- Of eight pre-registered campaigns, **seven did not meet their hypothesis**, mostly because the default budget raised false positives on clean traffic of the simulated agent (up to 73%). No unapproved destructive action ran in enforce mode.
+- One gate decision: p99 15.0 µs with 10 axioms, but the worst single call in the run was 195 µs, and the audit queue dropped 2,081 of 50,000 events in a burst test.
+- Of nine pre-registered campaigns (eight enforce, one shadow), **eight did not meet their hypothesis**: six on false positives (20% to 70% of clean control runs of the simulated agent raised the alarm) and two on the Safe State check. In the enforce campaigns where a destructive action was attempted, none ran.
 
 See [Benchmarks](evidence/benchmarks.md), [Claims](claims.md) and the [first unfavourable result](blog/first-unfavourable-result.md).
 

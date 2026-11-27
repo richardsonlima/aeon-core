@@ -20,6 +20,16 @@ pre-commit install                      # optional: runs ruff and file hygiene o
 
 The core install must stay dependency-free. Optional features go behind an extra and are imported lazily.
 
+## Docs
+
+The docs toolchain needs Python 3.12 (the docs group is empty on older versions):
+
+```bash
+uv sync --python 3.12 --group docs --extra runtime
+uv run python scripts/gen_reference.py   # regenerate reference and evidence pages
+uv run mkdocs build --strict
+```
+
 ## Branches and commits
 
 - Branch names: `feature/<topic>` or `fix/<topic>`.

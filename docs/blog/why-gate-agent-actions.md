@@ -17,9 +17,9 @@ You wrap the function through which your agent calls tools. Before each call a s
 
 ## Why two paths
 
-The decision has to be cheap and predictable, or nobody will leave it on. So the decision path does no I/O and reads a cached budget level. On my laptop (Apple M1, Python 3.12.14) a decision with 10 axioms took a median of about 11 µs, a p99 of 12.6 µs, and the worst call in 20,000 was 125 µs. Writing the audit log, hashing and computing baselines happen elsewhere, so a slow disk cannot slow a decision. I will not tell you that number applies to your machine, and the measurement says nothing about a model call, which costs thousands of times more.
+The decision has to be cheap and predictable, or nobody will leave it on. So the decision path does no I/O and reads a cached budget level. On my laptop (Apple M1, Python 3.10.21) a decision with 10 axioms took a median of about 14 µs and a p99 of 15 µs, and the worst call in 100,000 was 81 µs. Writing the audit log, hashing and computing baselines happen elsewhere, so a slow disk cannot slow a decision. I will not tell you that number applies to your machine, and the measurement says nothing about a model call, which costs thousands of times more.
 
-The price of that split is real. The audit queue is bounded, so a burst of 20,000 events with no pause dropped 3,856 of them, and the log says so with an `audit.gap` record. I chose to lose events rather than stall the agent, and I would rather you know.
+The price of that split is real. The audit queue is bounded, so a burst of 50,000 events with no pause dropped 2,081 of them, and the log says so with an `audit.gap` record. I chose to lose events rather than stall the agent, and I would rather you know.
 
 ## What it will not do
 

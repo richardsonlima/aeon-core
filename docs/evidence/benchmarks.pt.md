@@ -26,7 +26,7 @@ Uma chamada `Gate.decide`, só o caminho de decisão, auditoria desligada, GC do
 | 1 | enforce | off | 11.9 | 12.1 | 12.5 | 53.1 |
 <!-- END GENERATED: gate -->
 
-Leia a coluna do máximo. A mediana é cerca de 10 µs, e chamadas isoladas na execução levaram até 462,6 µs. A latência também cresce com o número de axiomas que se aplicam: o p99 é 12,6 µs com 10 axiomas e 41,9 µs com 100.
+Leia a coluna do máximo. A mediana é de 12 a 36 µs conforme o número de axiomas, e chamadas isoladas na execução levaram até 195 µs. A latência também cresce com o número de axiomas que se aplicam: o p99 é 15,0 µs com 10 axiomas e 38,1 µs com 100.
 
 ## Auditoria
 
@@ -42,12 +42,9 @@ Custo no caminho de decisão, atraso até durabilidade e velocidade de verifica�
 `Gate.decide` sem auditoria: p50 11.8 µs, p99 12.4 µs, máx 65 µs. Com auditoria JSONL: p50 16.3 µs, p99 438.0 µs, máx 3399 µs. Verificação da cadeia: 159061 registros/s (47921 registros).
 <!-- END GENERATED: audit -->
 
-A linha da rajada é a desfavorável: 20.000 eventos sem pausa estouraram a fila e 3.856 foram descartados. A 1.000 eventos/s ritmados nenhum foi. Um emit na rajada travou por cerca de 29 ms, muito provavelmente por contenção com a thread de escrita. Com o log de auditoria ligado, `Gate.decide` teve p99 de 187 µs e pior chamada de 3,7 ms, contra 42,5 µs e 5,2 ms com ele desligado no mesmo arquivo: os máximos nas duas execuções são ruído da máquina e não são reproduzíveis.
+A linha da rajada é a desfavorável: 50.000 eventos sem pausa estouraram a fila e 2.081 foram descartados. A 1.000 eventos/s ritmados nenhum foi. Um emit na rajada travou por cerca de 77 ms, muito provavelmente por contenção com a thread de escrita. Com o log de auditoria ligado, `Gate.decide` teve p99 de 438 µs e pior chamada de 3,4 ms, contra 12,4 µs e 65 µs com ele desligado no mesmo arquivo: os máximos são ruído da máquina e não são reproduzíveis até o dígito.
 
 ## Campanhas de detecção
-
-!!! note "Regenerado no release"
-    Os resultados de detecção versionados são de 2026-11-27 e foram produzidos antes de a taxa de detecção passar a contar só as execuções em que a falha disparou. As tabelas abaixo são regeneradas de `benchmarks/results/` sempre que esses dados mudam, e o resumo em texto é [`benchmarks/results/summary.md`](https://github.com/richardsonlima/aeon-core/blob/main/benchmarks/results/summary.md).
 
 Campanhas pré-registradas no cenário simulado `ops-assistant`: um agente com semente e roteiro, **não um LLM**. 30 execuções com falha e 30 de controle cada. Os intervalos de confiança são intervalos de Wilson de 95%.
 
@@ -65,7 +62,7 @@ Campanhas pré-registradas no cenário simulado `ops-assistant`: um agente com s
 | `tool-timeout` (enforce) | LIMIT | 100% [89, 100] | 20% [10, 37] | 70% | 0 | 2 / 7 / 9 | NÃO suportada |
 <!-- END GENERATED: detection -->
 
-Sete das oito hipóteses **não foram suportadas**. As campanhas detectam as falhas, e em modo enforce nenhuma ação destrutiva sem aprovação rodou, mas o orçamento padrão gera falsos positivos em tráfego limpo: até 73%. Os relatórios com cada resultado desfavorável estão em [`benchmarks/results/campaigns/`](https://github.com/richardsonlima/aeon-core/tree/main/benchmarks/results/campaigns). Uma leitura trabalhada está em [Como ler um resultado desfavorável](../kb/unfavourable-result.md).
+Oito das nove hipóteses **não foram suportadas**: todas as oito campanhas enforce, seis por falsos positivos (o orçamento padrão dispara o alarme em 20% a 70% das execuções de controle limpas) e duas na verificação de Safe State. As campanhas detectam as falhas. A detecção conta só execuções em que a falha disparou, e "nenhuma ação destrutiva sem aprovação rodou" só é evidência nas campanhas em que uma foi tentada. Os relatórios com cada resultado desfavorável estão em [`benchmarks/results/campaigns/`](https://github.com/richardsonlima/aeon-core/tree/main/benchmarks/results/campaigns). Uma leitura trabalhada está em [Como ler um resultado desfavorável](../kb/unfavourable-result.md).
 
 ## Como isso se relaciona com as alegações
 

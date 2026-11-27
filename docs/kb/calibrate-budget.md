@@ -23,7 +23,7 @@ An exploratory run on the `broken-schema` campaign, 30 controls each time, same 
 | `baseline_n = 30`, `slack = 2.0` | 100% | 3% (1 of 30) |
 | `baseline_n = 30`, `slack = 2.0`, thresholds doubled | 90% | 0% (0 of 30) |
 
-Two things to notice. A longer baseline helped a lot, because 30 samples of a very steady agent give a poor estimate of its spread. And the first row, 20 of 30, differs from the committed result for the same campaign, 22 of 30: the simulated agent sleeps for a few milliseconds per call, so latency-based outcomes move between runs even with fixed seeds.
+Two things to notice. A longer baseline helped a lot, because 30 samples of a very steady agent give a poor estimate of its spread. And the first row, 20 of 30, differs slightly from the committed result for the same campaign, 21 of 30 (an earlier run gave 22): the simulated agent sleeps for a few milliseconds per call, so latency-based outcomes move between runs even with fixed seeds.
 
 ## Pitfalls
 

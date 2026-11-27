@@ -23,7 +23,7 @@ Uma execução exploratória na campanha `broken-schema`, 30 controles a cada ve
 | `baseline_n = 30`, `slack = 2.0` | 100% | 3% (1 de 30) |
 | `baseline_n = 30`, `slack = 2.0`, limiares dobrados | 90% | 0% (0 de 30) |
 
-Duas coisas a notar. Uma baseline mais longa ajudou muito, porque 30 amostras de um agente muito estável dão uma estimativa ruim da dispersão dele. E a primeira linha, 20 de 30, difere do resultado versionado da mesma campanha, 22 de 30: o agente simulado dorme alguns milissegundos por chamada, então resultados baseados em latência variam entre execuções mesmo com sementes fixas.
+Duas coisas a notar. Uma baseline mais longa ajudou muito, porque 30 amostras de um agente muito estável dão uma estimativa ruim da dispersão dele. E a primeira linha, 20 de 30, difere pouco do resultado versionado da mesma campanha, 21 de 30 (uma execução anterior deu 22): o agente simulado dorme alguns milissegundos por chamada, então resultados baseados em latência variam entre execuções mesmo com sementes fixas.
 
 ## Armadilhas
 

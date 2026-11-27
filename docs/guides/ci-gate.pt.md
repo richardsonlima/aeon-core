@@ -26,10 +26,10 @@ jobs:
 
 ## Leia isto antes de adicionar
 
-- **As campanhas do repositório não passam em `--strict`.** Na execução versionada, sete das oito campanhas tiveram a hipótese não suportada, principalmente porque o orçamento padrão gera falsos positivos no tráfego limpo do agente simulado ([números](../evidence/benchmarks.md)). Não aponte o CI para elas como estão. Escreva sua própria campanha com limiares que você alcançou em execuções suas, e defina `max_false_positive_rate` com honestidade.
+- **As campanhas do repositório não passam em `--strict`.** Na execução versionada, oito das nove campanhas (todas as oito enforce) tiveram a hipótese não suportada, principalmente porque o orçamento padrão gera falsos positivos no tráfego limpo do agente simulado ([números](../evidence/benchmarks.md)). Não aponte o CI para elas como estão. Escreva sua própria campanha com limiares que você alcançou em execuções suas, e defina `max_false_positive_rate` com honestidade.
 - **Códigos de saída.** `0` suportada, `1` não suportada (só com `--strict`), `2` erro de uso, como falha desconhecida ou raio de impacto acima do teto.
 - **Determinismo.** As sementes são fixas, mas o agente simulado dorme alguns milissegundos por chamada e as falhas adicionam atrasos, então resultados baseados em latência variam entre execuções. Deixe margem entre o limiar e o que você mediu, e use execuções suficientes (30 é o tamanho das campanhas do repositório, e o intervalo de 95% é largo).
-- **Custo.** Cada campanha do repositório levou cerca de 7 a 9 segundos na máquina de referência, com 30 execuções com falha e 30 controles.
+- **Custo.** Cada campanha do repositório levou cerca de 8 a 10 segundos na máquina de referência, com 30 execuções com falha e 30 controles.
 - **Escopo.** A campanha exercita o gate e seus axiomas contra um agente simulado. Não testa seu agente ou modelo reais. Veja [Limites conhecidos](../known-limits.md).
 
 ## Um gate em que dá para confiar

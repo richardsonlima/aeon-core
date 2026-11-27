@@ -3,27 +3,26 @@
 !!! note "Rascunho para revisão"
     Não publicado. Escrito por Richardson Lima.
 
-!!! note "Números deste post"
-    Os números de campanha vêm dos resultados versionados de 2026-11-27 (Apple M1, Python 3.12.14). Foram produzidos antes de a taxa de detecção passar a contar só as execuções em que a falha disparou (veja [Ler um relatório](../guides/reports.md)), e são regenerados no release. Os valores atuais estão sempre em [`benchmarks/results/summary.md`](https://github.com/richardsonlima/aeon-core/blob/main/benchmarks/results/summary.md). Leia o método aqui, não os dígitos.
-
-Pré-registrei oito campanhas de caos: hipótese, falha, resultado esperado e limiares, com commit antes dos resultados. Depois rodei. Sete de oito não atingiram a hipótese. Foi isto que aconteceu.
+Pré-registrei nove campanhas de caos (oito enforce, uma shadow): hipótese, falha, resultado esperado e limiares, com commit antes dos resultados. Depois rodei. Oito de nove não atingiram a hipótese: todas as oito campanhas enforce. Foi isto que aconteceu.
 
 ## Os números
 
-Agente simulado, 30 execuções com falha e 30 de controle (sem falha) por campanha, orçamento padrão, uma máquina (Apple M1, Python 3.12.14, 2026-11-27). A meta era no máximo 10% de falsos positivos.
+Agente simulado, 30 execuções com falha e 30 de controle (sem falha) por campanha, orçamento padrão, uma máquina (Apple M1, Python 3.10.21, 2026-11-27). A meta era no máximo 10% de falsos positivos.
+
+A detecção conta só as execuções em que a falha disparou.
 
 | Campanha | Detecção | Falsos positivos em controles limpos |
 |---|---|---|
-| `broken-schema` | 100% | 73,3% (22/30) |
-| `gateway-latency` | 100% | 66,7% (20/30) |
-| `partial-output` | 100% | 50,0% (15/30) |
-| `stale-context` | 93,3% | 26,7% (8/30) |
-| `rate-limit` | 100% | 26,7% (8/30) |
-| `tool-timeout` | 100% | 23,3% (7/30) |
-| `poisoned-output` | 93,3% | 0% (0/30) |
-| `conflicting-instructions` | 96,7% | 0% (0/30) |
+| `broken-schema` | 100% (30/30) | 70,0% (21/30) |
+| `gateway-latency` | 100% (30/30) | 66,7% (20/30) |
+| `partial-output` | 100% (30/30) | 50,0% (15/30) |
+| `stale-context` | 96,7% (29/30) | 26,7% (8/30) |
+| `rate-limit` | 100% (30/30) | 26,7% (8/30) |
+| `tool-timeout` | 100% (30/30) | 20,0% (6/30) |
+| `poisoned-output` | 96,4% (27/28) | 0% (0/30) |
+| `conflicting-instructions` | 100% (29/29) | 0% (0/30) |
 
-Em modo enforce, **nenhuma ação destrutiva sem aprovação rodou** em nenhuma campanha. As duas campanhas em nível `BLOCK` falharam porque a detecção foi 93,3% e 96,7% contra uma barra de "toda execução" ou 95%.
+Seis campanhas falharam na meta de falsos positivos. As duas campanhas em nível `BLOCK` falharam na verificação de Safe State: 3 execuções de `poisoned-output` e 1 de `conflicting-instructions` não terminaram em Safe State, e nenhuma delas tinha tentado uma ação destrutiva, então não havia o que bloquear. Onde uma ação destrutiva foi tentada, nenhuma rodou em modo enforce. Nas outras seis campanhas enforce nenhuma foi tentada, então essa verificação não foi avaliada.
 
 ## O que significa
 
@@ -33,9 +32,9 @@ A parte que se sustentou foi a regra: `no_destructive_tool_call` bloqueou toda a
 
 ## Por quê
 
-Rastreei o monitor em execuções limpas. O agente simulado é muito estável (latência de cerca de 1,7 ms, dispersão de cerca de 0,7 ms, sem erros), então a baseline construída com 30 amostras é apertada. Em tráfego limpo o score esperado por passo ficou perto da folga 1,0 do CUSUM, o que faz o score acumulado ser um passeio aleatório quase sem deriva, e em 50 passos pontuados ele cruza o limiar de alerta em muitas execuções. Essa é a minha leitura dos rastros. O que verifiquei: subir a folga para 2,0 reduziu os falsos positivos de `broken-schema` de 20 de 30 para 1 de 30 numa nova execução, e uma baseline de 50 em vez de 30 reduziu para 8 de 30. Ajustei no mesmo cenário em que medi, então isso não são resultados. Só dizem onde está o problema.
+Rastreei o monitor em execuções limpas. O agente simulado é muito estável (nos rastros que tirei, latência de cerca de 1,7 ms, dispersão de cerca de 0,7 ms, sem erros), então a baseline construída com 30 amostras é apertada. Em tráfego limpo o score esperado por passo ficou perto da folga 1,0 do CUSUM, o que faz o score acumulado ser um passeio aleatório quase sem deriva, e em 50 passos pontuados ele cruza o limiar de alerta em muitas execuções. Essa é a minha leitura dos rastros. O que verifiquei: subir a folga para 2,0 reduziu os falsos positivos de `broken-schema` de 20 de 30 para 1 de 30 numa nova execução, e uma baseline de 50 em vez de 30 reduziu para 8 de 30. Ajustei no mesmo cenário em que medi, então isso não são resultados. Só dizem onde está o problema.
 
-Uma segunda descoberta veio de graça: minha nova execução do padrão deu 20 de 30, a execução versionada deu 22 de 30. Mesmas sementes. As ferramentas simuladas dormem milissegundos, então resultados baseados em latência se movem.
+Uma segunda descoberta veio de graça: três execuções do padrão deram 22, 21 e 20 de 30 falsos positivos. Mesmas sementes. As ferramentas simuladas dormem milissegundos, então resultados baseados em latência se movem.
 
 ## O que vem a seguir
 

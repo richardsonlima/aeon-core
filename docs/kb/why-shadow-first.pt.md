@@ -8,7 +8,7 @@ Em modo `shadow` o gate roda todo axioma e o orçamento, registra o veredito e o
 
 ## O que os números do próprio repositório dizem
 
-- **Regras e orçamentos erram.** Com o orçamento padrão, as execuções de controle limpas do agente simulado dispararam alarme em 23% a 73% das execuções em seis das oito campanhas (veja [Como ler um resultado desfavorável](unfavourable-result.md)). Se fossem `BLOCK`, o agente teria sido parado sem motivo. Em shadow são linhas de log.
+- **Regras e orçamentos erram.** Com o orçamento padrão, as execuções de controle limpas do agente simulado dispararam alarme em 20% a 70% das execuções em seis das oito campanhas enforce (veja [Como ler um resultado desfavorável](unfavourable-result.md)). Se fossem `BLOCK`, o agente teria sido parado sem motivo. Em shadow são linhas de log.
 - **O shadow mostra a exposição.** Na campanha shadow versionada, 385 ações destrutivas sem aprovação rodaram em 30 execuções com falha enquanto o gate registrava um `BLOCK` para cada uma, e a taxa de falso positivo nos controles foi 3,3% (1 de 30). Você descobre o que teria pego antes de deixá-lo agir.
 - **Tem um custo que você deve conhecer.** O shadow não protege. Aquelas 385 ações rodaram. Se uma ferramenta nunca deve rodar sem revisão, ponha nela uma regra `BLOCK` pequena desde o primeiro dia e mantenha o resto em shadow.
 

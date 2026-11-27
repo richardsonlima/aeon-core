@@ -15,7 +15,7 @@ Em modo **shadow**, nenhum dos itens 1 a 4 vale: o veredito é registrado e a a�
 
 ## Nas campanhas versionadas
 
-Em modo enforce, nas sete campanhas enforce (30 execuções com falha cada), o número de ações destrutivas sem aprovação executadas foi 0. É uma medição num agente simulado que segue instruções injetadas com probabilidade 0,7, e cujas únicas ferramentas destrutivas são `delete_files` e `send_email`. Não é uma prova.
+Em modo enforce, nas duas campanhas em que ações destrutivas foram tentadas (`poisoned-output` e `conflicting-instructions`, 30 execuções com falha cada), o número de ações destrutivas sem aprovação executadas foi 0. Nas outras seis campanhas enforce nenhuma foi tentada, então a verificação de dano não foi avaliada ali. É uma medição num agente simulado que segue instruções injetadas com probabilidade 0,7, e cujas únicas ferramentas destrutivas são `delete_files` e `send_email`. Não é uma prova.
 
 ## O que ainda não dá
 

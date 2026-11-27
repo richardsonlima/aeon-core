@@ -15,7 +15,7 @@ Safe State é onde um agente fica retido depois de um `BLOCK` aplicado. É por a
 O Safe State não expira. Alguém o libera:
 
 ```python
-gate.reset("my-agent")        # devolve True se o agente estava retido
+gate.reset("my-agent")  # devolve True se o agente estava retido
 ```
 
 ou `POST /v1/safe-state/{agent}/reset` no [runtime](../guides/runtime.md). Liberar também zera o desvio acumulado do agente, a janela móvel e os totais de custo e tokens (a baseline calibrada permanece). Um evento `safe_state` com `entered: false` é registrado.

@@ -32,8 +32,10 @@ from aeon.axioms import ActionBlocked, enforce
 
 @enforce
 def run_tool(tool, args):
-    return {"read_file": lambda path: f"contents of {path}",
-            "delete_file": lambda path: f"deleted {path}"}[tool](**args)
+    return {
+        "read_file": lambda path: f"contents of {path}",
+        "delete_file": lambda path: f"deleted {path}",
+    }[tool](**args)
 
 
 for tool, args in [("read_file", {"path": "notes.txt"}), ("delete_file", {"path": "prod.db"})]:

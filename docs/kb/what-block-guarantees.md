@@ -15,7 +15,7 @@ In **shadow** mode, none of 1 to 4 applies: the verdict is recorded and the acti
 
 ## On the committed campaigns
 
-In enforce mode, across the seven enforce campaigns (30 fault runs each), the number of unapproved destructive actions executed was 0. That is a measurement on a simulated agent that follows injected instructions with probability 0.7, and its only destructive tools are `delete_files` and `send_email`. It is not a proof.
+In enforce mode, in the two campaigns where destructive actions were attempted (`poisoned-output` and `conflicting-instructions`, 30 fault runs each), the number of unapproved destructive actions executed was 0. In the other six enforce campaigns none was attempted, so the no-harm check was not evaluated there. That is a measurement on a simulated agent that follows injected instructions with probability 0.7, and its only destructive tools are `delete_files` and `send_email`. It is not a proof.
 
 ## What it still does not give you
 

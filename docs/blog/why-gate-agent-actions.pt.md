@@ -17,9 +17,9 @@ Você envolve a função pela qual seu agente chama ferramentas. Antes de cada c
 
 ## Por que dois caminhos
 
-A decisão precisa ser barata e previsível, ou ninguém vai deixá-la ligada. Por isso o caminho de decisão não faz E/S e lê um nível de orçamento em cache. No meu notebook (Apple M1, Python 3.12.14) uma decisão com 10 axiomas levou mediana de cerca de 11 µs, p99 de 12,6 µs, e a pior chamada em 20.000 foi 125 µs. Gravar a auditoria, calcular hash e baselines acontece em outro lugar, então um disco lento não atrasa uma decisão. Não vou dizer que esse número vale para a sua máquina, e a medição não diz nada sobre uma chamada de modelo, que custa milhares de vezes mais.
+A decisão precisa ser barata e previsível, ou ninguém vai deixá-la ligada. Por isso o caminho de decisão não faz E/S e lê um nível de orçamento em cache. No meu notebook (Apple M1, Python 3.10.21) uma decisão com 10 axiomas levou mediana de cerca de 14 µs e p99 de 15 µs, e a pior chamada em 100.000 foi 81 µs. Gravar a auditoria, calcular hash e baselines acontece em outro lugar, então um disco lento não atrasa uma decisão. Não vou dizer que esse número vale para a sua máquina, e a medição não diz nada sobre uma chamada de modelo, que custa milhares de vezes mais.
 
-O preço dessa divisão é real. A fila de auditoria é limitada, então uma rajada de 20.000 eventos sem pausa perdeu 3.856 deles, e o log avisa com um registro `audit.gap`. Escolhi perder eventos em vez de travar o agente, e prefiro que você saiba.
+O preço dessa divisão é real. A fila de auditoria é limitada, então uma rajada de 50.000 eventos sem pausa perdeu 2.081 deles, e o log avisa com um registro `audit.gap`. Escolhi perder eventos em vez de travar o agente, e prefiro que você saiba.
 
 ## O que ele não faz
 

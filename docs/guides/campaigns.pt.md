@@ -14,7 +14,7 @@ Um nome ou apelido de falha cria uma campanha avulsa com id `adhoc-<falha>`, hip
 
 ## Rodar uma campanha pré-registrada
 
-O repositório traz oito em `campaigns/`. Rode uma por id ou por arquivo:
+O repositório traz nove em `campaigns/` (oito enforce, uma shadow). Rode uma por id ou por arquivo:
 
 ```bash
 aeon chaos run rate-limit
@@ -64,4 +64,4 @@ A detecção é calculada só sobre execuções com falha em que a falha disparo
 
 ## Resultados
 
-Cada execução salva JSON em `.aeon/campaigns/<id>/` e `latest.json`. Leia com [`aeon report`](reports.md). Os resultados versionados das oito campanhas do repositório estão em [`benchmarks/results/campaigns/`](https://github.com/richardsonlima/aeon-core/tree/main/benchmarks/results/campaigns), inclusive aquelas em que a hipótese não foi suportada.
+Cada execução salva JSON em `.aeon/campaigns/<id>/` e `latest.json`. Leia com [`aeon report`](reports.md). Os resultados versionados das nove campanhas do repositório estão em [`benchmarks/results/campaigns/`](https://github.com/richardsonlima/aeon-core/tree/main/benchmarks/results/campaigns), inclusive aquelas em que a hipótese não foi suportada.

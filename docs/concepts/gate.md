@@ -41,7 +41,7 @@ The audit log never writes on the caller's thread. `emit` stamps the event and p
 
 ## What it costs
 
-On the committed benchmark run (Apple M1, Python 3.12.14, 2026-11-27, audit off) one `decide` took a p50 of 10 to 12 µs with 1 to 10 axioms and a p99 of 12.6 µs with 10 axioms. With 100 axioms the p99 was 41.9 µs and the worst single call 462.6 µs. With the JSONL audit log on, p99 rose to 187 µs and the worst call to 3.7 ms. These numbers describe that machine only. Full tables, with p99 and max, are on the [Benchmarks](../evidence/benchmarks.md) page.
+On the committed benchmark run (Apple M1, Python 3.10.21, 2026-11-27, audit off) one `decide` took a p50 of 11.9 to 14.1 µs with 1 to 10 axioms and a p99 of 15.0 to 15.4 µs with 10 axioms. With 100 axioms the p99 was 38.2 µs. The worst single call in any row was 195 µs. With the JSONL audit log on, p99 rose to 438 µs and the worst call to 3.4 ms (12.4 µs and 65 µs with audit off in that run). These numbers describe that machine only. Full tables, with p99 and max, are on the [Benchmarks](../evidence/benchmarks.md) page.
 
 ## The limit of the gate
 

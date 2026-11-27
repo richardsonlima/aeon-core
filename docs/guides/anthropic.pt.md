@@ -24,6 +24,7 @@ def delete_file(path: str) -> str:
     """Apaga um arquivo."""
     return f"deleted {path}"
 
+
 # client = anthropic.Anthropic()   # lê ANTHROPIC_API_KEY
 messages = [{"role": "user", "content": "Resuma notes.txt"}]
 while True:

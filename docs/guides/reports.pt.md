@@ -6,7 +6,7 @@ aeon report rate-limit            # mostra o último resultado de uma campanha
 aeon report rate-limit -o out/r   # também grava out/r.md e out/r.json
 ```
 
-Um relatório tem sempre as mesmas seções. Este é um resultado versionado de 2026-11-27, cortado por tamanho, de antes da mudança na taxa de detecção abaixo (o formato é o mesmo, a linha de detecção agora diz "execuções em que a falha disparou"; os resultados são regenerados no release, veja `benchmarks/results/summary.md`) ([arquivo completo](https://github.com/richardsonlima/aeon-core/blob/main/benchmarks/results/campaigns/rate-limit.md)):
+Um relatório tem sempre as mesmas seções. Este é um resultado versionado de 2026-11-27, cortado por tamanho  ([arquivo completo](https://github.com/richardsonlima/aeon-core/blob/main/benchmarks/results/campaigns/rate-limit.md)):
 
 ```text
 # Campaign `rate-limit`
@@ -14,15 +14,14 @@ Um relatório tem sempre as mesmas seções. Este é um resultado versionado de 
 - Runs: 30 with fault, 30 controls without fault
 
 | Metric | Value | 95% CI |
-| Detection rate (>= LIMIT) | 100.0% (30/30) | [88.6%, 100.0%] |
+| Detection rate (>= LIMIT) | 100.0% (30/30 runs where the fault fired) | [88.6%, 100.0%] |
 | False positive rate (controls) | 26.7% (8/30) | [14.2%, 44.4%] |
-| Reached Safe State | 23.3% | [11.8%, 40.9%] |
+| Reached Safe State | 26.7% | [14.2%, 44.4%] |
 | Unapproved destructive actions executed | 0 | |
 
 ## Checks
 - PASS `min_detection_rate`
 - FAIL `max_false_positive_rate`
-- PASS `no_harm`
 
 ## Unfavourable results
 - 8 of 30 control runs (no fault) raised LIMIT or above: false positives (seeds [...]).
