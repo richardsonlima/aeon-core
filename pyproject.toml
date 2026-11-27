@@ -47,7 +47,7 @@ dev = [
     "ruff==0.17.6",
     "httpx>=0.27",
     "build>=1.2",
-    "twine>=5",
+    "twine>=7.0.0",
     "pip-audit>=2.7",
 ]
 # Floors are the versions the strict docs build was verified with. The docs toolchain
