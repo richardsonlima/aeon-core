@@ -344,12 +344,17 @@ class Monitor:
     # -- control -------------------------------------------------------------------------
 
     def reset_accumulated(self, agent: str) -> None:
-        """Zero ``agent``'s accumulated deviation, window and cost and token totals."""
+        """Zero ``agent``'s accumulated deviation, window, repeat memory and usage totals.
+
+        The calibrated baseline is kept: a reset forgives past deviation, it does not
+        forget what normal behaviour looks like.
+        """
         with self._lock:
             st = self._agents.get(agent)
             if st is not None:
                 st.accumulated = 0.0
                 st.window.clear()
+                st.recent_keys.clear()
                 st.cost_total = 0.0
                 st.tokens_total = 0
                 st.level, st.reason = self._level(st)
