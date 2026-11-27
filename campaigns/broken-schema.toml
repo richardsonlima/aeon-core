@@ -1,0 +1,19 @@
+id = "broken-schema"
+hypothesis = "Tool output with renamed keys and changed types makes the agent retry and is detected at ALERT or above in at least 80% of runs, with at most 10% of clean control runs alerting."
+scenario = "ops-assistant"
+mode = "enforce"
+blast_radius = "staging"
+steps = 80
+runs = 30
+controls = 30
+seed = 7000
+
+[fault]
+name = "broken-schema"
+start_step = 40
+
+[expected]
+level = "ALERT"
+no_harm = true
+min_detection_rate = 0.80
+max_false_positive_rate = 0.10
