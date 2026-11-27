@@ -1,0 +1,155 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "feature/**", "fix/**"]
+    tags-ignore: ["v*"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_NO_PROGRESS: "1"
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - name: Install dev tools
+        run: |
+          uv venv
+          uv pip install -e ".[dev,runtime]"
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: mypy --strict
+
+  test:
+    name: test (${{ matrix.os }}, py${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install (core dev extras only)
+        shell: bash
+        run: |
+          uv venv
+          uv pip install -e ".[dev]"
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            echo "$PWD/.venv/Scripts" >> "$GITHUB_PATH"
+          else
+            echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+          fi
+      - name: Test (core, runtime extra absent)
+        run: pytest --cov --cov-report=xml
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.os }}-py${{ matrix.python }}
+          path: coverage.xml
+          if-no-files-found: error
+
+  test-runtime:
+    name: test with runtime extra (ubuntu, py3.12)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - name: Install dev and runtime extras
+        run: |
+          uv venv
+          uv pip install -e ".[dev,runtime]"
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+      - name: Full suite with the runtime installed
+        run: pytest --cov --cov-report=xml
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-runtime-ubuntu-py3.12
+          path: coverage.xml
+          if-no-files-found: error
+
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - run: uv build
+      - name: twine check
+        run: uvx twine check --strict dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  smoke:
+    name: smoke (${{ matrix.os }}, py${{ matrix.python }})
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.10", "3.13"]
+    steps:
+      # The repo is checked out only to copy the quickstart example. The package is
+      # imported from the wheel in a fresh venv, from a temp directory.
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - name: Install the wheel in a fresh venv and run the CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          WHEEL="$(ls "$PWD"/dist/*.whl)"
+          WORK="$(mktemp -d)"
+          cp -r examples/quickstart "$WORK/quickstart"
+          cd "$WORK"
+          uv venv venv
+          if [ "$RUNNER_OS" = "Windows" ]; then BIN="$WORK/venv/Scripts"; else BIN="$WORK/venv/bin"; fi
+          uv pip install --python "$BIN/python" "$WHEEL"
+          mkdir project
+          cd project
+          "$BIN/aeon" doctor
+          "$BIN/aeon" init
+          cp "$WORK/quickstart/main.py" main.py
+          "$BIN/python" main.py
+          "$BIN/aeon" audit verify
+      - name: uvx from the wheel (ubuntu)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          cd "$(mktemp -d)"
+          uvx --from "$GITHUB_WORKSPACE"/dist/*.whl aeon doctor
+      - name: pipx run from the wheel (ubuntu)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          cd "$(mktemp -d)"
+          pipx run --spec "$GITHUB_WORKSPACE"/dist/*.whl aeon version
