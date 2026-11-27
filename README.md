@@ -77,6 +77,16 @@ aeon chaos run "poisoned output" --runs 10 --controls 10
 
 Start in shadow mode, read the log, and move one rule at a time to `ALERT`, `LIMIT`, then `BLOCK`.
 
+## Develop
+
+```bash
+git clone https://github.com/richardsonlima/aeon-core && cd aeon-core
+uv sync --group dev --extra runtime
+uv run --no-sync pytest
+```
+
+[`CONTRIBUTING.md`](CONTRIBUTING.md) has every check CI runs (lint, types, tests, package smoke test, dependency audit, docs), the benchmarks, how to run the control plane on port 8787, and the rules for branches, commits and claims.
+
 ## Documentation
 
 - Docs: <https://www.richardsonlima.com.br/aeon/docs/> (English and Portuguese; also `docs/` in this repository, `aeon docs mcp` to serve it to a coding agent, and [`llms.txt`](llms.txt))

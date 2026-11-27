@@ -30,6 +30,43 @@ uv run python scripts/gen_reference.py   # regenerate reference and evidence pag
 uv run mkdocs build --strict
 ```
 
+This replaces `.venv` with a Python 3.12 environment without the dev group. Run the setup `uv sync` again before you go back to the checks. To keep both, build the docs in a separate environment: `UV_PROJECT_ENVIRONMENT=.venv-docs uv sync --python 3.12 --group docs --extra runtime`, then `UV_PROJECT_ENVIRONMENT=.venv-docs uv run --no-sync mkdocs build --strict`.
+
+## Run what CI runs
+
+The checks above cover lint, types and unit tests. Before a pull request, also run the package smoke test and the dependency audit:
+
+```bash
+# build the wheel and sdist, and check their metadata
+uv build && uvx twine check --strict dist/*
+
+# install the wheel in a fresh venv and drive the CLI
+W=$(mktemp -d) && uv venv "$W/venv" && uv pip install --python "$W/venv" dist/*.whl
+mkdir "$W/p" && cp examples/quickstart/main.py "$W/p/" && cd "$W/p"
+"$W/venv/bin/aeon" doctor && "$W/venv/bin/aeon" init && "$W/venv/bin/python" main.py \
+  && "$W/venv/bin/aeon" audit verify
+cd -
+
+# known vulnerabilities in the locked dependencies, all extras
+uv export --frozen --all-extras --no-emit-project --no-hashes -o /tmp/requirements-audit.txt
+uvx pip-audit --strict -r /tmp/requirements-audit.txt
+```
+
+CI also runs [gitleaks](https://github.com/gitleaks/gitleaks) for secrets. Locally: `gitleaks git .` if you have it installed.
+
+## Benchmarks
+
+See [`benchmarks/README.md`](benchmarks/README.md). `python benchmarks/run_all.py --quick` is a smoke check. A full run overwrites the committed files in `benchmarks/results/` and `docs/claims.yaml`: commit them only when you mean to publish new numbers, otherwise restore them with `git checkout benchmarks/results docs/claims.yaml`.
+
+## Run the runtime and the control plane
+
+```bash
+uv run --no-sync aeon init                # once, in a scratch directory
+uv run --no-sync aeon ui                  # runtime on http://127.0.0.1:8787, opens /ui/
+```
+
+See [Runtime, control plane and Docker](docs/guides/runtime.md) for the token, remote access and the container.
+
 ## Branches and commits
 
 - Branch names: `feature/<topic>` or `fix/<topic>`.

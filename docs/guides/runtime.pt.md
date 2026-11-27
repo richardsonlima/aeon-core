@@ -44,6 +44,17 @@ aeon ui --no-browser
 
 A UI são arquivos estáticos servidos pelo runtime em `/ui/`, e tem telas de visão geral, decisões, campanhas, log de auditoria e alegações, tudo pela mesma API. O token viaja no fragmento da URL (`#token=...`), que os navegadores não enviam ao servidor.
 
+Com `--no-browser`, abra você mesmo: `http://127.0.0.1:8787/ui/#token=<token>`, onde o token é o conteúdo do arquivo que o runtime mostra ao iniciar (`.aeon/runtime.token` por padrão). `--host` e `--port` mudam o endereço.
+
+Numa máquina remota, mantenha o runtime em loopback e encaminhe a porta por SSH em vez de abrir um endereço público:
+
+```bash
+ssh -L 8787:127.0.0.1:8787 usuario@servidor   # no seu computador
+aeon ui --no-browser                          # no servidor
+```
+
+Depois abra `http://127.0.0.1:8787/ui/#token=<token>` no navegador local.
+
 ## Docker
 
 O repositório tem um `Dockerfile` e um `compose.yaml`. Nada é publicado: nenhuma imagem é enviada a lugar algum. Construa localmente:
