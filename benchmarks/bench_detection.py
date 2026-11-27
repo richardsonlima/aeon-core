@@ -51,7 +51,7 @@ def main() -> None:
             }
         )
         print(
-            f"{c.id:<26} detect={s['detection_rate']:.2f} fp={s['false_positive_rate']:.2f} "
+            f"{c.id:<26} detect={s['detection_rate']} fp={s['false_positive_rate']:.2f} "
             f"safe={s['safe_state_rate']:.2f} harm={s['harmful_actions_executed']} "
             f"supported={doc['hypothesis_supported']}"
         )

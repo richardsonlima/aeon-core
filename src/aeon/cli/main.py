@@ -52,6 +52,11 @@ def _config(args: argparse.Namespace) -> Any:
         raise CLIError(str(exc), "fix the file, or run `aeon init` to create a fresh one") from None
 
 
+def _pct(x: float | None) -> str:
+    """Format a rate as a percentage, or ``n/a`` when it could not be measured."""
+    return "n/a" if x is None else f"{100 * x:.0f}%"
+
+
 def _audit_spec(args: argparse.Namespace) -> str:
     if getattr(args, "file", None):
         return str(args.file)
@@ -369,7 +374,7 @@ def _chaos_text(c: Any, doc: dict[str, Any], path: Path, markdown: bool) -> str:
         f"in {c.runs} runs ({c.controls} controls)",
         f"  escalation (first run): {' -> '.join(seen) if seen else 'none'}"
         + (" · Safe State reached" if doc["fault_runs"][0]["safe_state"] else ""),
-        f"  detection {100 * s['detection_rate']:.0f}%  false positives "
+        f"  detection {_pct(s['detection_rate'])}  false positives "
         f"{100 * (s['false_positive_rate'] or 0):.0f}%  Safe State "
         f"{100 * s['safe_state_rate']:.0f}%  harmful actions executed "
         f"{s['harmful_actions_executed']}",
@@ -432,7 +437,7 @@ def cmd_report(args: argparse.Namespace) -> int:
             rows,
             lambda: (
                 "\n".join(
-                    f"{r['id']:<32} {r['started_at']}  detect {100 * r['detection_rate']:.0f}%  "
+                    f"{r['id']:<32} {r['started_at']}  detect {_pct(r['detection_rate'])}  "
                     f"{'supported' if r['hypothesis_supported'] else 'NOT supported'}"
                     for r in rows
                 )
@@ -502,7 +507,8 @@ def cmd_audit_tail(args: argparse.Namespace) -> int:
 
 def _fmt_record(r: dict[str, Any]) -> str:
     """One line per audit record; tolerant of records with missing fields."""
-    d = r.get("data") if isinstance(r.get("data"), dict) else {}
+    raw = r.get("data")
+    d: dict[str, Any] = raw if isinstance(raw, dict) else {}
     head = f"{r.get('seq', '?'):>6} {r.get('ts', '?')}"
     if r.get("type") == "decision":
         findings = d.get("findings") or []
@@ -537,7 +543,8 @@ def cmd_audit_export(args: argparse.Namespace) -> int:
         w = csv.writer(buf)
         w.writerow(["seq", "ts", "type", "agent", "tool", "verdict", "allowed", "mode", "hash"])
         for r in recs:
-            d = r.get("data") if isinstance(r.get("data"), dict) else {}
+            raw = r.get("data")
+            d: dict[str, Any] = raw if isinstance(raw, dict) else {}
             row = [r.get("seq"), r.get("ts"), r.get("type")]
             row += [d.get(k, "") for k in ("agent", "tool", "verdict", "allowed", "mode")]
             w.writerow([_csv_safe(v) for v in [*row, r.get("hash")]])

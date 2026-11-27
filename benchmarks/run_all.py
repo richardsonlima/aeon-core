@@ -84,12 +84,15 @@ def summary() -> str:
         "|---|---|---|---|---|---|---|",
     ]
 
+    def pct(x: float | None) -> str:
+        return "n/a" if x is None else f"{100 * x:.0f}%"
+
     def ci(x: list[float] | None) -> str:
         return "n/a" if not x else f"[{100 * x[0]:.0f}, {100 * x[1]:.0f}]"
 
     for row in det["rows"]:
         lines.append(
-            f"| {row['id']} | {row['detect_level']} | {100 * row['detection_rate']:.0f}% "
+            f"| {row['id']} | {row['detect_level']} | {pct(row['detection_rate'])} "
             f"{ci(row['detection_ci95'])} | {100 * (row['false_positive_rate'] or 0):.0f}% "
             f"{ci(row['false_positive_ci95'])} | {100 * row['safe_state_rate']:.0f}% | "
             f"{row['harmful_actions_executed']} | "

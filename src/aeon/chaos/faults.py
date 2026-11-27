@@ -7,6 +7,7 @@ refuses to run it above that radius or above the configured ceiling.
 
 from __future__ import annotations
 
+import dataclasses
 import enum
 import functools
 import inspect
@@ -277,7 +278,7 @@ def resolve(name: str) -> type[Fault] | None:
     return None
 
 
-def make(name: str, **params: Any) -> Fault:
+def make(name: str, /, **params: Any) -> Fault:
     """Instantiate the fault called ``name`` (or its alias) with ``params``.
 
     Raises:
@@ -287,8 +288,8 @@ def make(name: str, **params: Any) -> Fault:
     cls = resolve(name)
     if cls is None:
         raise KeyError(f"unknown fault {name!r}; run `aeon chaos list`")
-    fields = cls.__dataclass_fields__
-    unknown = set(params) - set(fields)
+    fields = {f.name for f in dataclasses.fields(cls) if f.init}  # ClassVars excluded
+    unknown = set(params) - fields
     if unknown:
         raise ValueError(f"fault {cls.name!r} has no parameter(s): {', '.join(sorted(unknown))}")
     return cls(**params)
