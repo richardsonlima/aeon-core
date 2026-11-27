@@ -64,35 +64,35 @@ claims:
   - id: gate-p99-100us
     text: "Gate decision latency p99 is under 100 µs with 10 axioms (reference machine, audit off)."
     status: "measured"
-    value: "p99 12.62 µs with 10 axioms (limit 100 µs)"
+    value: "p99 15.38 µs with 10 axioms (limit 100 µs)"
     last_checked: "2026-11-27"
     evidence:
       - "benchmarks/results/gate_latency.json"
   - id: gate-p99-100us-100-axioms
     text: "Gate decision latency p99 is under 100 µs with 100 axioms (reference machine, audit off)."
     status: "measured"
-    value: "p99 41.88 µs with 100 axioms (limit 100 µs)"
+    value: "p99 38.21 µs with 100 axioms (limit 100 µs)"
     last_checked: "2026-11-27"
     evidence:
       - "benchmarks/results/gate_latency.json"
   - id: gate-max-1ms
     text: "No single gate decision took 1 ms or more in the benchmark (reference machine, audit off)."
     status: "measured"
-    value: "worst max 462.6 µs over all rows (limit 1000 µs)"
+    value: "worst max 195.0 µs over all rows (limit 1000 µs)"
     last_checked: "2026-11-27"
     evidence:
       - "benchmarks/results/gate_latency.json"
   - id: audit-emit-cheap
     text: "Emitting an audit event costs under 10 µs at the median on the decision path."
     status: "measured"
-    value: "emit p50 2.54 µs at 1000/s; burst max 28892.0 µs"
+    value: "emit p50 2.50 µs at 1000/s; burst max 76697.2 µs"
     last_checked: "2026-11-27"
     evidence:
       - "benchmarks/results/audit_overhead.json"
   - id: audit-no-drop-paced
     text: "At 1000 events/s the audit queue drops no events."
     status: "measured"
-    value: "0 dropped at 1000/s paced; burst dropped 3856"
+    value: "0 dropped at 1000/s paced; burst dropped 2081"
     last_checked: "2026-11-27"
     evidence:
       - "benchmarks/results/audit_overhead.json"
@@ -107,8 +107,8 @@ claims:
   - id: false-positives-10pct
     text: "Target: clean control runs raise the campaign's detection level in at most 10% of runs (simulated agent)."
     status: "implemented"
-    value: "worst false positive rate 73% (broken-schema, level ALERT); target 10%"
-    note: "target not met: worst false positive rate 73% (broken-schema, level ALERT); target 10%"
+    value: "worst false positive rate 70% (broken-schema, level ALERT); target 10%"
+    note: "target not met: worst false positive rate 70% (broken-schema, level ALERT); target 10%"
     last_checked: "2026-11-27"
     evidence:
       - "benchmarks/results/detection.json"

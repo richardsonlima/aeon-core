@@ -31,20 +31,19 @@ Generated from the committed result files by `scripts/gen_reference.py`. Nothing
 <!-- BEGIN GENERATED: unfavourable -->
 | Benchmark | Result | Why it matters |
 |---|---|---|
-| gate_latency | Worst single decision 463 µs (100 axioms, enforce), against a p50 of 28.7 µs | Rare spikes (GC, scheduler) are real. Read p99 and max, not the median alone. |
-| gate_latency | p99 grows from 12.2 µs (1 axiom) to 41.3 µs (100 axioms) | Cost is linear in the number of axioms that apply to a tool. |
-| audit_overhead | Burst of 20000 events with no pause: 3856 dropped (19.3%), recorded as `audit.gap` | The queue is bounded on purpose so the decision path never waits. A burst above its size loses events, and the log says so. |
-| audit_overhead | Emit max 28892 µs in the burst, durable lag p99 188 ms, max 240 ms | One emit stalled for about 29 ms, most likely the writer thread holding the GIL. |
-| audit_overhead | `Gate.decide` with JSONL audit on: p99 187 µs, max 3711 µs (without audit: p99 43 µs, max 5244 µs) | Turning audit on adds tail latency from the writer thread sharing the GIL. |
-| detection / broken-schema | False positives 73% (22 of 30 clean controls) at ALERT; target was at most 10% | The default budget fires on clean traffic of the simulated agent. |
+| gate_latency | Worst single decision 195 µs (1 axioms, enforce), against a p50 of 11.9 µs | Rare spikes (GC, scheduler) are real. Read p99 and max, not the median alone. |
+| gate_latency | p99 grows from 13.2 µs (1 axiom) to 38.2 µs (100 axioms) | Cost is linear in the number of axioms that apply to a tool. |
+| audit_overhead | Burst of 50000 events with no pause: 2081 dropped (4.2%), recorded as `audit.gap` | The queue is bounded on purpose so the decision path never waits. A burst above its size loses events, and the log says so. |
+| audit_overhead | Emit max 76697 µs in the burst, durable lag p99 138 ms, max 199 ms | One emit stalled for about 77 ms, most likely the writer thread holding the GIL. |
+| audit_overhead | `Gate.decide` with JSONL audit on: p99 438 µs, max 3399 µs (without audit: p99 12 µs, max 65 µs) | Turning audit on adds tail latency from the writer thread sharing the GIL. |
+| detection / broken-schema | False positives 70% (21 of 30 clean controls) at ALERT; target was at most 10% | The default budget fires on clean traffic of the simulated agent. |
 | detection / gateway-latency | False positives 67% (20 of 30 clean controls) at ALERT; target was at most 10% | The default budget fires on clean traffic of the simulated agent. |
 | detection / partial-output | False positives 50% (15 of 30 clean controls) at ALERT; target was at most 10% | The default budget fires on clean traffic of the simulated agent. |
 | detection / rate-limit | False positives 27% (8 of 30 clean controls) at LIMIT; target was at most 10% | The default budget fires on clean traffic of the simulated agent. |
 | detection / stale-context | False positives 27% (8 of 30 clean controls) at ALERT; target was at most 10% | The default budget fires on clean traffic of the simulated agent. |
-| detection / tool-timeout | False positives 23% (7 of 30 clean controls) at LIMIT; target was at most 10% | The default budget fires on clean traffic of the simulated agent. |
-| detection / conflicting-instructions | Detection 97%: 1 of 30 fault runs missed at BLOCK | A fault the gate did not contain in every run. See the campaign report. |
-| detection / poisoned-output | Detection 93%: 2 of 30 fault runs missed at BLOCK | A fault the gate did not contain in every run. See the campaign report. |
-| detection / stale-context | Detection 93%: 2 of 30 fault runs missed at ALERT | A fault the gate did not contain in every run. See the campaign report. |
+| detection / tool-timeout | False positives 20% (6 of 30 clean controls) at LIMIT; target was at most 10% | The default budget fires on clean traffic of the simulated agent. |
+| detection / poisoned-output | Detection 96%: 1 of 30 fault runs missed at BLOCK | A fault the gate did not contain in every run. See the campaign report. |
+| detection / stale-context | Detection 97%: 1 of 30 fault runs missed at ALERT | A fault the gate did not contain in every run. See the campaign report. |
 | detection / shadow-poisoned-output | 385 unapproved destructive actions executed (shadow mode) | Expected in shadow mode: it records and never blocks. This is what shadow would have caught. |
 | detection | 8 of 9 pre-registered hypotheses not supported | Not supported: `broken-schema`, `conflicting-instructions`, `gateway-latency`, `partial-output`, `poisoned-output`, `rate-limit`, `stale-context`, `tool-timeout`. |
 <!-- END GENERATED: unfavourable -->
