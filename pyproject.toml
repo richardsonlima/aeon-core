@@ -33,7 +33,7 @@ dependencies = ["tomli>=2.0; python_version < '3.11'"]
 runtime = ["fastapi>=0.110", "uvicorn>=0.29"]
 ui = ["aeon-core[runtime]"]
 openai = ["openai>=1.40"]
-anthropic = ["anthropic>=0.34"]
+anthropic = ["anthropic>=2.13.0"]
 langgraph = ["langgraph>=0.2", "langchain-core>=0.2"]
 all = ["aeon-core[runtime,ui,openai,anthropic,langgraph]"]
 
