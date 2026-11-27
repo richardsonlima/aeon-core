@@ -21,11 +21,13 @@ FIELDS = ("seq", "ts", "type", "data", "prev")
 
 
 def record_hash(record: dict[str, Any]) -> str:
+    """Return the sha256 hex digest of the canonical JSON of ``record``'s hashed fields."""
     return sha256_hex(canonical_json({k: record.get(k) for k in FIELDS}))
 
 
-def seal(seq: int, ts: str, type: str, data: Any, prev: str) -> dict[str, Any]:
-    record: dict[str, Any] = {"seq": seq, "ts": ts, "type": type, "data": data, "prev": prev}
+def seal(seq: int, ts: str, kind: str, data: Any, prev: str) -> dict[str, Any]:
+    """Build a record of type ``kind`` linked to ``prev`` and stamp its hash."""
+    record: dict[str, Any] = {"seq": seq, "ts": ts, "type": kind, "data": data, "prev": prev}
     record["hash"] = record_hash(record)
     return record
 
@@ -44,6 +46,7 @@ class VerifyReport:
     ts_regressions: int = 0
 
     def to_dict(self) -> dict[str, Any]:
+        """Return the report as a plain dict."""
         return asdict(self)
 
 
@@ -58,6 +61,7 @@ Entry = tuple[int, "dict[str, Any] | ParseFailure"]
 
 
 def parse_jsonl(lines: Iterable[str]) -> Iterator[Entry]:
+    """Yield ``(line number, record)`` per non-blank line, or a ``ParseFailure`` for bad lines."""
     for lineno, line in enumerate(lines, start=1):
         if not line.strip():
             continue
@@ -70,6 +74,21 @@ def parse_jsonl(lines: Iterable[str]) -> Iterator[Entry]:
             yield lineno, ParseFailure("record is not a JSON object")
             continue
         yield lineno, obj
+
+
+def _link_failure(rec: dict[str, Any], prev: str, expected_seq: int) -> tuple[Any, str] | None:
+    """Return ``(seq, reason)`` if ``rec`` does not extend the chain, else ``None``."""
+    missing = [k for k in (*FIELDS, "hash") if k not in rec]
+    if missing:
+        return rec.get("seq"), f"missing fields: {', '.join(missing)}"
+    seq = rec["seq"]
+    if seq != expected_seq:
+        return seq, f"sequence gap: expected {expected_seq}, found {seq}"
+    if rec["prev"] != prev:
+        return seq, "prev does not match the previous record's hash"
+    if record_hash(rec) != rec["hash"]:
+        return seq, "hash mismatch: record content was changed"
+    return None
 
 
 def verify_records(entries: Iterable[Entry], *, expect_head: str | None = None) -> VerifyReport:
@@ -89,16 +108,9 @@ def verify_records(entries: Iterable[Entry], *, expect_head: str | None = None) 
     for lineno, rec in entries:
         if isinstance(rec, ParseFailure):
             return fail(lineno, expected_seq, rec.error)
-        missing = [k for k in (*FIELDS, "hash") if k not in rec]
-        if missing:
-            return fail(lineno, rec.get("seq"), f"missing fields: {', '.join(missing)}")
-        seq = rec["seq"]
-        if seq != expected_seq:
-            return fail(lineno, seq, f"sequence gap: expected {expected_seq}, found {seq}")
-        if rec["prev"] != prev:
-            return fail(lineno, seq, "prev does not match the previous record's hash")
-        if record_hash(rec) != rec["hash"]:
-            return fail(lineno, seq, "hash mismatch: record content was changed")
+        broken = _link_failure(rec, prev, expected_seq)
+        if broken is not None:
+            return fail(lineno, *broken)
         ts = rec["ts"]
         if last_ts is not None and isinstance(ts, str) and ts < last_ts:
             report.ts_regressions += 1

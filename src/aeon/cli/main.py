@@ -21,6 +21,14 @@ EXIT_OK, EXIT_FAIL, EXIT_USAGE = 0, 1, 2
 
 
 class CLIError(Exception):
+    """An expected failure: printed as a message and optional fix hint, without a traceback.
+
+    Args:
+        message: What went wrong.
+        hint: What the user can do about it.
+        code: Process exit code.
+    """
+
     def __init__(self, message: str, hint: str | None = None, code: int = EXIT_FAIL) -> None:
         super().__init__(message)
         self.hint = hint
@@ -28,6 +36,7 @@ class CLIError(Exception):
 
 
 def out(args: argparse.Namespace, data: Any, text: Callable[[], str] | str) -> None:
+    """Print ``data`` as JSON if ``--json`` was given, else the text (called if callable)."""
     if getattr(args, "json", False):
         print(json.dumps(data, indent=2, default=str, ensure_ascii=False))
     else:
@@ -56,6 +65,7 @@ def _audit_spec(args: argparse.Namespace) -> str:
 
 
 def cmd_version(args: argparse.Namespace) -> int:
+    """``aeon version``: print the Aeon and Python versions."""
     import platform
 
     data = {
@@ -68,6 +78,7 @@ def cmd_version(args: argparse.Namespace) -> int:
 
 
 def cmd_doctor(args: argparse.Namespace) -> int:
+    """``aeon doctor``: run the environment checks. Exits 1 if any check fails."""
     from aeon.cli.doctor import run_doctor
 
     checks = run_doctor(args.config)
@@ -142,6 +153,7 @@ deploys_need_approval = require_approval({"deploy"})
 
 
 def cmd_init(args: argparse.Namespace) -> int:
+    """``aeon init``: write a starter config and axiom file; existing files need ``--force``."""
     root = Path(args.path)
     root.mkdir(parents=True, exist_ok=True)
     written, skipped = [], []
@@ -195,6 +207,7 @@ def _axiom_rows(files: Sequence[str]) -> list[dict[str, Any]]:
 
 
 def cmd_axioms_list(args: argparse.Namespace) -> int:
+    """``aeon axioms list``: list the axioms declared in the given or configured files."""
     cfg = _config(args)
     files = args.files or [
         str(Path(a) if Path(a).is_absolute() else cfg.root / a) for a in cfg.axioms
@@ -218,6 +231,7 @@ def cmd_axioms_list(args: argparse.Namespace) -> int:
 
 
 def cmd_axioms_check(args: argparse.Namespace) -> int:
+    """``aeon axioms check``: run an axiom file against a probe action. Exits 1 on problems."""
     from aeon.axioms import Action, Gate
 
     rows = _axiom_rows([args.file])
@@ -251,6 +265,10 @@ def cmd_axioms_check(args: argparse.Namespace) -> int:
 
 
 def cmd_run(args: argparse.Namespace) -> int:
+    """``aeon run``: run a script under a default gate, then print the decision counters.
+
+    Returns the script's own exit code.
+    """
     from aeon.axioms import default_gate, set_default_gate
 
     script = Path(args.script)
@@ -282,6 +300,7 @@ def cmd_run(args: argparse.Namespace) -> int:
 
 
 def cmd_chaos_list(args: argparse.Namespace) -> int:
+    """``aeon chaos list``: list the fault catalog."""
     from aeon.chaos import CATALOG
 
     rows = [cls().describe() for cls in CATALOG.values()]
@@ -328,20 +347,53 @@ def _find_campaign(target: str, cfg: Any) -> Any:
     )
 
 
-def cmd_chaos_run(args: argparse.Namespace) -> int:
-    from aeon.chaos import BlastRadiusExceeded, render_markdown, run_campaign, save_result
-
-    cfg = _config(args)
-    try:
-        c = _find_campaign(args.target, cfg)
-    except (ValueError, KeyError) as exc:
-        raise CLIError(f"invalid campaign: {exc}", "see docs/guides/campaigns.md") from None
+def _apply_overrides(c: Any, args: argparse.Namespace) -> None:
+    """Copy campaign settings given on the command line onto ``c``."""
     if args.blast_radius:
         c.blast_radius = args.blast_radius
     for name in ("seed", "runs", "controls", "mode"):
         v = getattr(args, name)
         if v is not None:
             setattr(c, name, v)
+
+
+def _chaos_text(c: Any, doc: dict[str, Any], path: Path, markdown: bool) -> str:
+    """Render the human-readable summary of a finished campaign ``doc``."""
+    from aeon.chaos import render_markdown
+
+    s = doc["summary"]
+    seen: list[str] = next((r["levels_seen"] for r in doc["fault_runs"] if r["levels_seen"]), [])
+    lines = [
+        f"[{c.blast_radius}] fault {c.fault} injected from step {c.start_step} "
+        f"in {c.runs} runs ({c.controls} controls)",
+        f"  escalation (first run): {' -> '.join(seen) if seen else 'none'}"
+        + (" · Safe State reached" if doc["fault_runs"][0]["safe_state"] else ""),
+        f"  detection {100 * s['detection_rate']:.0f}%  false positives "
+        f"{100 * (s['false_positive_rate'] or 0):.0f}%  Safe State "
+        f"{100 * s['safe_state_rate']:.0f}%  harmful actions executed "
+        f"{s['harmful_actions_executed']}",
+        f"  hypothesis {'supported' if doc['hypothesis_supported'] else 'NOT supported'}",
+        f"  saved {path}",
+        f"  report: aeon report {c.id}",
+    ]
+    if markdown:
+        lines += ["", render_markdown(doc)]
+    return "\n".join(lines)
+
+
+def cmd_chaos_run(args: argparse.Namespace) -> int:
+    """``aeon chaos run``: run a campaign and save the result.
+
+    Exits 1 if the hypothesis is not supported and ``--strict`` is set.
+    """
+    from aeon.chaos import BlastRadiusExceeded, run_campaign, save_result
+
+    cfg = _config(args)
+    try:
+        c = _find_campaign(args.target, cfg)
+    except (ValueError, KeyError) as exc:
+        raise CLIError(f"invalid campaign: {exc}", "see docs/guides/campaigns.md") from None
+    _apply_overrides(c, args)
 
     def progress(kind: str, i: int, n: int) -> None:
         if not args.json and sys.stderr.isatty():
@@ -360,33 +412,12 @@ def cmd_chaos_run(args: argparse.Namespace) -> int:
     path = save_result(doc)
     doc["saved_to"] = str(path)
 
-    def text() -> str:
-        s = doc["summary"]
-        seen: list[str] = next(
-            (r["levels_seen"] for r in doc["fault_runs"] if r["levels_seen"]), []
-        )
-        lines = [
-            f"[{c.blast_radius}] fault {c.fault} injected from step {c.start_step} "
-            f"in {c.runs} runs ({c.controls} controls)",
-            f"  escalation (first run): {' -> '.join(seen) if seen else 'none'}"
-            + (" · Safe State reached" if doc["fault_runs"][0]["safe_state"] else ""),
-            f"  detection {100 * s['detection_rate']:.0f}%  false positives "
-            f"{100 * (s['false_positive_rate'] or 0):.0f}%  Safe State "
-            f"{100 * s['safe_state_rate']:.0f}%  harmful actions executed "
-            f"{s['harmful_actions_executed']}",
-            f"  hypothesis {'supported' if doc['hypothesis_supported'] else 'NOT supported'}",
-            f"  saved {path}",
-            f"  report: aeon report {c.id}",
-        ]
-        if args.markdown:
-            lines += ["", render_markdown(doc)]
-        return "\n".join(lines)
-
-    out(args, doc, text)
+    out(args, doc, lambda: _chaos_text(c, doc, path, args.markdown))
     return EXIT_OK if doc["hypothesis_supported"] or not args.strict else EXIT_FAIL
 
 
 def cmd_report(args: argparse.Namespace) -> int:
+    """``aeon report``: list saved results, or render one campaign's report as Markdown."""
     from aeon.chaos import list_results, load_result, render_markdown
 
     if not args.campaign:
@@ -422,6 +453,7 @@ def cmd_report(args: argparse.Namespace) -> int:
 
 
 def cmd_audit_verify(args: argparse.Namespace) -> int:
+    """``aeon audit verify``: check the hash chain. Exits 1 if it is broken."""
     from aeon.audit import verify
 
     spec = _audit_spec(args)
@@ -453,6 +485,7 @@ def cmd_audit_verify(args: argparse.Namespace) -> int:
 
 
 def cmd_audit_tail(args: argparse.Namespace) -> int:
+    """``aeon audit tail``: print the last ``-n`` records, optionally of one type."""
     from aeon.audit import read
 
     spec = _audit_spec(args)
@@ -475,6 +508,7 @@ def cmd_audit_tail(args: argparse.Namespace) -> int:
 
 
 def cmd_audit_export(args: argparse.Namespace) -> int:
+    """``aeon audit export``: write the audit records as JSONL or CSV."""
     import csv
     import io
 
@@ -526,6 +560,7 @@ def _require_runtime() -> None:
 
 
 def cmd_runtime_start(args: argparse.Namespace) -> int:
+    """``aeon runtime start``: serve the local HTTP runtime without opening a browser."""
     _require_runtime()
     from aeon.runtime.server import serve
 
@@ -533,6 +568,7 @@ def cmd_runtime_start(args: argparse.Namespace) -> int:
 
 
 def cmd_ui(args: argparse.Namespace) -> int:
+    """``aeon ui``: serve the local HTTP runtime and open the control plane in a browser."""
     _require_runtime()
     from aeon.runtime.server import serve
 
@@ -540,12 +576,14 @@ def cmd_ui(args: argparse.Namespace) -> int:
 
 
 def cmd_mcp(args: argparse.Namespace) -> int:
+    """``aeon mcp``: serve the runtime as an MCP server over stdio."""
     from aeon.runtime.mcp import serve_stdio
 
     return serve_stdio(config=args.config)
 
 
 def cmd_docs_mcp(args: argparse.Namespace) -> int:
+    """``aeon docs-mcp``: serve the documentation as an MCP server over stdio."""
     from aeon.docs_mcp import serve_docs
 
     return serve_docs(args.docs_dir)
@@ -555,6 +593,7 @@ def cmd_docs_mcp(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Build the ``aeon`` argument parser with all subcommands."""
     p = argparse.ArgumentParser(
         prog="aeon",
         description="Gate the actions of LLM agents and check that they fail safe.",
@@ -566,11 +605,11 @@ def build_parser() -> argparse.ArgumentParser:
     def add(
         name: str,
         fn: Callable[[argparse.Namespace], int],
-        help: str,
+        help_text: str,
         parent: Any = sub,
         json_flag: bool = True,
     ) -> argparse.ArgumentParser:
-        sp: argparse.ArgumentParser = parent.add_parser(name, help=help, description=help)
+        sp: argparse.ArgumentParser = parent.add_parser(name, help=help_text, description=help_text)
         sp.set_defaults(func=fn)
         if json_flag:
             sp.add_argument("--json", action="store_true", help="print JSON")
@@ -675,6 +714,10 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """Run the CLI with ``argv`` (default ``sys.argv``) and return the process exit code.
+
+    Expected errors print a message and a fix hint; ``KeyboardInterrupt`` returns 130.
+    """
     parser = build_parser()
     args = parser.parse_args(argv)
     if not getattr(args, "func", None):

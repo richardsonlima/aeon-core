@@ -36,10 +36,12 @@ class ToolBox:
         return fn
 
     def add(self, name: str, fn: Callable[..., Any]) -> None:
+        """Register ``fn`` under ``name``, replacing any earlier tool of that name."""
         self._tools[name] = fn
 
     @property
     def tools(self) -> Mapping[str, Callable[..., Any]]:
+        """Return a copy of the registered tools by name."""
         return dict(self._tools)
 
     def __contains__(self, name: object) -> bool:

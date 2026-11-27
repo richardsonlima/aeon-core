@@ -93,22 +93,14 @@ def build_campaign(
         if campaign is not None:
             c = Campaign.from_mapping(campaign)
         else:
-            assert target is not None
+            if target is None:  # unreachable: checked above, kept for type narrowing
+                raise InvalidRequest("give exactly one of 'target' or 'campaign'")
             if not _TARGET_RE.match(target):
                 raise InvalidRequest("target must be a fault name or a campaign name")
             c = _from_target(cfg, target, Campaign, resolve)
-        if blast_radius is not None:
-            c.blast_radius = blast_radius
-        for name, value in (("seed", seed), ("runs", runs), ("controls", controls)):
-            if value is not None:
-                setattr(c, name, value)
+        _apply_overrides(c, blast_radius, seed=seed, runs=runs, controls=controls)
         c.__post_init__()  # revalidate after overrides
-        if not CAMPAIGN_ID_RE.match(c.id):
-            raise InvalidRequest("campaign id must match [A-Za-z0-9][A-Za-z0-9_-]{0,63}")
-        if c.runs > MAX_RUNS or c.controls > MAX_RUNS or c.steps > MAX_STEPS:
-            raise InvalidRequest(
-                f"runs and controls are capped at {MAX_RUNS}, steps at {MAX_STEPS}"
-            )
+        _check_limits(c)
         fault = make(c.fault, probability=c.probability, **c.fault_params)
         check_radius(fault, c.blast_radius, ceiling=cfg.max_blast_radius, gate_mode=c.mode)
     except InvalidRequest:
@@ -118,6 +110,25 @@ def build_campaign(
     except (ValueError, KeyError, TypeError) as exc:
         raise InvalidRequest(f"invalid campaign: {exc}") from None
     return c
+
+
+def _apply_overrides(
+    c: Any, blast_radius: str | None, *, seed: int | None, runs: int | None, controls: int | None
+) -> None:
+    """Set the caller's overrides on campaign ``c``; ``None`` leaves a field unchanged."""
+    if blast_radius is not None:
+        c.blast_radius = blast_radius
+    for name, value in (("seed", seed), ("runs", runs), ("controls", controls)):
+        if value is not None:
+            setattr(c, name, value)
+
+
+def _check_limits(c: Any) -> None:
+    """Raise ``InvalidRequest`` if the campaign id or size is outside the allowed bounds."""
+    if not CAMPAIGN_ID_RE.match(c.id):
+        raise InvalidRequest("campaign id must match [A-Za-z0-9][A-Za-z0-9_-]{0,63}")
+    if c.runs > MAX_RUNS or c.controls > MAX_RUNS or c.steps > MAX_STEPS:
+        raise InvalidRequest(f"runs and controls are capped at {MAX_RUNS}, steps at {MAX_STEPS}")
 
 
 def _from_target(cfg: Config, target: str, campaign_cls: Any, resolve: Any) -> Any:

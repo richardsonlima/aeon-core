@@ -37,6 +37,8 @@ def default_docs_dir() -> Path:
 
 
 class DocsServer(JsonRpcServer):
+    """MCP server exposing the Markdown docs as searchable, readable resources."""
+
     name = "aeon-docs"
     instructions = "Search and read the Æon documentation."
 
@@ -76,11 +78,13 @@ class DocsServer(JsonRpcServer):
         )
 
     def capabilities(self) -> dict[str, Any]:
+        """Advertise the tools and resources this server provides."""
         return {"tools": {"listChanged": False}, "resources": {"listChanged": False}}
 
     # -- files -------------------------------------------------------------------------
 
     def files(self) -> list[Path]:
+        """Return the Markdown files under the docs root, at most ``MAX_FILES``."""
         out: list[Path] = []
         for p in sorted(self.root.rglob("*.md")):
             if len(out) >= MAX_FILES:
@@ -96,6 +100,7 @@ class DocsServer(JsonRpcServer):
             return False
 
     def rel(self, p: Path) -> str:
+        """Return ``p`` as a POSIX path relative to the docs root."""
         return p.resolve().relative_to(self.root).as_posix()
 
     def resolve(self, path: str) -> Path:
@@ -120,11 +125,13 @@ class DocsServer(JsonRpcServer):
         return target
 
     def text(self, p: Path) -> str:
+        """Read up to ``MAX_BYTES`` of ``p`` as UTF-8, replacing undecodable bytes."""
         with p.open("rb") as fh:
             return fh.read(MAX_BYTES).decode("utf-8", errors="replace")
 
     @staticmethod
     def title_of(body: str, fallback: str) -> str:
+        """Return the first ``# `` heading in ``body``, or ``fallback`` if there is none."""
         for line in body.splitlines():
             if line.startswith("# "):
                 return line[2:].strip() or fallback

@@ -54,6 +54,8 @@ ToolHandler = Callable[[dict[str, Any]], Any]
 
 @dataclass(frozen=True)
 class Tool:
+    """An MCP tool: its name, description, JSON schema for arguments and handler."""
+
     name: str
     description: str
     handler: ToolHandler
@@ -62,6 +64,7 @@ class Tool:
     )
 
     def describe(self) -> dict[str, Any]:
+        """Return the tool as listed by ``tools/list``."""
         return {
             "name": self.name,
             "description": self.description,
@@ -70,6 +73,7 @@ class Tool:
 
 
 def log(message: str) -> None:
+    """Write a diagnostic line to stderr (stdout carries the protocol)."""
     print(f"aeon-mcp: {message}", file=sys.stderr, flush=True)
 
 
@@ -92,12 +96,15 @@ class JsonRpcServer:
     # -- registration (for subclasses) -------------------------------------------------
 
     def add_tool(self, tool: Tool) -> None:
+        """Register ``tool``, replacing any earlier tool of the same name."""
         self._tools[tool.name] = tool
 
     def add_method(self, name: str, fn: Callable[[dict[str, Any]], Any]) -> None:
+        """Register a JSON-RPC method handler under ``name``, replacing any earlier one."""
         self._methods[name] = fn
 
     def capabilities(self) -> dict[str, Any]:
+        """Return the capabilities advertised in ``initialize``."""
         return {"tools": {"listChanged": False}}
 
     # -- dispatch ----------------------------------------------------------------------
@@ -132,6 +139,7 @@ class JsonRpcServer:
         return {"jsonrpc": "2.0", "id": req_id, "result": result}
 
     def handle_line(self, line: str) -> dict[str, Any] | None:
+        """Decode one JSON line and handle it; reply with a parse error if it is not JSON."""
         try:
             message = json.loads(line)
         except ValueError:
@@ -200,6 +208,7 @@ class JsonRpcServer:
     # -- transport ---------------------------------------------------------------------
 
     def serve_streams(self, stdin: IO[str], stdout: IO[str]) -> int:
+        """Serve newline-delimited JSON-RPC from ``stdin`` to ``stdout`` until EOF; return 0."""
         for line in stdin:
             line = line.strip()
             if not line:
@@ -215,6 +224,11 @@ class JsonRpcServer:
 
 
 def str_arg(args: Mapping[str, Any], key: str, default: str | None = None) -> str:
+    """Return the string argument ``key`` (or ``default``).
+
+    Raises:
+        ToolError: The value is missing, empty or not a string.
+    """
     value = args.get(key, default)
     if not isinstance(value, str) or not value:
         raise ToolError(f"'{key}' must be a non-empty string")

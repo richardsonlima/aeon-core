@@ -5,8 +5,7 @@
 ```bash
 git clone https://github.com/richardsonlima/aeon-core
 cd aeon-core
-uv venv
-uv pip install -e ".[dev,runtime]"
+uv sync --group dev --extra runtime   # installs from uv.lock
 ```
 
 ## Checks

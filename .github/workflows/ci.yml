@@ -25,10 +25,9 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.12"
-      - name: Install dev tools
+      - name: Install from the lockfile
         run: |
-          uv venv
-          uv pip install -e ".[dev,runtime]"
+          uv sync --locked --group dev --extra runtime
           echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
       - run: ruff check .
       - run: ruff format --check .
@@ -47,18 +46,19 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: ${{ matrix.python }}
-      - name: Install (core dev extras only)
+      - name: Install from the lockfile (core only, no runtime extra)
         shell: bash
         run: |
-          uv venv
-          uv pip install -e ".[dev]"
+          uv sync --locked --group dev
           if [ "$RUNNER_OS" = "Windows" ]; then
             echo "$PWD/.venv/Scripts" >> "$GITHUB_PATH"
           else
             echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
           fi
       - name: Test (core, runtime extra absent)
-        run: pytest --cov --cov-report=xml
+        # runtime modules are not importable here, so the coverage floor is checked
+        # in test-runtime, where the whole package runs
+        run: pytest --cov --cov-report=xml --cov-fail-under=0
       - uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ matrix.os }}-py${{ matrix.python }}
@@ -73,18 +73,36 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.12"
-      - name: Install dev and runtime extras
+      - name: Install from the lockfile with the runtime extra
         run: |
-          uv venv
-          uv pip install -e ".[dev,runtime]"
+          uv sync --locked --group dev --extra runtime
           echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
-      - name: Full suite with the runtime installed
-        run: pytest --cov --cov-report=xml
+      - name: Full suite with the runtime installed (coverage floor from pyproject)
+        run: pytest --cov --cov-report=xml --cov-report=term
       - uses: actions/upload-artifact@v4
         with:
           name: coverage-runtime-ubuntu-py3.12
           path: coverage.xml
           if-no-files-found: error
+
+  security:
+    name: dependency audit and secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - name: pip-audit on the locked dependencies (all extras)
+        run: |
+          uv export --frozen --all-extras --no-emit-project --no-hashes -o requirements-audit.txt
+          uvx pip-audit --strict -r requirements-audit.txt
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build:
     name: build

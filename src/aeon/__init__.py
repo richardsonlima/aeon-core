@@ -3,6 +3,8 @@
 Inspired by the MECADE framework for chaos engineering; an independent project.
 """
 
+import logging
+
 from aeon._version import __version__
 from aeon.axioms import (
     ALERT,
@@ -22,6 +24,9 @@ from aeon.axioms import (
     enforce,
 )
 from aeon.baseline import Budget, ChaosBudget, Monitor
+
+# A library only creates loggers; the application decides where logs go.
+logging.getLogger("aeon").addHandler(logging.NullHandler())
 
 __all__ = [
     "ALERT",

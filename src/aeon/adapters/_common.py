@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import inspect
 import json
+import logging
 import types
 import typing
 from collections.abc import Callable, Mapping
 from typing import Any
 
 from aeon.axioms import ActionBlocked
+
+logger = logging.getLogger(__name__)
 
 _JSON_TYPES: dict[Any, str] = {
     str: "string",
@@ -85,7 +88,8 @@ def parameters_schema(fn: Callable[..., Any]) -> dict[str, Any]:
     """A JSON schema for ``fn``'s parameters, from its signature and type hints."""
     try:
         hints = typing.get_type_hints(fn)
-    except Exception:
+    except Exception:  # unresolvable forward references: fall back to untyped params
+        logger.debug("could not resolve type hints for %r", fn, exc_info=True)
         hints = {}
     properties: dict[str, Any] = {}
     required: list[str] = []

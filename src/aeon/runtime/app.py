@@ -87,17 +87,22 @@ class BodyLimitMiddleware:
         self.app = app
         self.limit = limit
 
+    def _declared_too_big(self, scope: Scope) -> bool:
+        """Whether Content-Length is above the limit or not a number."""
+        declared = dict(scope["headers"]).get(b"content-length")
+        if declared is None:
+            return False
+        try:
+            return int(declared) > self.limit
+        except ValueError:
+            return True
+
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """Pass non-HTTP scopes through; buffer HTTP bodies and answer 413 above the limit."""
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
-        declared = dict(scope["headers"]).get(b"content-length")
-        too_big = False
-        if declared is not None:
-            try:
-                too_big = int(declared) > self.limit
-            except ValueError:
-                too_big = True
+        too_big = self._declared_too_big(scope)
         chunks: list[bytes] = []
         size = 0
         while not too_big:
@@ -147,6 +152,7 @@ class DecisionHub:
         self._queue_size = queue_size
 
     def publish(self, record: dict[str, Any]) -> None:
+        """Record a decision and queue it to every SSE client, whichever thread calls."""
         with self._lock:
             self._ring.append(record)
             clients = list(self._clients)
@@ -167,21 +173,25 @@ class DecisionHub:
             self._clients = [c for c in self._clients if c[1] is not q]
 
     def attach(self) -> asyncio.Queue[dict[str, Any]]:
+        """Register the calling event loop as a client; return the queue its events arrive on."""
         q: asyncio.Queue[dict[str, Any]] = asyncio.Queue(maxsize=self._queue_size)
         with self._lock:
             self._clients.append((asyncio.get_running_loop(), q))
         return q
 
     def detach(self, q: asyncio.Queue[dict[str, Any]]) -> None:
+        """Unregister the client that owns ``q``."""
         self._drop(q)
 
     @property
     def clients(self) -> int:
+        """Number of connected SSE clients."""
         return len(self._clients)
 
     def recent(
         self, *, agent: str | None, axiom: str | None, level: str | None, limit: int
     ) -> list[dict[str, Any]]:
+        """Return up to ``limit`` buffered decisions, newest first, optionally filtered."""
         with self._lock:
             items = list(self._ring)
         out: list[dict[str, Any]] = []
@@ -227,6 +237,8 @@ async def sse_events(
 
 
 class EvaluateIn(BaseModel):
+    """Body of ``POST /v1/actions/evaluate``: the action to decide on."""
+
     tool: str = Field(min_length=1, max_length=256)
     args: dict[str, Any] = Field(default_factory=dict)
     agent: str = Field(default="default", min_length=1, max_length=256)
@@ -235,6 +247,8 @@ class EvaluateIn(BaseModel):
 
 
 class ResultIn(BaseModel):
+    """Body of ``POST /v1/actions/result``: how an evaluated action went (``latency_ms`` in ms)."""
+
     action_id: str | None = Field(default=None, max_length=128)
     tool: str = Field(min_length=1, max_length=256)
     agent: str = Field(default="default", min_length=1, max_length=256)
@@ -245,20 +259,28 @@ class ResultIn(BaseModel):
 
 
 class PolicyIn(BaseModel):
+    """Body of ``PUT /v1/policies/{name}``: a new level and/or whether the axiom is enabled."""
+
     level: str | None = None
     enabled: bool | None = None
 
 
 class ModeIn(BaseModel):
+    """Request body for switching the gate mode: ``shadow`` or ``enforce``."""
+
     mode: str
 
 
 class KillSwitchIn(BaseModel):
+    """Request body for the kill switch: engage or release it, with an optional reason."""
+
     engaged: bool
     reason: str | None = Field(default=None, max_length=500)
 
 
 class CampaignIn(BaseModel):
+    """Request body for starting a campaign: a target name or an inline campaign, plus overrides."""
+
     target: str | None = None
     campaign: dict[str, Any] | None = None
     runs: int | None = Field(default=None, ge=1)
@@ -268,6 +290,8 @@ class CampaignIn(BaseModel):
 
 
 class AuditVerifyIn(BaseModel):
+    """Request body for audit verification: the head hash the chain is expected to end at."""
+
     expect_head: str | None = None
 
 
@@ -288,6 +312,7 @@ def controlplane_dir() -> Path | None:
 
 
 def claims_candidates(cfg: Config) -> list[Path]:
+    """Return the places a ``docs/claims.json`` may live, in lookup order."""
     here = Path(__file__).resolve()
     return [
         Path.cwd() / "docs" / "claims.json",
@@ -300,7 +325,7 @@ def claims_candidates(cfg: Config) -> list[Path]:
 # -- app --------------------------------------------------------------------------------
 
 
-def create_app(
+def create_app(  # noqa: C901 - route factory: each nested route function counts toward the total
     gate: Gate | None = None,
     *,
     config: Config | None = None,
@@ -590,12 +615,12 @@ def create_app(
 
     @api.get("/audit")
     def audit_tail(
-        limit: int = Query(100, ge=1, le=5000), type: str | None = None
+        limit: int = Query(100, ge=1, le=5000), kind: str | None = Query(None, alias="type")
     ) -> dict[str, Any]:
         audit = _audit()
         tail: deque[dict[str, Any]] = deque(maxlen=limit)
         for rec in audit.records():
-            if type is None or rec.get("type") == type:
+            if kind is None or rec.get("type") == kind:
                 tail.append(rec)
         return {"records": list(tail), "count": len(tail)}
 
@@ -606,9 +631,11 @@ def create_app(
         return dict(report.to_dict())
 
     @api.get("/audit/export")
-    def audit_export(format: str = Query("jsonl", pattern="^(jsonl|csv)$")) -> StreamingResponse:
+    def audit_export(
+        fmt: str = Query("jsonl", alias="format", pattern="^(jsonl|csv)$"),
+    ) -> StreamingResponse:
         audit = _audit()
-        if format == "jsonl":
+        if fmt == "jsonl":
             return StreamingResponse(
                 (json.dumps(r, default=str) + "\n" for r in audit.records()),
                 media_type="application/x-ndjson",

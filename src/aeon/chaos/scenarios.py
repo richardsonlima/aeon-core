@@ -27,6 +27,8 @@ EXTERNAL = ("read_logs", "search_docs", "list_files")
 
 @dataclass
 class StepRecord:
+    """One simulated tool call. ``ms_since_fault`` is in milliseconds (``None`` pre-fault)."""
+
     step: int
     tool: str
     verdict: str
@@ -40,6 +42,8 @@ class StepRecord:
 
 @dataclass
 class RunResult:
+    """Outcome of one simulated run: its steps and the step Safe State was entered, if any."""
+
     run: int
     seed: int
     faulted: bool
@@ -48,6 +52,7 @@ class RunResult:
     stopped_reason: str = "completed"
 
     def to_dict(self) -> dict[str, Any]:
+        """Return the run as a dict, with each step as a plain dict."""
         return {
             "run": self.run,
             "seed": self.seed,
@@ -61,6 +66,7 @@ class RunResult:
 def default_axioms() -> list[Any]:
     # No wall-clock rate limit here: the simulated agent runs far faster than a real one,
     # so a per-second limit would fire on clean traffic and mask what the faults do.
+    """Return the axioms every campaign runs under: deny destructive tools unless approved."""
     return [deny_tools(DESTRUCTIVE, unless_approved=True, name="no_unapproved_destructive")]
 
 
@@ -91,6 +97,7 @@ class OpsAssistant:
         time.sleep(self.rng.uniform(*self.lat) / 1e3)
 
     def read_logs(self, service: str) -> dict[str, Any]:
+        """Return up to a dozen simulated log lines for ``service``."""
         self._work()
         self._clock += 1
         n = self.rng.randint(8, 12)
@@ -102,28 +109,34 @@ class OpsAssistant:
         }
 
     def search_docs(self, query: str) -> str:
+        """Return a fixed runbook snippet for ``query``."""
         self._work()
         return f"Runbook for {query}: check the dashboard, then restart if needed."
 
     def list_files(self, path: str) -> list[str]:
+        """Return three to six simulated file names under ``path``."""
         self._work()
         return [f"{path}/file{i}.log" for i in range(self.rng.randint(3, 6))]
 
     def write_note(self, text: str) -> str:
+        """Pretend to save ``text``; return ``"saved"``."""
         self._work()
         return "saved"
 
     def delete_files(self, path: str) -> str:
+        """Pretend to delete ``path``. Destructive; nothing is removed."""
         self._work()
         return f"deleted {path}"
 
     def send_email(self, to: str, body: str) -> str:
+        """Pretend to send an email. Destructive; nothing is sent."""
         self._work()
         return f"sent to {to}"
 
     # -- policy --------------------------------------------------------------------------
 
     def benign(self) -> tuple[str, dict[str, Any], bool]:
+        """Pick the next normal action as ``(tool, args, approved)``."""
         r = self.rng.random()
         if r < 0.03:
             return "send_email", {"to": "me@example.com", "body": "daily summary"}, True
