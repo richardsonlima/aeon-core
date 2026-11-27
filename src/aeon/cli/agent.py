@@ -19,14 +19,7 @@ from typing import Any
 
 __all__ = ["PROVIDERS", "add_parser", "cmd_agent_run", "load_tools", "make_client"]
 
-# provider -> (base URL, API key variable, wire format)
-PROVIDERS: dict[str, tuple[str | None, str | None, str]] = {
-    "openrouter": ("https://openrouter.ai/api/v1", "OPENROUTER_API_KEY", "openai"),
-    "openai": ("https://api.openai.com/v1", "OPENAI_API_KEY", "openai"),
-    "anthropic": ("https://api.anthropic.com", "ANTHROPIC_API_KEY", "anthropic"),
-    "ollama": ("http://localhost:11434/v1", None, "openai"),
-    "compatible": (None, "OPENAI_API_KEY", "openai"),
-}
+from aeon.agents.models import PROVIDERS
 
 
 def _error(message: str, hint: str | None = None) -> Exception:
@@ -73,21 +66,15 @@ def _pick_provider(name: str | None) -> str:
     )
 
 
-def make_client(provider: str, base_url: str | None = None) -> tuple[Any, str]:
-    """Build the HTTP client for ``provider`` and return it with its wire format."""
-    from aeon.agents import AnthropicClient, OpenAICompatible
+def make_client(provider: str, model: str, base_url: str | None = None) -> Any:
+    """Resolve ``provider`` and ``model`` to a :class:`~aeon.agents.Model`."""
+    from aeon.agents import resolve_model
 
-    default_url, key_env, wire = PROVIDERS[provider]
-    url = base_url or default_url
-    if url is None:
-        raise _error("--provider compatible needs --base-url")
-    key = os.environ.get(key_env) if key_env else None
-    if key_env and not key and provider != "compatible":
-        raise _error(f"{key_env} is not set", f"export {key_env}=... before running")
-    if wire == "anthropic":
-        return AnthropicClient(key, base_url=url), wire
-    headers = {"x-title": "aeon-core"} if provider == "openrouter" else None
-    return OpenAICompatible(url, key or "", headers=headers), wire
+    try:
+        return resolve_model(f"{provider}:{model}", base_url=base_url)
+    except ValueError as exc:
+        hint = "export the API key" if "not set" in str(exc) else None
+        raise _error(str(exc), hint) from None
 
 
 def cmd_agent_run(args: argparse.Namespace) -> int:
@@ -101,7 +88,7 @@ def cmd_agent_run(args: argparse.Namespace) -> int:
     if not model:
         raise _error("no model", "pass --model, or set AEON_LLM_MODEL")
     provider = _pick_provider(args.provider)
-    client, wire = make_client(provider, args.base_url)
+    resolved = make_client(provider, model, args.base_url)
     tools_path = Path(args.tools)
     tools = load_tools(tools_path)
 
@@ -120,13 +107,13 @@ def cmd_agent_run(args: argparse.Namespace) -> int:
         print(f"provider {provider}, model {model}, mode {gate.mode.value}", file=sys.stderr)
 
     agent = Agent(
-        client,
-        model,
+        resolved,
         box,
-        provider="anthropic" if wire == "anthropic" else "openai",
-        system=args.system,
+        name=args.agent,
+        instructions=args.system,
         max_steps=args.max_steps,
         max_tokens=args.max_tokens,
+        approval=_approve_at_prompt if sys.stdin.isatty() else "deny",
     )
     try:
         run = agent.run(args.prompt)
@@ -180,6 +167,11 @@ def _print_run(run: Any, gate: Any) -> None:
         f"decisions={k['decisions']} denied={k['denied']}",
         file=sys.stderr,
     )
+
+
+def _approve_at_prompt(call: Any) -> bool:
+    answer = input(f"approve {call.name}({json.dumps(call.args, ensure_ascii=False)})? [y/N] ")
+    return answer.strip().lower() in ("y", "yes", "s", "sim")
 
 
 def add_parser(sub: Any, add: Callable[..., argparse.ArgumentParser]) -> None:

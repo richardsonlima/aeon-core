@@ -127,7 +127,7 @@ def test_provider_error_is_a_clean_failure(
     [
         (["--model", "m"], "no provider"),
         (["--model", "m", "--provider", "openrouter"], "OPENROUTER_API_KEY is not set"),
-        (["--model", "m", "--provider", "compatible"], "needs --base-url"),
+        (["--model", "m", "--provider", "compatible"], "needs base_url"),
         (["--provider", "ollama"], "no model"),
     ],
 )

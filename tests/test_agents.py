@@ -149,9 +149,11 @@ def test_openai_loop_runs_tools_and_finishes(box: ToolBox) -> None:
             _oai_reply(content="all done"),
         ]
     )
-    agent = Agent(_oai(script), "m", box, system="be careful", request={"temperature": 0})
+    agent = Agent(
+        "m", box, client=_oai(script), instructions="be careful", request={"temperature": 0}
+    )
     run = agent.run("go")
-    assert agent.provider == "openai"
+    assert agent.model.wire == "openai"
     assert run.stop_reason == "done" and run.text == "all done"
     assert run.steps == 3 and run.tokens == 30
     assert [c.result for c in run.tool_calls] == ["contents of a", "contents of b"]
@@ -173,7 +175,7 @@ def test_openai_block_puts_agent_in_safe_state_and_stops(box: ToolBox) -> None:
             _oai_reply(content="never reached"),
         ]
     )
-    run = Agent(_oai(script), "m", box, max_tokens=50).run("go")
+    run = Agent("m", box, client=_oai(script), max_tokens=50).run("go")
     assert run.stop_reason == "safe_state" and run.text is None
     assert len(run.blocked) == 1 and run.blocked[0].is_error
     assert run.blocked[0].result.startswith("Æon blocked this action:")
@@ -183,7 +185,7 @@ def test_openai_block_puts_agent_in_safe_state_and_stops(box: ToolBox) -> None:
 
 def test_openai_bad_arguments_and_max_steps(box: ToolBox) -> None:
     script = _Script([_oai_reply(calls=[_oai_call("c1", "read_file", "{oops")])] * 2)
-    run = Agent(_oai(script), "m", box, max_steps=2).run([{"role": "user", "content": "x"}])
+    run = Agent("m", box, client=_oai(script), max_steps=2).run([{"role": "user", "content": "x"}])
     assert run.stop_reason == "max_steps" and run.steps == 2
     assert all(c.is_error and not c.blocked for c in run.tool_calls)
     assert run.tool_calls[0].result.startswith("Error: ")
@@ -193,7 +195,7 @@ def test_kill_switch_stops_before_the_model_is_called(box: ToolBox) -> None:
     assert box.gate is not None
     box.gate.engage_kill_switch("maintenance")
     script = _Script([_oai_reply(content="x")])
-    run = Agent(_oai(script), "m", box).run("go")
+    run = Agent("m", box, client=_oai(script)).run("go")
     assert run.stop_reason == "kill_switch" and run.steps == 0
     assert not script.requests
 
@@ -208,7 +210,7 @@ def test_shadow_mode_records_but_does_not_block() -> None:
             _oai_reply(content="done"),
         ]
     )
-    run = Agent(_oai(script), "m", b).run("go")
+    run = Agent("m", b, client=_oai(script)).run("go")
     assert run.stop_reason == "done"
     assert run.tool_calls[0].result == "deleted p" and not run.tool_calls[0].blocked
 
@@ -236,9 +238,9 @@ def test_anthropic_loop(box: ToolBox) -> None:
             {"content": [SimpleNamespace(type="text", text="done ")], "usage": None},
         ]
     )
-    agent = Agent(_ant(script), "m", box, system="sys", max_steps=3)
+    agent = Agent("m", box, client=_ant(script), instructions="sys", max_steps=3)
     run = agent.run("go")
-    assert agent.provider == "anthropic"
+    assert agent.model.wire == "anthropic"
     assert run.stop_reason == "done" and run.text == "done "
     assert run.tokens == 8 and run.steps == 2
     first = script.requests[0]
@@ -279,7 +281,7 @@ def test_anthropic_block_and_unknown_block_objects(box: ToolBox) -> None:
             }
         ]
     )
-    run = Agent(_ant(script), "m", box, provider="anthropic").run("go")
+    run = Agent("m", box, client=_ant(script)).run("go")
     assert run.stop_reason == "max_steps" or run.stop_reason == "safe_state"
     assert run.blocked and run.blocked[0].name == "delete_file"
     sent = run.messages[1]["content"]
@@ -292,15 +294,15 @@ def test_anthropic_block_and_unknown_block_objects(box: ToolBox) -> None:
 
 def test_provider_detection_and_validation(box: ToolBox) -> None:
     with pytest.raises(ValueError, match="provider"):
-        Agent(object(), "m", box)
+        Agent("m", box, client=object())
     with pytest.raises(ValueError, match="max_steps"):
-        Agent(_oai(_Script([])), "m", box, max_steps=0)
+        Agent("m", box, client=_oai(_Script([])), max_steps=0)
 
 
 def test_default_gate_is_used_without_one() -> None:
     b = ToolBox(agent="d")
     b.add("noop", lambda: "ok")
-    agent = Agent(_oai(_Script([_oai_reply(content="hi")])), "m", b)
+    agent = Agent("m", b, client=_oai(_Script([_oai_reply(content="hi")])))
     assert agent.gate is not None
     assert agent.run("go").text == "hi"
 
@@ -345,7 +347,7 @@ def test_reasoning_fields_are_sent_back(box: ToolBox) -> None:
             _oai_reply(content="end"),
         ]
     )
-    run = Agent(_oai(script), "m", box).run("go")
+    run = Agent("m", box, client=_oai(script)).run("go")
     sent = script.requests[1]["messages"][1]
     assert sent["reasoning_details"] == [{"type": "reasoning.encrypted", "data": "x"}]
     assert sent["tool_calls"][0]["function"]["arguments"] == '{"path": "a"}'
