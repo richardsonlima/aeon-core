@@ -2,7 +2,7 @@
 
 [English](https://github.com/richardsonlima/aeon-core/blob/main/README.md) | [Português](https://github.com/richardsonlima/aeon-core/blob/main/README.pt.md)
 
-![version](https://img.shields.io/badge/version-0.5.0-blue) ![license](https://img.shields.io/badge/license-Apache--2.0-green) ![python](https://img.shields.io/badge/python-3.10%2B-blue)
+![version](https://img.shields.io/badge/version-0.5.1-blue) ![license](https://img.shields.io/badge/license-Apache--2.0-green) ![python](https://img.shields.io/badge/python-3.10%2B-blue)
 
 O Æon é um runtime Python gratuito e de código aberto que **controla as ações de agentes LLM** e **injeta falhas controladas** para verificar se eles falham de forma segura.
 
