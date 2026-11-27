@@ -182,6 +182,7 @@ class Gate:
         self._lock = threading.Lock()
         self._safe: dict[str, SafeState] = {}
         self._subscribers: list[Callable[[Decision], None]] = []
+        self._pending_safe = threading.local()
         self.counters: dict[str, int] = {
             "decisions": 0,
             "allowed": 0,
@@ -259,6 +260,10 @@ class Gate:
                 decided_ns=time.perf_counter_ns() - t0,
             )
         self._publish(decision)
+        entered: SafeState | None = getattr(self._pending_safe, "entered", None)
+        if entered is not None:
+            self._pending_safe.entered = None
+            self._emit("safe_state", {"entered": True, **entered.to_dict()})
         return decision
 
     def _decide(self, action: Action, mode: Mode, t0: int) -> Decision:
@@ -306,20 +311,14 @@ class Gate:
             elif verdict is Level.LIMIT:
                 allowed = action.approved or self._approve(provisional)
 
+        newly_safe: SafeState | None = None
         if entered_safe:
             reason = "; ".join(f.reason for f in findings if f.level is Level.BLOCK)
             with self._lock:
                 if action.agent not in self._safe:
-                    self._safe[action.agent] = SafeState(action.agent, reason, provisional.id)
-                    self._emit(
-                        "safe_state",
-                        {
-                            "agent": action.agent,
-                            "entered": True,
-                            "reason": reason,
-                            "decision_id": provisional.id,
-                        },
-                    )
+                    newly_safe = SafeState(action.agent, reason, provisional.id)
+                    self._safe[action.agent] = newly_safe
+        self._pending_safe.entered = newly_safe
 
         return Decision(
             action=action,
