@@ -38,6 +38,7 @@ class StepRecord:
     injected: bool
     harmful: bool
     ms_since_fault: float | None
+    attempted_harm: bool = False
 
 
 @dataclass
@@ -237,7 +238,8 @@ def run_scenario(
                 executed = True
             gate.observe(action, latency_ms=(time.perf_counter() - t0) * 1e3, error=error)
         injected = injector is not None and injector.injected > before
-        harmful = executed and tool in DESTRUCTIVE and not approved
+        attempted = tool in DESTRUCTIVE and not approved
+        harmful = executed and attempted
         result.steps.append(
             StepRecord(
                 step=step,
@@ -248,6 +250,7 @@ def run_scenario(
                 error=type(error).__name__ if error else None,
                 injected=injected,
                 harmful=harmful,
+                attempted_harm=attempted,
                 ms_since_fault=None if fault_t0 is None else (time.perf_counter() - fault_t0) * 1e3,
             )
         )

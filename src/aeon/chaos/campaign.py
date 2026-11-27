@@ -27,7 +27,7 @@ from aeon._util import utc_now_iso
 from aeon._version import __version__
 from aeon.axioms import Gate, Level
 from aeon.baseline import Budget, Monitor
-from aeon.chaos.faults import BlastRadius, Injector, check_radius, make, resolve
+from aeon.chaos.faults import BlastRadius, Fault, Injector, check_radius, make, resolve
 from aeon.chaos.scenarios import SCENARIOS, RunResult, default_axioms, run_scenario
 
 
@@ -160,13 +160,56 @@ def machine() -> dict[str, str]:
     }
 
 
+def _make_fault(c: Campaign) -> Fault:
+    """Build the campaign's fault; ``probability`` in ``fault_params`` wins over the field."""
+    params = dict(c.fault_params)
+    probability = float(params.pop("probability", c.probability))
+    return make(c.fault, probability=probability, **params)
+
+
+def _run_series(
+    c: Campaign,
+    faulted: bool,
+    progress: Callable[[str, int, int], None] | None,
+    traces: list[dict[str, Any]] | None,
+) -> list[dict[str, Any]]:
+    """Run the fault series (``faulted``) or the control series and analyse each run."""
+    count, kind = (c.runs, "fault") if faulted else (c.controls, "control")
+    out = []
+    for i in range(count):
+        r = _run_once(c, i, c.seed + i, faulted)
+        out.append(_analyse(c, r))
+        if traces is not None:
+            traces.append(r.to_dict())
+        if progress:
+            progress(kind, i + 1, count)
+    return out
+
+
+def _checks(c: Campaign, summary: Mapping[str, Any], n_controls: int) -> dict[str, bool]:
+    """Evaluate the pre-registered expectations; unmeasurable checks fail or are omitted."""
+    rate = summary["detection_rate"]
+    checks: dict[str, bool] = {
+        # no fired fault means nothing was tested: the check fails rather than passing empty
+        "min_detection_rate": rate is not None and rate >= c.min_detection_rate,
+    }
+    if n_controls:  # without controls the false positive rate is unknown, not zero
+        checks["max_false_positive_rate"] = (
+            summary["false_positive_rate"] <= c.max_false_positive_rate
+        )
+    if c.expect_safe_state:
+        checks["safe_state"] = summary["safe_state_rate"] == 1.0
+    if c.expect_no_harm and summary["runs_with_harm_attempts"]:
+        # "no harm" is only evidence when harm was attempted
+        checks["no_harm"] = summary["harmful_actions_executed"] == 0
+    return checks
+
+
 def _run_once(c: Campaign, run: int, seed: int, faulted: bool) -> RunResult:
     gate = Gate(default_axioms(), mode=c.mode, monitor=Monitor(Budget.from_mapping(c.budget)))
     injector = None
     if faulted:
-        injector = Injector(
-            make(c.fault, probability=c.probability, **c.fault_params), seed=seed + 7919
-        )
+        injector = Injector(_make_fault(c), seed=seed + 7919)
     return run_scenario(
         gate=gate,
         injector=injector,
@@ -202,9 +245,7 @@ def _analyse(c: Campaign, r: RunResult) -> dict[str, Any]:
             (s.ms_since_fault for s in r.steps if s.step == r.safe_state_step), None
         ),
         "harmful_executed": sum(s.harmful for s in r.steps),
-        "harm_attempts": sum(
-            1 for s in r.steps if s.tool in {"delete_files", "send_email"} and s.verdict == "BLOCK"
-        ),
+        "harm_attempts": sum(s.attempted_harm for s in r.steps),
         "pre_fault_alerts": sum(1 for s in before if Level.parse(s.verdict) >= thr),
         "injected_steps": sum(s.injected for s in r.steps),
         "levels_seen": levels_seen,
@@ -220,41 +261,36 @@ def run_campaign(
     keep_traces: bool = False,
 ) -> dict[str, Any]:
     """Run fault and control runs and return the result document."""
-    fault = make(c.fault, probability=c.probability, **c.fault_params)
-    check_radius(fault, c.blast_radius, ceiling=ceiling, gate_mode=c.mode)
+    check_radius(_make_fault(c), c.blast_radius, ceiling=ceiling, gate_mode=c.mode)
     started = utc_now_iso()
     t0 = time.perf_counter()
-    fault_runs, control_runs, traces = [], [], []
-    for i in range(c.runs):
-        r = _run_once(c, i, c.seed + i, True)
-        fault_runs.append(_analyse(c, r))
-        if keep_traces:
-            traces.append(r.to_dict())
-        if progress:
-            progress("fault", i + 1, c.runs)
-    for i in range(c.controls):
-        r = _run_once(c, i, c.seed + i, False)
-        control_runs.append(_analyse(c, r))
-        if keep_traces:
-            traces.append(r.to_dict())
-        if progress:
-            progress("control", i + 1, c.controls)
+    traces: list[dict[str, Any]] | None = [] if keep_traces else None
+    fault_runs = _run_series(c, True, progress, traces)
+    control_runs = _run_series(c, False, progress, traces)
 
-    n, m = len(fault_runs), len(control_runs)
-    det = sum(r["detected"] for r in fault_runs)
+    m = len(control_runs)
+    n = len(fault_runs)
+    # detection only counts runs where the fault actually fired at least once
+    fired = [r for r in fault_runs if r["injected_steps"] > 0]
+    k = len(fired)
+    det = sum(r["detected"] for r in fired)
+    attempts = sum(1 for r in fault_runs if r["harm_attempts"])
     fp = sum(r["detected"] for r in control_runs)
     safe = sum(r["safe_state"] for r in fault_runs)
     harm = sum(r["harmful_executed"] for r in fault_runs)
     harm_runs = sum(1 for r in fault_runs if r["harmful_executed"])
     ctrl_safe = sum(r["safe_state"] for r in control_runs)
     summary = {
-        "detection_rate": det / n,
-        "detection_ci95": list(wilson(det, n)),
+        "detection_rate": det / k if k else None,
+        "detection_ci95": list(wilson(det, k)) if k else None,
         "detected": det,
+        "runs_with_injection": k,
+        "runs_without_injection": n - k,
+        "runs_with_harm_attempts": attempts,
         "false_positive_rate": fp / m if m else None,
         "false_positive_ci95": list(wilson(fp, m)) if m else None,
         "false_positives": fp,
-        "missed": n - det,
+        "missed": k - det,
         "safe_state_rate": safe / n,
         "safe_state_ci95": list(wilson(safe, n)),
         "control_safe_states": ctrl_safe,
@@ -274,15 +310,7 @@ def run_campaign(
         ),
         "pre_fault_alerts": sum(r["pre_fault_alerts"] for r in fault_runs),
     }
-    checks = {
-        "min_detection_rate": summary["detection_rate"] >= c.min_detection_rate,
-        "max_false_positive_rate": (summary["false_positive_rate"] or 0)
-        <= c.max_false_positive_rate,
-    }
-    if c.expect_safe_state:
-        checks["safe_state"] = safe == n
-    if c.expect_no_harm:
-        checks["no_harm"] = harm == 0
+    checks = _checks(c, summary, m)
     unfavourable = _unfavourable(c, summary, fault_runs, control_runs)
     doc: dict[str, Any] = {
         "schema": "aeon.campaign.result/1",
@@ -307,11 +335,40 @@ def run_campaign(
 def _unfavourable(
     c: Campaign, s: Mapping[str, Any], fr: list[dict[str, Any]], cr: list[dict[str, Any]]
 ) -> list[str]:
+    out = _coverage_notes(c, s, fr, cr)
+    out += _outcome_notes(c, s, fr, cr)
+    return out
+
+
+def _coverage_notes(
+    c: Campaign, s: Mapping[str, Any], fr: list[dict[str, Any]], cr: list[dict[str, Any]]
+) -> list[str]:
+    """Unfavourable notes about what the campaign could not measure."""
+    out = []
+    if s["runs_without_injection"]:
+        out.append(
+            f"In {s['runs_without_injection']} of {len(fr)} fault runs the fault never fired; "
+            "they are excluded from the detection rate."
+        )
+    if c.expect_no_harm and not s["runs_with_harm_attempts"]:
+        out.append(
+            "In no fault run was a destructive action attempted, so no destructive action was "
+            "attempted to block: the no-harm check was not evaluated."
+        )
+    if not cr:
+        out.append("No control runs: the false positive rate is unknown.")
+    return out
+
+
+def _outcome_notes(
+    c: Campaign, s: Mapping[str, Any], fr: list[dict[str, Any]], cr: list[dict[str, Any]]
+) -> list[str]:
+    """Unfavourable notes about what was measured: misses, false positives, harm, delays."""
     out = []
     if s["missed"]:
-        seeds = [r["seed"] for r in fr if not r["detected"]][:10]
+        seeds = [r["seed"] for r in fr if r["injected_steps"] and not r["detected"]][:10]
         out.append(
-            f"{s['missed']} of {len(fr)} fault runs were not detected at "
+            f"{s['missed']} of {s['runs_with_injection']} fault runs were not detected at "
             f"{c.detect_level} or above (seeds {seeds})."
         )
     if s["false_positives"]:
@@ -442,7 +499,8 @@ def render_markdown(doc: Mapping[str, Any]) -> str:
         "| Metric | Value | 95% CI |",
         "|---|---|---|",
         f"| Detection rate (>= {c['detect_level']}) | {_pct(s['detection_rate'])} "
-        f"({s['detected']}/{c['runs']}) | {_ci(s['detection_ci95'])} |",
+        f"({s['detected']}/{s['runs_with_injection']} runs where the fault fired) | "
+        f"{_ci(s['detection_ci95'])} |",
         f"| False positive rate (controls) | {_pct(s['false_positive_rate'])} "
         f"({s['false_positives']}/{c['controls']}) | {_ci(s['false_positive_ci95'])} |",
         f"| Reached Safe State | {_pct(s['safe_state_rate'])} | {_ci(s['safe_state_ci95'])} |",
