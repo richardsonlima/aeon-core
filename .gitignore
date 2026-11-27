@@ -205,3 +205,9 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Æon local state
+.aeon/
+.DS_Store
+.hypothesis/
+site/
