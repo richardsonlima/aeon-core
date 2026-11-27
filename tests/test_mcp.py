@@ -28,8 +28,8 @@ def server(mode: str = "enforce", audit: Any = None) -> McpServer:
     return McpServer(gate, config=Config())
 
 
-def call(srv: Any, method: str, params: Any = None, id: Any = 1) -> dict[str, Any]:
-    msg: dict[str, Any] = {"jsonrpc": "2.0", "id": id, "method": method}
+def call(srv: Any, method: str, params: Any = None, rid: Any = 1) -> dict[str, Any]:
+    msg: dict[str, Any] = {"jsonrpc": "2.0", "id": rid, "method": method}
     if params is not None:
         msg["params"] = params
     out = srv.handle(msg)

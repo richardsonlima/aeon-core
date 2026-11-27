@@ -11,6 +11,7 @@ counted and reported in an ``audit.gap`` record.
 from __future__ import annotations
 
 import contextlib
+import logging
 import os
 import queue
 import threading
@@ -24,9 +25,13 @@ from aeon._util import utc_now_iso
 from aeon.audit.backends import Backend, open_backend
 from aeon.audit.chain import GENESIS, VerifyReport, seal, verify_records
 
+logger = logging.getLogger(__name__)
+
 
 @dataclass
 class AuditStats:
+    """Counters for the audit writer. Latencies are in milliseconds."""
+
     emitted: int = 0
     written: int = 0
     dropped: int = 0
@@ -37,6 +42,7 @@ class AuditStats:
     lag_samples: deque[float] = field(default_factory=lambda: deque(maxlen=10_000))
 
     def to_dict(self) -> dict[str, Any]:
+        """Return the counters as a dict, with latencies rounded to 4 decimals."""
         return {
             "emitted": self.emitted,
             "written": self.written,
@@ -87,12 +93,12 @@ class AuditLog:
 
     # -- decision-path side --------------------------------------------------------------
 
-    def emit(self, type: str, data: Mapping[str, Any]) -> None:
+    def emit(self, kind: str, data: Mapping[str, Any]) -> None:
         """Queue an event. Never blocks; a full queue drops the event and counts it."""
         if self._closed:
             self.stats.dropped += 1
             return
-        item = (time.perf_counter(), utc_now_iso(), type, dict(data))
+        item = (time.perf_counter(), utc_now_iso(), kind, dict(data))
         with self._lock:  # count before queueing so the writer can never settle it first
             self._unflushed += 1
             self.stats.emitted += 1
@@ -113,35 +119,41 @@ class AuditLog:
         else:
             self._seq, self._prev = head[0] + 1, head[1]
 
-    def _seal(self, ts: str, type: str, data: Mapping[str, Any]) -> dict[str, Any]:
-        assert self._seq is not None
-        rec = seal(self._seq, ts, type, dict(data), self._prev)
+    def _seal(self, ts: str, kind: str, data: Mapping[str, Any]) -> dict[str, Any]:
+        if self._seq is None:
+            raise RuntimeError("audit chain head was not initialised")
+        rec = seal(self._seq, ts, kind, dict(data), self._prev)
         self._seq += 1
         self._prev = rec["hash"]
         return rec
+
+    def _collect(self, stopping: bool) -> bool:
+        """Move queued events into ``_pending``; return whether the stop sentinel was seen."""
+        if not stopping:
+            try:
+                first = self._q.get(timeout=0.05 if self._pending else 0.25)
+            except queue.Empty:
+                first = None
+            if first is _STOP:
+                stopping = True
+            elif first is not None:
+                self._pending.append(first)
+        while len(self._pending) < self._batch * 4:
+            try:
+                item = self._q.get_nowait()
+            except queue.Empty:
+                break
+            if item is _STOP:
+                stopping = True
+                break
+            self._pending.append(item)
+        return stopping
 
     def _run(self) -> None:
         backoff = 0.05
         stopping = False
         while True:
-            if not stopping:
-                try:
-                    first = self._q.get(timeout=0.05 if self._pending else 0.25)
-                except queue.Empty:
-                    first = None
-                if first is _STOP:
-                    stopping = True
-                elif first is not None:
-                    self._pending.append(first)
-            while len(self._pending) < self._batch * 4:
-                try:
-                    item = self._q.get_nowait()
-                except queue.Empty:
-                    break
-                if item is _STOP:
-                    stopping = True
-                    break
-                self._pending.append(item)
+            stopping = self._collect(stopping)
             if not self._pending:
                 if stopping:
                     return
@@ -162,7 +174,8 @@ class AuditLog:
         except Exception as exc:
             self._fail(exc)
             return False
-        assert self._seq is not None
+        if self._seq is None:
+            raise RuntimeError("audit chain head was not initialised")
         seq0, prev0 = self._seq, self._prev
         events = self._pending[: self._batch]
         sealed: list[dict[str, Any]] = []
@@ -187,6 +200,8 @@ class AuditLog:
             return False
 
         del self._pending[: len(events)]
+        if self._outage is not None:
+            logger.warning("audit backend %s recovered", self.backend.location)
         self._outage = None
         self._reported_dropped = dropped
         now = time.perf_counter()
@@ -202,6 +217,12 @@ class AuditLog:
 
     def _fail(self, exc: Exception) -> None:
         err = f"{type(exc).__name__}: {exc}"
+        if self._outage is None:
+            logger.warning(
+                "audit backend %s failed; holding records and retrying: %s",
+                self.backend.location,
+                err,
+            )
         with self._lock:
             self.stats.backend_errors += 1
             self.stats.last_error = err
@@ -226,10 +247,12 @@ class AuditLog:
 
     @property
     def healthy(self) -> bool:
+        """Whether the backend is accepting writes (no outage in progress)."""
         return self._outage is None
 
     @property
     def pending(self) -> int:
+        """Number of emitted events not yet durable."""
         return self._unflushed
 
     def flush(self, timeout: float = 5.0) -> bool:
@@ -244,6 +267,10 @@ class AuditLog:
         return True
 
     def close(self, timeout: float = 5.0) -> None:
+        """Stop the writer and wait up to ``timeout`` seconds for it to finish.
+
+        Events still unwritten afterwards are counted as dropped. Safe to call more than once.
+        """
         if self._closed:
             return
         self._closed = True
@@ -266,9 +293,11 @@ class AuditLog:
     # -- reading -------------------------------------------------------------------------
 
     def verify(self, expect_head: str | None = None) -> VerifyReport:
+        """Verify the stored chain; see ``verify_records`` for ``expect_head``."""
         return verify_records(self.backend.entries(), expect_head=expect_head)
 
     def records(self) -> Iterator[dict[str, Any]]:
+        """Yield the stored records, skipping lines that failed to parse."""
         for _, rec in self.backend.entries():
             if isinstance(rec, dict):
                 yield rec
@@ -284,6 +313,7 @@ def verify(spec: str | os.PathLike[str], expect_head: str | None = None) -> Veri
 
 
 def read(spec: str | os.PathLike[str]) -> Iterator[dict[str, Any]]:
+    """Yield the records stored at ``spec``, skipping lines that failed to parse."""
     backend = open_backend(spec)
     try:
         for _, rec in backend.entries():

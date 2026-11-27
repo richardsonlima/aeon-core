@@ -7,10 +7,13 @@ Nothing is imported from ``langchain`` here. A tool is anything with ``name`` an
 from __future__ import annotations
 
 import inspect
+import logging
 from collections.abc import Callable, Mapping, Sequence
 from typing import Any
 
 from aeon.axioms import Action, Gate, enforce
+
+logger = logging.getLogger(__name__)
 
 
 def _args_of(value: Any) -> dict[str, Any]:
@@ -54,16 +57,27 @@ class GuardedTool:
         return self._tool
 
     def invoke(self, input: Any, config: Any = None, **kwargs: Any) -> Any:
+        """Call the wrapped tool's ``invoke`` after the gate has allowed the call.
+
+        Raises:
+            AttributeError: The wrapped tool has no ``invoke``.
+        """
         if self._invoke is None:
             raise AttributeError(f"{self._tool!r} has no invoke")
         return self._invoke(input, config, **kwargs)
 
     async def ainvoke(self, input: Any, config: Any = None, **kwargs: Any) -> Any:
+        """Call the wrapped tool's ``ainvoke`` after the gate has allowed the call.
+
+        Raises:
+            AttributeError: The wrapped tool has no ``ainvoke``.
+        """
         if self._ainvoke is None:
             raise AttributeError(f"{self._tool!r} has no ainvoke")
         return await self._ainvoke(input, config, **kwargs)
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        """Call the wrapped tool directly."""
         return self._tool(*args, **kwargs)
 
     def __getattr__(self, item: str) -> Any:
@@ -90,7 +104,8 @@ def _guard_object(tool: Any, gate: Gate | None, agent: str) -> Any:
         for attr in ("invoke", "ainvoke"):
             if getattr(proxy, f"_{attr}") is not None:
                 object.__setattr__(clone, attr, getattr(proxy, attr))
-    except Exception:
+    except Exception:  # not a pydantic model we can copy: the proxy still guards calls
+        logger.debug("could not copy tool %r; using a proxy", tool, exc_info=True)
         return proxy
     return clone
 

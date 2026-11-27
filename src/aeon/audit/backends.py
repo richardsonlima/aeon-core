@@ -21,39 +21,54 @@ class Backend(Protocol):
         """Return ``(seq, hash)`` of the last stored record, or ``None`` if empty."""
         ...
 
-    def append(self, records: list[dict[str, Any]]) -> None: ...
+    def append(self, records: list[dict[str, Any]]) -> None:
+        """Store ``records`` in order. Must be all-or-nothing from the caller's view."""
+        ...
 
-    def entries(self) -> Iterator[Entry]: ...
+    def entries(self) -> Iterator[Entry]:
+        """Yield ``(line number, record)`` for each stored record, oldest first."""
+        ...
 
-    def close(self) -> None: ...
+    def close(self) -> None:
+        """Release any open handle. Safe to call more than once."""
+        ...
 
     @property
-    def location(self) -> str: ...
+    def location(self) -> str:
+        """Human-readable place the records live (a path, ``sqlite:<path>`` or ``memory``)."""
+        ...
 
 
 class MemoryBackend:
+    """Keeps records in a list. For tests and ephemeral gates; nothing is persisted."""
+
     def __init__(self) -> None:
         self.records: list[dict[str, Any]] = []
         self._lock = threading.Lock()
 
     @property
     def location(self) -> str:
+        """Always ``"memory"``."""
         return "memory"
 
     def head(self) -> tuple[int, str] | None:
+        """Return ``(seq, hash)`` of the last record, or ``None`` if empty."""
         with self._lock:
             return (self.records[-1]["seq"], self.records[-1]["hash"]) if self.records else None
 
     def append(self, records: list[dict[str, Any]]) -> None:
+        """Store a JSON-normalised copy of each record."""
         with self._lock:
             self.records.extend(json.loads(json.dumps(r, default=str)) for r in records)
 
     def entries(self) -> Iterator[Entry]:
+        """Yield a snapshot of the records, numbered from 1."""
         with self._lock:
             snapshot = list(self.records)
         yield from enumerate(snapshot, start=1)
 
     def close(self) -> None:
+        """Do nothing; there is no handle to release."""
         pass
 
 
@@ -67,9 +82,15 @@ class JsonlBackend:
 
     @property
     def location(self) -> str:
+        """The file path as a string."""
         return str(self.path)
 
     def head(self) -> tuple[int, str] | None:
+        """Return ``(seq, hash)`` from the last line of the file, or ``None``.
+
+        Raises:
+            RuntimeError: The last line is not a valid record (the file was edited or truncated).
+        """
         if not self.path.exists() or self.path.stat().st_size == 0:
             return None
         last = _last_line(self.path)
@@ -85,6 +106,7 @@ class JsonlBackend:
             ) from exc
 
     def append(self, records: list[dict[str, Any]]) -> None:
+        """Append one line per record, flushing (and fsyncing if enabled) before returning."""
         if self._fh is None:
             self.path.parent.mkdir(parents=True, exist_ok=True)
             self._fh = open(self.path, "a", encoding="utf-8")  # noqa: SIM115
@@ -98,12 +120,14 @@ class JsonlBackend:
             os.fsync(self._fh.fileno())
 
     def entries(self) -> Iterator[Entry]:
+        """Yield each line of the file as a record or a ``ParseFailure``."""
         if not self.path.exists():
             return
         with open(self.path, encoding="utf-8", errors="replace") as fh:
             yield from parse_jsonl(fh)
 
     def close(self) -> None:
+        """Close the file handle if one is open."""
         if self._fh is not None:
             with contextlib.suppress(OSError):
                 self._fh.close()
@@ -139,6 +163,7 @@ class SqliteBackend:
 
     @property
     def location(self) -> str:
+        """``sqlite:`` followed by the database path."""
         return f"sqlite:{self.path}"
 
     def _db(self) -> sqlite3.Connection:
@@ -155,6 +180,7 @@ class SqliteBackend:
         return self._conn
 
     def head(self) -> tuple[int, str] | None:
+        """Return ``(seq, hash)`` of the highest ``seq`` row, or ``None`` if empty."""
         with self._lock:
             row = (
                 self._db()
@@ -164,6 +190,7 @@ class SqliteBackend:
         return (int(row[0]), str(row[1])) if row else None
 
     def append(self, records: list[dict[str, Any]]) -> None:
+        """Insert the records in one transaction."""
         rows = [
             (r["seq"], r["hash"], json.dumps(r, ensure_ascii=False, default=str)) for r in records
         ]
@@ -173,6 +200,7 @@ class SqliteBackend:
                 db.executemany("INSERT INTO audit (seq, hash, body) VALUES (?, ?, ?)", rows)
 
     def entries(self) -> Iterator[Entry]:
+        """Yield stored records in ``seq`` order, or a ``ParseFailure`` for an undecodable row."""
         if not self.path.exists():
             return
         with self._lock:
@@ -186,6 +214,7 @@ class SqliteBackend:
             yield i, obj
 
     def close(self) -> None:
+        """Close the connection if one is open."""
         with self._lock:
             if self._conn is not None:
                 self._conn.close()

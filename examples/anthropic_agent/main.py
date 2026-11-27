@@ -1,7 +1,7 @@
 """Anthropic Messages tool-use loop behind the gate, using a scripted fake client."""
 
 import os
-from types import SimpleNamespace as NS
+from types import SimpleNamespace
 
 from aeon.adapters import ToolBox
 from aeon.adapters.anthropic import record_usage, run_tool_uses, tool_specs
@@ -28,16 +28,16 @@ def delete_file(path: str) -> str:
 
 
 def message(*blocks, stop_reason, tokens):
-    return NS(
+    return SimpleNamespace(
         role="assistant",
         content=list(blocks),
         stop_reason=stop_reason,
-        usage=NS(input_tokens=tokens, output_tokens=40),
+        usage=SimpleNamespace(input_tokens=tokens, output_tokens=40),
     )
 
 
 def tool_use(use_id, name, **args):
-    return NS(type="tool_use", id=use_id, name=name, input=args)
+    return SimpleNamespace(type="tool_use", id=use_id, name=name, input=args)
 
 
 class FakeMessages:
@@ -57,7 +57,9 @@ class FakeMessages:
                     tokens=130,
                 ),
                 message(
-                    NS(type="text", text="I could not delete prod.db; it was blocked."),
+                    SimpleNamespace(
+                        type="text", text="I could not delete prod.db; it was blocked."
+                    ),
                     stop_reason="end_turn",
                     tokens=80,
                 ),
@@ -68,7 +70,7 @@ class FakeMessages:
         return next(self.script)
 
 
-client = NS(messages=FakeMessages())
+client = SimpleNamespace(messages=FakeMessages())
 # Real client: import anthropic; client = anthropic.Anthropic()
 
 messages = [{"role": "user", "content": "Summarise notes.txt"}]

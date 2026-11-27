@@ -23,11 +23,12 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.12"
-      - name: Install docs extra
+      - name: Install the docs group from the lockfile
         run: |
-          uv venv
-          uv pip install -e ".[docs]"
+          uv sync --locked --group docs --extra runtime
           echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+      - name: Regenerate reference pages
+        run: python scripts/gen_reference.py
       - run: mkdocs build --strict --site-dir site
       - uses: actions/upload-pages-artifact@v3
         with:

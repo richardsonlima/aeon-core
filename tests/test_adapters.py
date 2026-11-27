@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
-from types import SimpleNamespace as NS
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
@@ -94,11 +94,13 @@ def test_toolbox_default_gate_is_lazy() -> None:
 
 
 def _chat_call(call_id: str, name: str, arguments: str) -> Any:
-    return NS(id=call_id, type="function", function=NS(name=name, arguments=arguments))
+    return SimpleNamespace(
+        id=call_id, type="function", function=SimpleNamespace(name=name, arguments=arguments)
+    )
 
 
 def test_openai_chat_completions_shapes(box: ToolBox, sink: ListSink) -> None:
-    msg = NS(
+    msg = SimpleNamespace(
         tool_calls=[
             _chat_call("c1", "read_file", json.dumps({"path": "a"})),
             _chat_call("c2", "delete_file", json.dumps({"path": "prod"})),
@@ -129,15 +131,19 @@ def test_openai_accepts_full_completion_and_dicts(box: ToolBox) -> None:
 
 
 def test_openai_no_tool_calls(box: ToolBox) -> None:
-    assert oai.run_tool_calls(NS(tool_calls=None), box) == []
+    assert oai.run_tool_calls(SimpleNamespace(tool_calls=None), box) == []
 
 
 def test_openai_responses_shapes(box: ToolBox) -> None:
-    resp = NS(
+    resp = SimpleNamespace(
         output=[
-            NS(type="message", content=[]),
-            NS(type="function_call", call_id="r1", name="read_file", arguments='{"path":"a"}'),
-            NS(type="function_call", call_id="r2", name="delete_file", arguments='{"path":"p"}'),
+            SimpleNamespace(type="message", content=[]),
+            SimpleNamespace(
+                type="function_call", call_id="r1", name="read_file", arguments='{"path":"a"}'
+            ),
+            SimpleNamespace(
+                type="function_call", call_id="r2", name="delete_file", arguments='{"path":"p"}'
+            ),
         ]
     )
     out = oai.run_tool_calls(resp, box)
@@ -150,7 +156,7 @@ def test_openai_responses_shapes(box: ToolBox) -> None:
 def test_openai_malformed_arguments_become_error_message(
     box: ToolBox, sink: ListSink, raw: str
 ) -> None:
-    out = oai.run_tool_calls(NS(tool_calls=[_chat_call("c1", "read_file", raw)]), box)
+    out = oai.run_tool_calls(SimpleNamespace(tool_calls=[_chat_call("c1", "read_file", raw)]), box)
     assert out[0]["tool_call_id"] == "c1"
     assert out[0]["content"].startswith("Error: ")
     assert sink.of("decision") == []  # never reached the gate
@@ -158,7 +164,8 @@ def test_openai_malformed_arguments_become_error_message(
 
 def test_openai_empty_arguments_and_unknown_tool(box: ToolBox) -> None:
     out = oai.run_tool_calls(
-        NS(tool_calls=[_chat_call("c1", "boom", ""), _chat_call("c2", "nope", "{}")]), box
+        SimpleNamespace(tool_calls=[_chat_call("c1", "boom", ""), _chat_call("c2", "nope", "{}")]),
+        box,
     )
     assert "kaput" in out[0]["content"]
     assert "unknown tool" in out[1]["content"]
@@ -179,27 +186,29 @@ def test_openai_tool_specs(box: ToolBox) -> None:
 
 def test_openai_record_usage() -> None:
     gate = Gate(mode="enforce", monitor=Monitor())
-    oai.record_usage(NS(usage=NS(total_tokens=150)), gate, "a")
-    oai.record_usage(NS(usage=None), gate, "a")
+    oai.record_usage(SimpleNamespace(usage=SimpleNamespace(total_tokens=150)), gate, "a")
+    oai.record_usage(SimpleNamespace(usage=None), gate, "a")
     oai.record_usage({"usage": {"input_tokens": 10, "output_tokens": 5}}, gate, "a")
     assert gate.monitor is not None
     assert gate.monitor._state("a").tokens_total == 165
 
 
 def test_record_usage_without_monitor(gate: Gate) -> None:
-    oai.record_usage(NS(usage=NS(total_tokens=5)), gate, "a")  # no monitor: no-op
+    oai.record_usage(
+        SimpleNamespace(usage=SimpleNamespace(total_tokens=5)), gate, "a"
+    )  # no monitor: no-op
 
 
 # -- anthropic --------------------------------------------------------------------------
 
 
 def test_anthropic_tool_results(box: ToolBox, sink: ListSink) -> None:
-    msg = NS(
+    msg = SimpleNamespace(
         content=[
-            NS(type="text", text="working"),
-            NS(type="tool_use", id="tu1", name="read_file", input={"path": "a"}),
+            SimpleNamespace(type="text", text="working"),
+            SimpleNamespace(type="tool_use", id="tu1", name="read_file", input={"path": "a"}),
             {"type": "tool_use", "id": "tu3", "name": "boom", "input": {}},
-            NS(type="tool_use", id="tu2", name="delete_file", input={"path": "p"}),
+            SimpleNamespace(type="tool_use", id="tu2", name="delete_file", input={"path": "p"}),
         ]
     )
     out = anth.run_tool_uses(msg, box)
@@ -217,7 +226,9 @@ def test_anthropic_tool_results(box: ToolBox, sink: ListSink) -> None:
 
 
 def test_anthropic_bad_input_is_error(box: ToolBox) -> None:
-    msg = NS(content=[NS(type="tool_use", id="t", name="read_file", input="{oops")])
+    msg = SimpleNamespace(
+        content=[SimpleNamespace(type="tool_use", id="t", name="read_file", input="{oops")]
+    )
     out = anth.run_tool_uses(msg, box)
     assert out[0]["is_error"] is True and out[0]["content"].startswith("Error: ")
 
@@ -227,7 +238,9 @@ def test_anthropic_specs_and_usage(box: ToolBox) -> None:
     assert spec["input_schema"]["required"] == ["path"]
     assert spec["description"] == "Read a file."
     gate = Gate(mode="enforce", monitor=Monitor())
-    anth.record_usage(NS(usage=NS(input_tokens=100, output_tokens=25)), gate, "a")
+    anth.record_usage(
+        SimpleNamespace(usage=SimpleNamespace(input_tokens=100, output_tokens=25)), gate, "a"
+    )
     assert gate.monitor is not None
     assert gate.monitor._state("a").tokens_total == 125
 

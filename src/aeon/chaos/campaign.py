@@ -33,6 +33,11 @@ from aeon.chaos.scenarios import SCENARIOS, RunResult, default_axioms, run_scena
 
 @dataclass
 class Campaign:
+    """One chaos experiment: a hypothesis, the fault that tests it and what to expect.
+
+    Time fields are in steps; ``probability`` and the ``*_rate`` fields are fractions in [0, 1].
+    """
+
     id: str
     hypothesis: str
     fault: str
@@ -69,6 +74,14 @@ class Campaign:
 
     @classmethod
     def from_mapping(cls, d: Mapping[str, Any], source: str | None = None) -> Campaign:
+        """Build a campaign from a parsed TOML-style mapping.
+
+        The ``fault`` entry is a name or a table with ``name``, ``params``, ``probability`` and
+        ``start_step``; ``expected`` holds the success criteria.
+
+        Raises:
+            ValueError: The mapping has an unknown key, fault or scenario, or an invalid value.
+        """
         d = dict(d)
         fault = d.pop("fault")
         expected = d.pop("expected", {})
@@ -101,11 +114,13 @@ class Campaign:
 
     @classmethod
     def load(cls, path: str | os.PathLike[str]) -> Campaign:
+        """Load a campaign from a TOML file at ``path``."""
         p = Path(path)
         data = tomllib.loads(p.read_text("utf-8"))
         return cls.from_mapping(data, source=str(p))
 
     def to_dict(self) -> dict[str, Any]:
+        """Return the campaign as a plain dict."""
         return asdict(self)
 
 
@@ -121,6 +136,7 @@ def wilson(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
 
 
 def dist(xs: list[float]) -> dict[str, float | int | None]:
+    """Summarise ``xs`` as ``n``, ``p50``, ``p90``, ``max`` and ``mean`` (all ``None`` if empty)."""
     if not xs:
         return {"n": 0, "p50": None, "p90": None, "max": None, "mean": None}
     s = sorted(xs)
@@ -132,6 +148,7 @@ def dist(xs: list[float]) -> dict[str, float | int | None]:
 
 
 def machine() -> dict[str, str]:
+    """Describe the host (Python, OS, CPU) so results can be compared across machines."""
     return {
         "python": platform.python_version(),
         "implementation": platform.python_implementation(),
@@ -331,10 +348,12 @@ def _unfavourable(
 
 
 def results_dir(root: Path | None = None) -> Path:
+    """Return the campaign results folder under ``root`` (default: the working directory)."""
     return (root or Path.cwd()) / ".aeon" / "campaigns"
 
 
 def save_result(doc: Mapping[str, Any], root: Path | None = None) -> Path:
+    """Write ``doc`` as a timestamped result and as ``latest.json``; return the timestamped path."""
     cid = str(doc["campaign"]["id"])
     d: Path = results_dir(root) / cid
     d.mkdir(parents=True, exist_ok=True)
@@ -346,6 +365,11 @@ def save_result(doc: Mapping[str, Any], root: Path | None = None) -> Path:
 
 
 def load_result(campaign_id: str, root: Path | None = None) -> dict[str, Any]:
+    """Load the latest result of ``campaign_id``, or the result file if given a ``.json`` path.
+
+    Raises:
+        FileNotFoundError: No result exists for the campaign.
+    """
     p = Path(campaign_id)
     if p.suffix == ".json" and p.is_file():
         return dict(json.loads(p.read_text("utf-8")))
@@ -359,6 +383,7 @@ def load_result(campaign_id: str, root: Path | None = None) -> dict[str, Any]:
 
 
 def list_results(root: Path | None = None) -> list[dict[str, Any]]:
+    """Return a summary of the latest result of every campaign that has one."""
     out = []
     base = results_dir(root)
     if base.is_dir():
@@ -395,6 +420,7 @@ def _d(d: Mapping[str, Any], unit: str) -> str:
 
 
 def render_markdown(doc: Mapping[str, Any]) -> str:
+    """Render a campaign result ``doc`` as a Markdown report."""
     c, s = doc["campaign"], doc["summary"]
     verdict = "supported" if doc["hypothesis_supported"] else "NOT supported"
     lines = [

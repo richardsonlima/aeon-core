@@ -15,11 +15,11 @@ class ListSink:
     def __init__(self) -> None:
         self.events: list[tuple[str, dict[str, Any]]] = []
 
-    def emit(self, type: str, data: Any) -> None:
-        self.events.append((type, dict(data)))
+    def emit(self, kind: str, data: Any) -> None:
+        self.events.append((kind, dict(data)))
 
-    def of(self, type: str) -> list[dict[str, Any]]:
-        return [d for t, d in self.events if t == type]
+    def of(self, kind: str) -> list[dict[str, Any]]:
+        return [d for t, d in self.events if t == kind]
 
 
 @pytest.fixture(autouse=True)

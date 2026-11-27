@@ -72,6 +72,11 @@ class Budget:
 
     @classmethod
     def from_mapping(cls, data: Mapping[str, Any]) -> Budget:
+        """Build a budget from ``data``.
+
+        Raises:
+            ValueError: ``data`` has a key that is not a budget field, or a value is invalid.
+        """
         known = {f for f in cls.__dataclass_fields__}
         unknown = set(data) - known
         if unknown:
@@ -79,6 +84,7 @@ class Budget:
         return cls(**dict(data))
 
     def to_dict(self) -> dict[str, Any]:
+        """Return the budget as a plain dict."""
         d = asdict(self)
         d["weights"] = dict(self.weights)
         return d
@@ -102,15 +108,19 @@ class Baseline:
     tools: dict[str, float]
 
     def to_dict(self) -> dict[str, Any]:
+        """Return the baseline as a plain dict."""
         return asdict(self)
 
     @classmethod
     def from_dict(cls, d: Mapping[str, Any]) -> Baseline:
+        """Rebuild a baseline from the output of ``to_dict``."""
         return cls(**dict(d))
 
 
 @dataclass(frozen=True)
 class Observation:
+    """One tool call as seen by the monitor. ``latency_ms`` is in milliseconds."""
+
     tool: str
     latency_ms: float
     error: bool
@@ -274,33 +284,46 @@ class Monitor:
         score = sum(w.get(k, 1.0) * v for k, v in terms.items())
         return score, terms
 
+    def _deviation_level(self, st: _AgentState) -> tuple[Level, list[str]]:
+        """Level implied by the accumulated deviation score, with the reason if any."""
+        bud = self.budget
+        if st.baseline is None:
+            return Level.GO, []
+        s = st.accumulated
+        for thr, lv in (
+            (bud.block_at, Level.BLOCK),
+            (bud.limit_at, Level.LIMIT),
+            (bud.alert_at, Level.ALERT),
+        ):
+            if s >= thr and thr > 0:
+                return lv, [f"accumulated deviation {s:.2f} >= {thr:g} ({lv.name})"]
+        return Level.GO, []
+
+    def _window_breaches(self, st: _AgentState) -> list[str]:
+        """Reasons for p99 latency and error-rate budget breaches over the window."""
+        bud = self.budget
+        samples = list(st.window)
+        reasons: list[str] = []
+        if len(samples) < bud.min_samples:
+            return reasons
+        if bud.p99_ms is not None:
+            v = p99([o.latency_ms for o in samples])
+            if v > bud.p99_ms:
+                reasons.append(f"p99 latency {v:.1f} ms > {bud.p99_ms:g} ms")
+        if bud.error_rate is not None:
+            er = sum(o.error for o in samples) / len(samples)
+            if er > bud.error_rate:
+                reasons.append(f"error rate {er:.3f} > {bud.error_rate:g}")
+        return reasons
+
     def _level(self, st: _AgentState) -> tuple[Level, str]:
         bud = self.budget
-        level, reasons = Level.GO, []
-        if st.baseline is not None:
-            s = st.accumulated
-            for thr, lv in (
-                (bud.block_at, Level.BLOCK),
-                (bud.limit_at, Level.LIMIT),
-                (bud.alert_at, Level.ALERT),
-            ):
-                if s >= thr and thr > 0:
-                    level = lv
-                    reasons.append(f"accumulated deviation {s:.2f} >= {thr:g} ({lv.name})")
-                    break
+        level, reasons = self._deviation_level(st)
         breach = Level.parse(bud.on_breach)
-        samples = list(st.window)
-        if len(samples) >= bud.min_samples:
-            if bud.p99_ms is not None:
-                v = p99([o.latency_ms for o in samples])
-                if v > bud.p99_ms:
-                    level = max(level, breach)
-                    reasons.append(f"p99 latency {v:.1f} ms > {bud.p99_ms:g} ms")
-            if bud.error_rate is not None:
-                er = sum(o.error for o in samples) / len(samples)
-                if er > bud.error_rate:
-                    level = max(level, breach)
-                    reasons.append(f"error rate {er:.3f} > {bud.error_rate:g}")
+        window_reasons = self._window_breaches(st)
+        if window_reasons:
+            level = max(level, breach)
+            reasons.extend(window_reasons)
         if bud.max_cost is not None and st.cost_total > bud.max_cost:
             level = max(level, breach)
             reasons.append(f"cost {st.cost_total:.4f} > {bud.max_cost:g}")
@@ -312,6 +335,7 @@ class Monitor:
     # -- decision path -------------------------------------------------------------------
 
     def finding(self, agent: str) -> Finding | None:
+        """Return the budget finding for ``agent``, or ``None`` while its level is GO."""
         st = self._agents.get(agent)
         if st is None or st.level is Level.GO:
             return None
@@ -320,6 +344,7 @@ class Monitor:
     # -- control -------------------------------------------------------------------------
 
     def reset_accumulated(self, agent: str) -> None:
+        """Zero ``agent``'s accumulated deviation, window and cost and token totals."""
         with self._lock:
             st = self._agents.get(agent)
             if st is not None:
@@ -330,14 +355,17 @@ class Monitor:
                 st.level, st.reason = self._level(st)
 
     def baseline(self, agent: str) -> Baseline | None:
+        """Return ``agent``'s calibrated baseline, or ``None`` if it has none yet."""
         st = self._agents.get(agent)
         return st.baseline if st else None
 
     def set_baseline(self, agent: str, baseline: Baseline) -> None:
+        """Install ``baseline`` for ``agent`` instead of calibrating from live calls."""
         with self._lock:
             self._state(agent).baseline = baseline
 
     def status(self) -> dict[str, Any]:
+        """Return the budget and per-agent calibration and level state."""
         with self._lock:
             return {
                 "budget": self.budget.to_dict(),

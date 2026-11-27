@@ -2,7 +2,7 @@
 
 import json
 import os
-from types import SimpleNamespace as NS
+from types import SimpleNamespace
 
 from aeon.adapters import ToolBox
 from aeon.adapters.openai import record_usage, run_tool_calls, tool_specs
@@ -29,12 +29,16 @@ def delete_file(path: str) -> str:
 
 
 def call(call_id, name, **args):
-    return NS(id=call_id, type="function", function=NS(name=name, arguments=json.dumps(args)))
+    return SimpleNamespace(
+        id=call_id, type="function", function=SimpleNamespace(name=name, arguments=json.dumps(args))
+    )
 
 
 def reply(content=None, calls=None, tokens=0):
-    msg = NS(role="assistant", content=content, tool_calls=calls)
-    return NS(choices=[NS(message=msg)], usage=NS(total_tokens=tokens))
+    msg = SimpleNamespace(role="assistant", content=content, tool_calls=calls)
+    return SimpleNamespace(
+        choices=[SimpleNamespace(message=msg)], usage=SimpleNamespace(total_tokens=tokens)
+    )
 
 
 class FakeCompletions:
@@ -53,7 +57,7 @@ class FakeCompletions:
         return next(self.script)
 
 
-client = NS(chat=NS(completions=FakeCompletions()))
+client = SimpleNamespace(chat=SimpleNamespace(completions=FakeCompletions()))
 # Real client: from openai import OpenAI; client = OpenAI()
 
 messages = [{"role": "user", "content": "Summarise notes.txt"}]

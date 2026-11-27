@@ -1,7 +1,7 @@
 """LangChain-style tools behind the gate, driven by a scripted fake model (no network)."""
 
 import os
-from types import SimpleNamespace as NS
+from types import SimpleNamespace
 
 from aeon.adapters import guard_tools
 from aeon.audit import AuditLog
@@ -36,8 +36,8 @@ by_name = {t.name: t for t in tools}
 # Scripted model turns: each is a list of tool calls, or None to finish.
 script = iter(
     [
-        [NS(name="read_file", args={"path": "notes.txt"}, id="1")],
-        [NS(name="delete_file", args={"path": "prod.db"}, id="2")],
+        [SimpleNamespace(name="read_file", args={"path": "notes.txt"}, id="1")],
+        [SimpleNamespace(name="delete_file", args={"path": "prod.db"}, id="2")],
         None,
     ]
 )

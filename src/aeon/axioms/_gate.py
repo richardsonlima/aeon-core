@@ -7,11 +7,13 @@ non-blocking queue.
 
 from __future__ import annotations
 
+import contextlib
 import functools
 import inspect
+import logging
 import threading
 import time
-from collections.abc import Awaitable, Callable, Iterable, Mapping
+from collections.abc import Awaitable, Callable, Iterable, Iterator, Mapping
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Protocol, TypeVar, cast, overload
 
@@ -31,6 +33,8 @@ from aeon.axioms._types import (
 if TYPE_CHECKING:
     from aeon.baseline import Monitor
 
+logger = logging.getLogger(__name__)
+
 AxiomFn = Callable[[Action], Any]
 Approver = Callable[[Decision], bool]
 F = TypeVar("F", bound=Callable[..., Any])
@@ -39,7 +43,8 @@ F = TypeVar("F", bound=Callable[..., Any])
 class AuditSink(Protocol):
     """What the gate needs from an audit log. ``emit`` must not block."""
 
-    def emit(self, type: str, data: Mapping[str, Any]) -> None: ...
+    def emit(self, kind: str, data: Mapping[str, Any]) -> None:
+        """Queue an audit event of type ``kind``."""
 
 
 @dataclass(frozen=True)
@@ -247,6 +252,7 @@ class Gate:
             decision = self._decide(action, mode, t0)
         except Exception as exc:  # the gate itself failed: fail closed in enforce mode
             self.counters["gate_errors"] += 1
+            logger.warning("gate error while deciding %r: %r", action.tool, exc, exc_info=True)
             enforce = mode is Mode.ENFORCE
             decision = Decision(
                 action=action,
@@ -270,13 +276,7 @@ class Gate:
         findings: list[Finding] = []
         gate_error: str | None = None
 
-        if self.kill_switch.engaged:
-            findings.append(Finding("kill-switch", Level.BLOCK, self.kill_switch.reason or ""))
-        held = self._safe.get(action.agent)
-        if held is not None and mode is Mode.ENFORCE:
-            findings.append(
-                Finding("safe-state", Level.BLOCK, f"agent in Safe State: {held.reason}")
-            )
+        self._preflight(action, mode, findings)
 
         for spec in self.axioms.snapshot():
             if not spec.applies_to(action.tool):
@@ -285,6 +285,7 @@ class Gate:
                 finding = spec.check(action)
             except Exception as exc:
                 self.counters["gate_errors"] += 1
+                logger.debug("axiom %s raised; failing closed", spec.name, exc_info=True)
                 gate_error = gate_error or f"{spec.name}: {exc!r}"
                 finding = Finding(spec.name, Level.BLOCK, f"axiom raised {exc!r}")
             if finding is not None:
@@ -311,13 +312,9 @@ class Gate:
             elif verdict is Level.LIMIT:
                 allowed = action.approved or self._approve(provisional)
 
-        newly_safe: SafeState | None = None
-        if entered_safe:
-            reason = "; ".join(f.reason for f in findings if f.level is Level.BLOCK)
-            with self._lock:
-                if action.agent not in self._safe:
-                    newly_safe = SafeState(action.agent, reason, provisional.id)
-                    self._safe[action.agent] = newly_safe
+        newly_safe = (
+            self._enter_safe_state(action, findings, provisional.id) if entered_safe else None
+        )
         self._pending_safe.entered = newly_safe
 
         return Decision(
@@ -334,6 +331,28 @@ class Gate:
             id=provisional.id,
         )
 
+    def _preflight(self, action: Action, mode: Mode, findings: list[Finding]) -> None:
+        """Append kill-switch and Safe State blocks to ``findings`` before axioms run."""
+        if self.kill_switch.engaged:
+            findings.append(Finding("kill-switch", Level.BLOCK, self.kill_switch.reason or ""))
+        held = self._safe.get(action.agent)
+        if held is not None and mode is Mode.ENFORCE:
+            findings.append(
+                Finding("safe-state", Level.BLOCK, f"agent in Safe State: {held.reason}")
+            )
+
+    def _enter_safe_state(
+        self, action: Action, findings: list[Finding], decision_id: str
+    ) -> SafeState | None:
+        """Put the agent in Safe State; return it, or ``None`` if it was already held."""
+        reason = "; ".join(f.reason for f in findings if f.level is Level.BLOCK)
+        with self._lock:
+            if action.agent in self._safe:
+                return None
+            entered = SafeState(action.agent, reason, decision_id)
+            self._safe[action.agent] = entered
+            return entered
+
     def _approve(self, decision: Decision) -> bool:
         if self.approver is None:
             return False
@@ -341,6 +360,7 @@ class Gate:
             return bool(self.approver(decision))
         except Exception:
             self.counters["gate_errors"] += 1
+            logger.debug("approval hook raised; treating as not approved", exc_info=True)
             return False  # an approval hook that fails does not approve
 
     def _publish(self, decision: Decision) -> None:
@@ -353,14 +373,16 @@ class Gate:
                 cb(decision)
             except Exception:
                 self.counters["subscriber_errors"] += 1
+                logger.debug("decision subscriber raised", exc_info=True)
 
-    def _emit(self, type: str, data: Mapping[str, Any]) -> None:
+    def _emit(self, kind: str, data: Mapping[str, Any]) -> None:
         if self.audit is None:
             return
         try:
-            self.audit.emit(type, data)
+            self.audit.emit(kind, data)
         except Exception:  # the observation path must never break a decision
             self.counters["gate_errors"] += 1
+            logger.debug("audit sink failed for a %s event", kind, exc_info=True)
 
     # -- observation path ---------------------------------------------------------------
 
@@ -664,23 +686,19 @@ def enforce(
     return wrap(executor) if executor is not None else wrap
 
 
-class capture:
-    """Context manager: redirect module-level ``@axiom`` registrations into a new registry.
+@contextlib.contextmanager
+def capture() -> Iterator[AxiomRegistry]:
+    """Redirect module-level ``@axiom`` registrations into a fresh registry.
 
     Used to load an axiom file in isolation (``aeon axioms check``).
+
+    Yields:
+        The registry that receives the axioms declared inside the block.
     """
-
-    def __init__(self) -> None:
-        self.registry = AxiomRegistry()
-        self._saved: AxiomRegistry | None = None
-
-    def __enter__(self) -> AxiomRegistry:
-        global _registry
-        self._saved = _registry
-        _registry = self.registry
-        return self.registry
-
-    def __exit__(self, *exc: object) -> None:
-        global _registry
-        assert self._saved is not None
-        _registry = self._saved
+    global _registry
+    saved, temp = _registry, AxiomRegistry()
+    _registry = temp
+    try:
+        yield temp
+    finally:
+        _registry = saved

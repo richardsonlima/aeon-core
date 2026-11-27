@@ -25,9 +25,9 @@ from aeon.axioms import Action, Gate
 from aeon.axioms.builtin import deny_tools
 
 
-def write(log: AuditLog, n: int, type: str = "decision") -> None:
+def write(log: AuditLog, n: int, kind: str = "decision") -> None:
     for i in range(n):
-        log.emit(type, {"i": i})
+        log.emit(kind, {"i": i})
     assert log.flush(5)
 
 

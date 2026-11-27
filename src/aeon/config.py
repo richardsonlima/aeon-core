@@ -1,7 +1,6 @@
-"""Configuration: ``aeon.toml`` (or ``[tool.aeon]`` in ``pyproject.toml``) plus ``AEON_*``
-environment variables, which take precedence.
+"""Configuration from ``aeon.toml`` or ``[tool.aeon]`` in ``pyproject.toml``.
 
-New installs default to shadow mode.
+``AEON_*`` environment variables take precedence. New installs default to shadow mode.
 """
 
 from __future__ import annotations
@@ -29,6 +28,8 @@ CONFIG_NAMES = ("aeon.toml", ".aeon.toml")
 
 @dataclass
 class Config:
+    """Resolved Aeon settings. ``root`` is the directory relative paths resolve against."""
+
     mode: str = "shadow"
     audit: str = DEFAULT_AUDIT
     fsync: bool = False
@@ -43,6 +44,7 @@ class Config:
 
     @property
     def audit_enabled(self) -> bool:
+        """Whether auditing is on: ``audit`` is not empty, ``off``, ``none``, ``false`` or ``0``."""
         return self.audit.strip().lower() not in {"", "off", "none", "false", "0"}
 
     def audit_location(self) -> str:
@@ -57,6 +59,7 @@ class Config:
         return prefix + str(p if p.is_absolute() else self.root / p)
 
     def to_dict(self) -> dict[str, Any]:
+        """Return the settings as a plain dict, with ``root`` as a string."""
         return {
             "mode": self.mode,
             "audit": self.audit,
@@ -73,10 +76,18 @@ class Config:
 
 
 class ConfigError(ValueError):
+    """The configuration file or an ``AEON_*`` variable is invalid."""
+
     pass
 
 
 def find_config(start: Path | None = None) -> Path | None:
+    """Locate the config file, or return ``None`` if there is none.
+
+    Uses ``AEON_CONFIG`` if set. Otherwise walks up from ``start`` (default: the working
+    directory) to the repository root, looking for ``aeon.toml``, ``.aeon.toml`` or a
+    ``pyproject.toml`` with a ``[tool.aeon]`` table.
+    """
     explicit = os.environ.get("AEON_CONFIG")
     if explicit:
         return Path(explicit)

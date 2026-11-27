@@ -22,6 +22,7 @@ def _cli_error(message: str, hint: str | None = None) -> Exception:
 
 
 def is_loopback(host: str) -> bool:
+    """Whether ``host`` is ``localhost`` or a loopback IP address."""
     if host == "localhost":
         return True
     try:
