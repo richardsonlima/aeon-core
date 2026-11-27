@@ -1,55 +1,27 @@
 # Install
 
-!!! warning "Not on PyPI yet"
-    No release has been published. The commands marked "after the first release" will not work today. Until then, install from a checkout or from git. The remote `main` branch is still the old v0.4 line and `feature/v0.5.0` is not pushed yet, so install from a local checkout of the v0.5.0 work.
-
 Requires Python 3.10 or newer. The core has no third-party dependencies (on 3.10 only, `tomli`).
 
-## From a checkout (works today)
-
-```bash
-cd aeon-core                       # your checkout of the v0.5.0 work
-```
-
-=== "pip"
-
-    ```bash
-    python -m venv .venv && . .venv/bin/activate
-    pip install .                  # core only
-    pip install ".[runtime]"       # plus the HTTP runtime
-    aeon version
-    ```
-
-=== "uv"
-
-    ```bash
-    uv venv && uv pip install .
-    uv run aeon version
-    ```
-
-=== "uvx"
-
-    ```bash
-    uvx --from /path/to/aeon-core aeon version
-    ```
-
-=== "pipx"
-
-    ```bash
-    pipx install /path/to/aeon-core
-    aeon version
-    ```
-
-Once the branch is on GitHub, the same works straight from git: `pip install "aeon-core @ git+https://github.com/richardsonlima/aeon-core@<branch>"`, `uvx --from "git+https://github.com/richardsonlima/aeon-core@<branch>" aeon version`, `pipx install "git+https://github.com/richardsonlima/aeon-core@<branch>"`.
-
-## After the first release
+## From PyPI
 
 ```bash
 pip install aeon-core
+pip install "aeon-core[runtime]"      # plus the HTTP runtime
 uv add aeon-core                      # in a project
 uvx --from aeon-core aeon version     # no install
 pipx install aeon-core                # as a command-line tool
 ```
+
+The 0.3.0 and 0.4.0 releases on PyPI are the old code line. 0.5.0 is a rewrite with a different API: read the [changelog](https://github.com/richardsonlima/aeon-core/blob/main/CHANGELOG.md) before you upgrade.
+
+## From a checkout
+
+```bash
+cd aeon-core
+pip install .                  # or: uv pip install . / pipx install .
+```
+
+From git: `pip install "aeon-core @ git+https://github.com/richardsonlima/aeon-core@main"`.
 
 ## Extras
 

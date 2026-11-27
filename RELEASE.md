@@ -1,14 +1,14 @@
 # Release guide
 
-**Nothing has been published.** No tag exists for 0.5.0, the PyPI and TestPyPI projects are not created, the GitHub environments are not configured, and no container image has been pushed. Every step below is done by the maintainer. Tagging and pushing are manual.
+The PyPI project `aeon-core` already exists (0.3.0 and 0.4.0 were published from the old code). The TestPyPI project does not exist yet. No container image has been pushed. Every step below is done by the maintainer. Tagging and pushing are manual.
 
 ## One-time setup
 
 ### 1. PyPI and TestPyPI: pending trusted publishers
 
-No API tokens are used. Create a pending publisher on each index before the first release.
+No API tokens are used. Add a trusted publisher on each index before the first release.
 
-PyPI (<https://pypi.org/manage/account/publishing/>), "Add a new pending publisher":
+PyPI: the project exists, so add the publisher on the project itself (<https://pypi.org/manage/project/aeon-core/settings/publishing/>), not as a pending publisher:
 
 | Field | Value |
 |---|---|

@@ -7,7 +7,7 @@ You wrap the function through which your agent runs tools. Before each call, a s
 *Inspired by the MECADE framework (chaos engineering for dependability); an independent project with no relation to any academic program.*
 
 !!! warning "Status: alpha, v0.5.0 in development"
-    Nothing is published to PyPI yet. The gate, audit chain, budget, fault catalog, campaigns, adapters, runtime and MCP servers are implemented and tested. Signed audit records, an external anchor for the chain, a Postgres backend and any test against a real LLM are **not built**. Read [Known limits](known-limits.md) before you rely on it.
+    Alpha, published to PyPI as `aeon-core`. The gate, audit chain, budget, fault catalog, campaigns, adapters, runtime and MCP servers are implemented and tested. Signed audit records, an external anchor for the chain, a Postgres backend and any test against a real LLM are **not built**. Read [Known limits](known-limits.md) before you rely on it.
 
 ## Start here
 

@@ -12,6 +12,6 @@ Mudanças que o site público em `richardsonlima.com.br/aeon` precisa para refle
 | 6 | "aeon-axioms, um módulo independente" | Não há distribuição separada. O motor de axiomas é o subpacote `aeon.axioms` do `aeon-core`, sem dependências de terceiros. | Diga "o subpacote `aeon.axioms` do `aeon-core`, sem dependências", e não mande ninguém fazer `pip install aeon-axioms`. |
 | 7 | Sem link para a documentação | A documentação agora existe. | Adicione um link visível para `https://www.richardsonlima.com.br/aeon/docs/`, e para [Limites conhecidos](known-limits.md) e [Alegações](claims.md). |
 | 8 | Qualquer texto com SIL, DO-178C, IEC 61508 ou "pronto para produção" | O código não tem certificação nem dados de campo, e a auditoria da v0.4 achou o mesmo tipo de texto no repositório antigo. | Use só "inspirado em" ou "roteiro", e diga alfa. Veja a [auditoria](audit.md). |
-| 9 | Instruções de instalação | Nada está no PyPI ainda. | Mostre `pip install aeon-core` só marcado "após a primeira versão", e a instalação por checkout de [Instalação](get-started/install.md) até lá. |
+| 9 | Instruções de instalação | A 0.5.0 está no PyPI; a 0.3.0 e a 0.4.0 de lá são a linha antiga. | Mostre `pip install aeon-core` e diga que a 0.5.0 é uma reescrita com outra API. |
 
 Não consegui ver o código-fonte atual do site ao escrever esta lista. Os itens 1, 2 e 3 vêm da [auditoria](audit.md), os outros da comparação dos nomes públicos do site com o código. Confira cada um na página publicada antes de editar.

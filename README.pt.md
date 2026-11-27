@@ -2,7 +2,7 @@
 
 [English](README.md) | [Português](README.pt.md)
 
-![version](https://img.shields.io/badge/version-0.5.0.dev0-blue) ![license](https://img.shields.io/badge/license-Apache--2.0-green) ![python](https://img.shields.io/badge/python-3.10%2B-blue)
+![version](https://img.shields.io/badge/version-0.5.0-blue) ![license](https://img.shields.io/badge/license-Apache--2.0-green) ![python](https://img.shields.io/badge/python-3.10%2B-blue)
 
 O Æon é um runtime Python gratuito e de código aberto que **controla as ações de agentes LLM** e **injeta falhas controladas** para verificar se eles falham de forma segura.
 
@@ -12,7 +12,7 @@ Inspirado no framework MECADE (engenharia do caos para confiabilidade); um proje
 
 ## Status
 
-**Alfa. Nada foi publicado no PyPI ainda, e não há tag 0.5.0.** É uma reescrita do zero da v0.4 (veja o [`CHANGELOG.md`](CHANGELOG.md) e a [auditoria](https://www.richardsonlima.com.br/aeon/docs/pt/audit/)).
+**Alfa.** Instale com `pip install aeon-core`. É uma reescrita do zero da v0.4 (veja o [`CHANGELOG.md`](CHANGELOG.md) e a [auditoria](https://www.richardsonlima.com.br/aeon/docs/pt/audit/)).
 
 | Implementado e testado | Não construído |
 |---|---|
@@ -29,25 +29,14 @@ Inspirado no framework MECADE (engenharia do caos para confiabilidade); um proje
 
 Requer Python 3.10 ou mais novo. O núcleo não tem dependências de terceiros.
 
-Ainda não está no PyPI, então instale de um checkout deste repositório:
-
 ```bash
-cd aeon-core
-pip install .                # ou: pip install ".[runtime]" para o runtime HTTP
-uv pip install .             # com uv
-pipx install .               # como ferramenta de linha de comando
-```
-
-Quando a branch estiver no GitHub: `pip install "aeon-core @ git+https://github.com/richardsonlima/aeon-core@<branch>"`.
-
-Após a primeira versão:
-
-```bash
-pip install aeon-core
-uv add aeon-core
+pip install aeon-core            # ou: pip install "aeon-core[runtime]" para o runtime HTTP
+uv add aeon-core                 # num projeto
 uvx --from aeon-core aeon version
-pipx install aeon-core
+pipx install aeon-core           # como ferramenta de linha de comando
 ```
+
+As versões 0.3.0 e 0.4.0 no PyPI são a linha antiga; a 0.5.0 é uma reescrita com outra API.
 
 ## Início rápido
 

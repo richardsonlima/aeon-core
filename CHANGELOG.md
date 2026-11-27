@@ -4,7 +4,9 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
-The v0.5.0 rewrite. Nothing is published yet: there is no PyPI release and no tag for 0.5.0. The previous code is kept at tag `v0.4.0-ULTRA`.
+## [0.5.0] - 2026-11-27
+
+The v0.5.0 rewrite, published to PyPI as `aeon-core` 0.5.0. The previous code is kept at tag `v0.4.0-ULTRA`.
 
 ### Added
 
@@ -56,7 +58,8 @@ Tag `v0.2.0-alpha`.
 
 Tag `v0.1.0`. First tagged version.
 
-[Unreleased]: https://github.com/richardsonlima/aeon-core/compare/v0.4.0-ULTRA...HEAD
+[Unreleased]: https://github.com/richardsonlima/aeon-core/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/richardsonlima/aeon-core/releases/tag/v0.5.0
 [0.4.0-ULTRA]: https://github.com/richardsonlima/aeon-core/releases/tag/v0.4.0-ULTRA
 [0.3.0-ULTRA]: https://github.com/richardsonlima/aeon-core/releases/tag/v0.3.0-ULTRA
 [0.2.0-alpha]: https://github.com/richardsonlima/aeon-core/releases/tag/v0.2.0-alpha

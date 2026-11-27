@@ -1,55 +1,27 @@
 # Instalação
 
-!!! warning "Ainda não está no PyPI"
-    Nenhuma versão foi publicada. Os comandos marcados como "após a primeira versão" não funcionam hoje. Até lá, instale de um checkout ou do git. A `main` remota ainda é a linha antiga v0.4 e a `feature/v0.5.0` ainda não foi enviada, então instale de um checkout local do trabalho da v0.5.0.
-
 Requer Python 3.10 ou mais novo. O núcleo não tem dependências de terceiros (só `tomli` no 3.10).
 
-## De um checkout (funciona hoje)
-
-```bash
-cd aeon-core                       # seu checkout do trabalho da v0.5.0
-```
-
-=== "pip"
-
-    ```bash
-    python -m venv .venv && . .venv/bin/activate
-    pip install .                  # só o núcleo
-    pip install ".[runtime]"       # mais o runtime HTTP
-    aeon version
-    ```
-
-=== "uv"
-
-    ```bash
-    uv venv && uv pip install .
-    uv run aeon version
-    ```
-
-=== "uvx"
-
-    ```bash
-    uvx --from /caminho/para/aeon-core aeon version
-    ```
-
-=== "pipx"
-
-    ```bash
-    pipx install /caminho/para/aeon-core
-    aeon version
-    ```
-
-Quando a branch estiver no GitHub, o mesmo funciona direto do git: `pip install "aeon-core @ git+https://github.com/richardsonlima/aeon-core@<branch>"`, `uvx --from "git+https://github.com/richardsonlima/aeon-core@<branch>" aeon version`, `pipx install "git+https://github.com/richardsonlima/aeon-core@<branch>"`.
-
-## Após a primeira versão
+## Do PyPI
 
 ```bash
 pip install aeon-core
+pip install "aeon-core[runtime]"      # mais o runtime HTTP
 uv add aeon-core                      # num projeto
 uvx --from aeon-core aeon version     # sem instalar
 pipx install aeon-core                # como ferramenta de linha de comando
 ```
+
+As versões 0.3.0 e 0.4.0 no PyPI são a linha antiga do código. A 0.5.0 é uma reescrita com outra API: leia o [changelog](https://github.com/richardsonlima/aeon-core/blob/main/CHANGELOG.md) antes de atualizar.
+
+## De um checkout
+
+```bash
+cd aeon-core
+pip install .                  # ou: uv pip install . / pipx install .
+```
+
+Do git: `pip install "aeon-core @ git+https://github.com/richardsonlima/aeon-core@main"`.
 
 ## Extras
 

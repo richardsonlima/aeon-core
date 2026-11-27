@@ -5,7 +5,7 @@ O runtime é um pequeno serviço FastAPI em volta de um gate, para agentes que n
 ## Instalar e iniciar
 
 ```bash
-pip install "aeon-core[runtime]"      # após a primeira versão; do git até lá
+pip install "aeon-core[runtime]"
 aeon runtime start                    # alias: aeon serve
 ```
 

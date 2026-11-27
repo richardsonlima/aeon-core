@@ -5,7 +5,7 @@ The runtime is a small FastAPI service around one gate, for agents that are not 
 ## Install and start
 
 ```bash
-pip install "aeon-core[runtime]"      # after the first release; from git until then
+pip install "aeon-core[runtime]"
 aeon runtime start                    # alias: aeon serve
 ```
 

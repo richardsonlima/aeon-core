@@ -7,7 +7,7 @@ Você envolve a função pela qual o agente executa ferramentas. Antes de cada c
 *Inspirado no framework MECADE (engenharia do caos para confiabilidade); um projeto independente, sem relação com nenhum programa acadêmico.*
 
 !!! warning "Status: alfa, v0.5.0 em desenvolvimento"
-    Nada foi publicado no PyPI ainda. O gate, a cadeia de auditoria, o orçamento, o catálogo de falhas, as campanhas, os adaptadores, o runtime e os servidores MCP estão implementados e testados. Registros de auditoria assinados, uma âncora externa para a cadeia, um backend Postgres e qualquer teste contra um LLM real **não foram construídos**. Leia [Limites conhecidos](known-limits.md) antes de depender dele.
+    Alfa, publicado no PyPI como `aeon-core`. O gate, a cadeia de auditoria, o orçamento, o catálogo de falhas, as campanhas, os adaptadores, o runtime e os servidores MCP estão implementados e testados. Registros de auditoria assinados, uma âncora externa para a cadeia, um backend Postgres e qualquer teste contra um LLM real **não foram construídos**. Leia [Limites conhecidos](known-limits.md) antes de depender dele.
 
 ## Comece aqui
 

@@ -12,6 +12,6 @@ Changes the public site at `richardsonlima.com.br/aeon` needs so that it matches
 | 6 | "aeon-axioms, a standalone module" | There is no separate distribution. The axiom engine is the `aeon.axioms` subpackage of `aeon-core`, and it has no third-party dependencies. | Say "the dependency-free `aeon.axioms` subpackage of `aeon-core`", and do not tell people to `pip install aeon-axioms`. |
 | 7 | No link to the docs | The docs now exist. | Add a visible link to `https://www.richardsonlima.com.br/aeon/docs/`, and to [Known limits](known-limits.md) and [Claims](claims.md). |
 | 8 | Any SIL, DO-178C, IEC 61508 or "production-ready" wording | The code has no certification and no field data, and the v0.4 audit found the same wording in the old repository. | Use "inspired by" or "roadmap" only, and say alpha. See the [audit](audit.md). |
-| 9 | Install instructions | Nothing is on PyPI yet. | Show `pip install aeon-core` only labelled "after the first release", and the checkout install from [Install](get-started/install.md) until then. |
+| 9 | Install instructions | 0.5.0 is on PyPI; 0.3.0 and 0.4.0 there are the old line. | Show `pip install aeon-core`, and say 0.5.0 is a rewrite with a different API. |
 
 I could not see the site's current source while writing this list. Items 1, 2 and 3 come from the [audit](audit.md), the others from comparing the site's public names with the code. Check each against the live page before editing.

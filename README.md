@@ -2,7 +2,7 @@
 
 [English](README.md) | [Português](README.pt.md)
 
-![version](https://img.shields.io/badge/version-0.5.0.dev0-blue) ![license](https://img.shields.io/badge/license-Apache--2.0-green) ![python](https://img.shields.io/badge/python-3.10%2B-blue)
+![version](https://img.shields.io/badge/version-0.5.0-blue) ![license](https://img.shields.io/badge/license-Apache--2.0-green) ![python](https://img.shields.io/badge/python-3.10%2B-blue)
 
 Æon is a free, open-source Python runtime that **gates the actions of LLM agents** and **injects controlled faults** to check that they fail safe.
 
@@ -12,7 +12,7 @@ Inspired by the MECADE framework (chaos engineering for dependability); an indep
 
 ## Status
 
-**Alpha. Nothing is published to PyPI yet, and there is no 0.5.0 tag.** This is a ground-up rewrite of v0.4 (see [`CHANGELOG.md`](CHANGELOG.md) and the [audit](https://www.richardsonlima.com.br/aeon/docs/audit/)).
+**Alpha.** Install with `pip install aeon-core`. This is a ground-up rewrite of v0.4 (see [`CHANGELOG.md`](CHANGELOG.md) and the [audit](https://www.richardsonlima.com.br/aeon/docs/audit/)).
 
 | Implemented and tested | Not built |
 |---|---|
@@ -29,25 +29,14 @@ Inspired by the MECADE framework (chaos engineering for dependability); an indep
 
 Requires Python 3.10 or newer. The core has no third-party dependencies.
 
-Not on PyPI yet, so install from a checkout of this repository:
-
 ```bash
-cd aeon-core
-pip install .                # or: pip install ".[runtime]" for the HTTP runtime
-uv pip install .             # with uv
-pipx install .               # as a command-line tool
-```
-
-Once the branch is on GitHub: `pip install "aeon-core @ git+https://github.com/richardsonlima/aeon-core@<branch>"`.
-
-After the first release:
-
-```bash
-pip install aeon-core
-uv add aeon-core
+pip install aeon-core            # or: pip install "aeon-core[runtime]" for the HTTP runtime
+uv add aeon-core                 # in a project
 uvx --from aeon-core aeon version
-pipx install aeon-core
+pipx install aeon-core           # as a command-line tool
 ```
+
+0.3.0 and 0.4.0 on PyPI are the old code line; 0.5.0 is a rewrite with a different API.
 
 ## Quickstart
 
