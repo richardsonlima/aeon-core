@@ -18,10 +18,11 @@ Inspirado no framework MECADE (engenharia do caos para confiabilidade); um proje
 |---|---|
 | Gate, axiomas, níveis de autonomia, Safe State, kill-switch, modo shadow | Registros de auditoria assinados e âncora externa para a cadeia |
 | Log de auditoria encadeado por hash (JSONL, SQLite) e `aeon audit verify` | Backend de auditoria Postgres |
-| Baseline de comportamento, score de desvio, CUSUM e envelope | Qualquer teste contra um LLM real, e qualquer dado de campo |
+| Baseline de comportamento, score de desvio, CUSUM e envelope | Dados de campo, e uma taxa medida de qualquer coisa num LLM real |
 | Oito falhas com guarda de raio de impacto, campanhas pré-registradas | Escritores de auditoria em vários processos |
 | Adaptadores para Python simples, OpenAI, Anthropic e LangGraph (duck typing) | Certificação de qualquer tipo (IEC 61508, DO-178C e semelhantes são só inspiração e roteiro) |
 | Runtime HTTP local, painel de controle, servidores MCP para o gate e para a documentação | Uma imagem de contêiner publicada |
+| SDK de agentes: `Agent`, `Team`, `Workflow`, sessões, memória, aprovação, saída estruturada; roda em modelos reais (OpenRouter, OpenAI, Anthropic, Ollama) | Streaming de tokens, execução async, RAG ([roteiro](https://www.richardsonlima.com.br/aeon/docs/pt/roadmap/agent-sdk/)) |
 
 **Leia os [Limites conhecidos](https://www.richardsonlima.com.br/aeon/docs/pt/known-limits/) antes de depender dele.** A versão curta: o gate só cobre ações que passam pelo executor envolvido, axiomas não julgam o significado de texto livre, e nas campanhas versionadas o orçamento padrão gerou falsos positivos em até 70% das execuções de controle limpas de um agente simulado (oito de nove hipóteses pré-registradas não foram suportadas).
 

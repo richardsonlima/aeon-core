@@ -11,23 +11,23 @@ Legenda: **entregue** (numa versão, testado), **próximo** (em construção par
 | Capacidade | O que significa | Status | Como o Æon faz |
 |---|---|---|---|
 | Agent | Um modelo, ferramentas e instruções, e o loop entre eles | **entregue** (0.5.1) | `aeon.agents.Agent`; toda chamada de ferramenta por um `ToolBox` e pelo gate |
-| String de modelo | `model="openrouter:openai/gpt-4o-mini"` em vez de montar um cliente | próximo | `provedor:modelo` resolvido para os clientes HTTP da biblioteca padrão |
-| Funções simples como ferramentas | `tools=[read_file, search]` | próximo | envolvidas num `ToolBox` ligado ao gate do agente |
-| Team | Um coordenador delega a agentes membros | próximo | os membros viram ferramentas do coordenador, então a própria delegação passa pelo gate e pela auditoria |
-| Workflow | Passos repetíveis sobre agentes, times e funções | próximo | passos em sequência, a saída de um é a entrada do próximo; um passo parado para o workflow |
+| String de modelo | `model="openrouter:openai/gpt-4o-mini"` em vez de montar um cliente | **entregue** (0.5.1) | `provedor:modelo` resolvido para os clientes HTTP da biblioteca padrão |
+| Funções simples como ferramentas | `tools=[read_file, search]` | **entregue** (0.5.1) | envolvidas num `ToolBox` ligado ao gate do agente |
+| Team | Um coordenador delega a agentes membros | **entregue** (0.5.1) | os membros viram ferramentas do coordenador, então a própria delegação passa pelo gate e pela auditoria |
+| Workflow | Passos repetíveis sobre agentes, times e funções | **entregue** (0.5.1) | passos em sequência, a saída de um é a entrada do próximo; um passo parado para o workflow |
 
 ## Execução e saída
 
 | Capacidade | Status | Notas |
 |---|---|---|
-| `run()` devolvendo um objeto de execução (conteúdo, mensagens, métricas, chamadas) | **entregue** (`AgentRun`) | próximo: `run_id`, `session_id`, tempo, status |
-| `print_response()` para desenvolvimento | próximo | chamadas de ferramenta com o veredito, depois a resposta |
-| Fluxo de eventos (início, chamada ao modelo, ferramenta iniciada, concluída, bloqueada, fim) | próximo | eventos por etapa em `run(stream=True)` |
+| `run()` devolvendo um objeto de execução (conteúdo, mensagens, métricas, chamadas) | **entregue** (0.5.1) | `RunOutput`: `run_id`, `session_id`, `status`, `duration_s`, tokens |
+| `print_response()` para desenvolvimento | **entregue** (0.5.1) | chamadas de ferramenta com o veredito, depois a resposta |
+| Fluxo de eventos (início, chamada ao modelo, ferramenta iniciada, concluída, bloqueada, fim) | **entregue** (0.5.1) | eventos por etapa em `run(stream=True)` |
 | Streaming de tokens | planejado | precisa ler Server-Sent Events por provedor |
-| Saída estruturada (`output_schema`) | próximo | JSON schema a partir de dataclass ou modelo Pydantic, validado, uma nova tentativa se o JSON vier errado |
+| Saída estruturada (`output_schema`) | **entregue** (0.5.1) | JSON schema a partir de dataclass ou modelo Pydantic, validado, uma nova tentativa se o JSON vier errado |
 | Async (`arun`) | planejado | o gate já aceita ferramentas async |
-| CLI interativo (`cli_app`) | próximo | `Agent.cli_app()` e `aeon agent chat` |
-| Modo debug | próximo | `debug=True` ou `AEON_DEBUG_AGENT=1` mostra mensagens e tokens por etapa |
+| CLI interativo (`cli_app`) | **entregue** (0.5.1) | `Agent.cli_app()` e `aeon agent chat` |
+| Modo debug | **entregue** (0.5.1) | `debug=True` ou `AEON_DEBUG_AGENT=1` mostra mensagens e tokens por etapa |
 | Modelos de raciocínio | **entregue** | os campos de raciocínio do provedor (`reasoning_details`) voltam sem alteração |
 
 ## Modelos
@@ -44,11 +44,11 @@ Legenda: **entregue** (numa versão, testado), **próximo** (em construção par
 
 | Capacidade | Status | Notas |
 |---|---|---|
-| Armazenamento de sessões (`db=SqliteDb(...)`, `session_id`) | próximo | `sqlite3` da biblioteca padrão, sem dependência extra |
-| Histórico no contexto (`add_history_to_context`, `num_history_runs`) | próximo | |
-| Memória do usuário (`enable_agentic_memory`, `user_id`) | próximo | uma ferramenta `update_user_memory`, também atrás do gate |
+| Armazenamento de sessões (`db=SqliteDb(...)`, `session_id`) | **entregue** (0.5.1) | `sqlite3` da biblioteca padrão, sem dependência extra |
+| Histórico no contexto (`add_history_to_context`, `num_history_runs`) | **entregue** (0.5.1) | |
+| Memória do usuário (`enable_agentic_memory`, `user_id`) | **entregue** (0.5.1) | uma ferramenta `update_user_memory`, também atrás do gate |
 | Estado da sessão | planejado | |
-| Data e hora no contexto | próximo | `add_datetime_to_context` |
+| Data e hora no contexto | **entregue** (0.5.1) | `add_datetime_to_context` |
 | Knowledge (RAG sobre banco vetorial) | fora do escopo por ora | precisa de embeddings e de um banco vetorial; pode entrar como ferramenta |
 | Compressão, aprendizado, provedores de contexto | fora do escopo por ora | |
 
@@ -61,7 +61,7 @@ Legenda: **entregue** (numa versão, testado), **próximo** (em construção par
 | Orçamento de tokens e de comportamento | **entregue** | o uso de tokens de cada resposta alimenta o monitor |
 | Auditoria à prova de adulteração de toda decisão | **entregue** | cadeia de hash, `aeon audit verify` |
 | Injeção de falhas e campanhas | **entregue** | `aeon chaos`, campanhas pré-registradas |
-| Aprovação humana (human-in-the-loop) | próximo | uma regra `require_approval` pausa a execução; `continue_run(approve=...)` retoma |
+| Aprovação humana (human-in-the-loop) | **entregue** (0.5.1) | uma regra `require_approval` pausa a execução; `continue_run(approve=...)` retoma |
 | Guardrails de entrada e saída (texto) | planejado | hooks no prompt e na resposta |
 | Hooks antes e depois da execução | planejado | |
 
@@ -69,7 +69,7 @@ Legenda: **entregue** (numa versão, testado), **próximo** (em construção par
 
 | Capacidade | Status | Notas |
 |---|---|---|
-| Gerador de projeto | próximo | `aeon create agent` grava um projeto de agente pronto para rodar |
+| Gerador de projeto | planejado | `aeon create agent` grava um projeto de agente pronto para rodar |
 | Servir agentes por HTTP | planejado | o runtime já serve o gate; agentes em seguida |
 | Painel de controle | **entregue** para o gate | decisões, campanhas, auditoria e alegações em `/ui/` |
 | Docs por MCP para agentes de código | **entregue** | `aeon docs mcp` |

@@ -11,23 +11,23 @@ Status keys: **shipped** (in a release, tested), **next** (being built for the n
 | Capability | What it means | Status | How Æon does it |
 |---|---|---|---|
 | Agent | A model, tools and instructions, and the loop between them | **shipped** (0.5.1) | `aeon.agents.Agent`; every tool call through a `ToolBox` and the gate |
-| Model string | `model="openrouter:openai/gpt-4o-mini"` instead of building a client | next | `provider:model` resolved to the stdlib HTTP clients |
-| Plain functions as tools | `tools=[read_file, search]` | next | wrapped in a `ToolBox` bound to the agent's gate |
-| Team | A coordinator delegates to member agents | next | members exposed to the coordinator as tools, so delegation itself is gated and audited |
-| Workflow | Repeatable steps over agents, teams and functions | next | sequential steps, each step's output is the next input; a halted step stops the workflow |
+| Model string | `model="openrouter:openai/gpt-4o-mini"` instead of building a client | **shipped** (0.5.1) | `provider:model` resolved to the stdlib HTTP clients |
+| Plain functions as tools | `tools=[read_file, search]` | **shipped** (0.5.1) | wrapped in a `ToolBox` bound to the agent's gate |
+| Team | A coordinator delegates to member agents | **shipped** (0.5.1) | members exposed to the coordinator as tools, so delegation itself is gated and audited |
+| Workflow | Repeatable steps over agents, teams and functions | **shipped** (0.5.1) | sequential steps, each step's output is the next input; a halted step stops the workflow |
 
 ## Running and output
 
 | Capability | Status | Notes |
 |---|---|---|
-| `run()` returning a run object (content, messages, metrics, tool calls) | **shipped** (`AgentRun`) | next: `run_id`, `session_id`, timing, status |
-| `print_response()` for development | next | tool calls with their verdict, then the answer |
-| Event stream (run started, model request, tool call started, completed, blocked, run completed) | next | step-level events from `run(stream=True)` |
+| `run()` returning a run object (content, messages, metrics, tool calls) | **shipped** (0.5.1) | `RunOutput`: `run_id`, `session_id`, `status`, `duration_s`, tokens |
+| `print_response()` for development | **shipped** (0.5.1) | tool calls with their verdict, then the answer |
+| Event stream (run started, model request, tool call started, completed, blocked, run completed) | **shipped** (0.5.1) | step-level events from `run(stream=True)` |
 | Token streaming | planned | needs Server-Sent Events parsing per provider |
-| Structured output (`output_schema`) | next | JSON schema from a dataclass or a Pydantic model, validated, one retry on bad JSON |
+| Structured output (`output_schema`) | **shipped** (0.5.1) | JSON schema from a dataclass or a Pydantic model, validated, one retry on bad JSON |
 | Async (`arun`) | planned | the gate already supports async tools |
-| Interactive CLI (`cli_app`) | next | `Agent.cli_app()` and `aeon agent chat` |
-| Debug mode | next | `debug=True` or `AEON_DEBUG_AGENT=1` prints messages and token use per step |
+| Interactive CLI (`cli_app`) | **shipped** (0.5.1) | `Agent.cli_app()` and `aeon agent chat` |
+| Debug mode | **shipped** (0.5.1) | `debug=True` or `AEON_DEBUG_AGENT=1` prints messages and token use per step |
 | Reasoning models | **shipped** | provider reasoning fields (`reasoning_details`) are sent back unchanged |
 
 ## Models
@@ -44,11 +44,11 @@ Status keys: **shipped** (in a release, tested), **next** (being built for the n
 
 | Capability | Status | Notes |
 |---|---|---|
-| Storage of sessions (`db=SqliteDb(...)`, `session_id`) | next | stdlib `sqlite3`, no extra dependency |
-| History in context (`add_history_to_context`, `num_history_runs`) | next | |
-| User memory (`enable_agentic_memory`, `user_id`) | next | an `update_user_memory` tool, itself behind the gate |
+| Storage of sessions (`db=SqliteDb(...)`, `session_id`) | **shipped** (0.5.1) | stdlib `sqlite3`, no extra dependency |
+| History in context (`add_history_to_context`, `num_history_runs`) | **shipped** (0.5.1) | |
+| User memory (`enable_agentic_memory`, `user_id`) | **shipped** (0.5.1) | an `update_user_memory` tool, itself behind the gate |
 | Session state | planned | |
-| Datetime in context | next | `add_datetime_to_context` |
+| Datetime in context | **shipped** (0.5.1) | `add_datetime_to_context` |
 | Knowledge (RAG over a vector database) | out of scope for now | needs embeddings and a vector store; can be added as a tool |
 | Compression, learning, context providers | out of scope for now | |
 
@@ -61,7 +61,7 @@ Status keys: **shipped** (in a release, tested), **next** (being built for the n
 | Budget on tokens and behaviour | **shipped** | token usage from every reply feeds the monitor |
 | Tamper-evident audit of every decision | **shipped** | hash chain, `aeon audit verify` |
 | Fault injection and campaigns | **shipped** | `aeon chaos`, pre-registered campaigns |
-| Human-in-the-loop approval | next | a `require_approval` rule pauses the run; `continue_run(approve=...)` resumes it |
+| Human-in-the-loop approval | **shipped** (0.5.1) | a `require_approval` rule pauses the run; `continue_run(approve=...)` resumes it |
 | Input and output guardrails (text) | planned | hooks on the prompt and the answer |
 | Pre-run and post-run hooks | planned | |
 
@@ -69,7 +69,7 @@ Status keys: **shipped** (in a release, tested), **next** (being built for the n
 
 | Capability | Status | Notes |
 |---|---|---|
-| Project scaffold | next | `aeon create agent` writes a runnable agent project |
+| Project scaffold | planned | `aeon create agent` writes a runnable agent project |
 | Serve agents over HTTP | planned | the runtime already serves the gate; agents next |
 | Control plane | **shipped** for the gate | decisions, campaigns, audit and claims at `/ui/` |
 | Docs over MCP for coding agents | **shipped** | `aeon docs mcp` |

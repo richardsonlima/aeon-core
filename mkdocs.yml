@@ -65,6 +65,7 @@ plugins:
             Roadmap: Roteiro
             Agent SDK: SDK de agentes
             Guides: Guias
+            Build an agent: Construir um agente
             Wrap a plain Python agent: Proteger um agente Python simples
             Wrap an OpenAI agent: Proteger um agente OpenAI
             Wrap an Anthropic agent: Proteger um agente Anthropic
@@ -98,6 +99,8 @@ plugins:
             Changelog: Changelog
             Blog: Blog
             Site changes: Mudanças no site
+  - autorefs:
+      resolve_closest: true  # one page per language: link within the same language
   - mkdocstrings:
       handlers:
         python:
@@ -145,6 +148,7 @@ nav:
       - Audit chain: concepts/audit-chain.md
       - Shadow-first adoption: concepts/shadow-first.md
   - Guides:
+      - Build an agent: guides/agents.md
       - Wrap a plain Python agent: guides/plain-python.md
       - Wrap an OpenAI agent: guides/openai.md
       - Wrap an Anthropic agent: guides/anthropic.md

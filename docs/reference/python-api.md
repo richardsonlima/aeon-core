@@ -28,6 +28,10 @@ Top level: `from aeon import axiom, enforce, Gate, Action, Level, Mode, Budget, 
 
 ::: aeon.adapters
 
+## `aeon.agents`
+
+::: aeon.agents
+
 ## `aeon.config`
 
 ::: aeon.config

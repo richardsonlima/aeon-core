@@ -18,10 +18,11 @@ Inspired by the MECADE framework (chaos engineering for dependability); an indep
 |---|---|
 | Gate, axioms, autonomy levels, Safe State, kill-switch, shadow mode | Signed audit records and an external anchor for the chain |
 | Hash-chained audit log (JSONL, SQLite) and `aeon audit verify` | A Postgres audit backend |
-| Behavioural baseline, deviation score, CUSUM and envelope | Any test against a real LLM, and any field data |
+| Behavioural baseline, deviation score, CUSUM and envelope | Field data, and a measured rate of anything on a real LLM |
 | Eight faults with a blast-radius guard, pre-registered campaigns | Multi-process audit writers |
 | Adapters for plain Python, OpenAI, Anthropic and LangGraph (duck-typed) | Certification of any kind (IEC 61508, DO-178C and similar are inspiration and roadmap only) |
 | Local HTTP runtime, control plane UI, MCP servers for the gate and the docs | A published container image |
+| Agent SDK: `Agent`, `Team`, `Workflow`, sessions, memory, approval, structured output; runs on real models (OpenRouter, OpenAI, Anthropic, Ollama) | Token streaming, async runs, RAG ([roadmap](https://www.richardsonlima.com.br/aeon/docs/roadmap/agent-sdk/)) |
 
 **Read [Known limits](https://www.richardsonlima.com.br/aeon/docs/known-limits/) before you rely on it.** The short version: the gate only covers actions that pass through the wrapped executor, axioms do not judge the meaning of free text, and on the committed campaigns the default budget raised false positives in up to 70% of clean control runs of a simulated agent (eight of nine pre-registered hypotheses were not supported).
 
