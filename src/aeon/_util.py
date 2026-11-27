@@ -21,8 +21,15 @@ def sha256_hex(text: str) -> str:
 
 
 def digest(obj: Any) -> str:
-    """sha256 of the canonical JSON form of ``obj``."""
-    return sha256_hex(canonical_json(obj))
+    """sha256 of the canonical JSON form of ``obj``.
+
+    Values that cannot be serialised canonically (mixed-type keys, cycles) fall back to a
+    digest of their ``repr``, so hashing never raises on the decision path.
+    """
+    try:
+        return sha256_hex(canonical_json(obj))
+    except (TypeError, ValueError, RecursionError):
+        return sha256_hex("repr:" + repr(obj))
 
 
 def new_id() -> str:
