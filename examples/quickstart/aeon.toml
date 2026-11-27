@@ -1,0 +1,4 @@
+[aeon]
+mode = "shadow"
+axioms = ["aeon_axioms.py"]
+audit = ".aeon/audit.jsonl"
