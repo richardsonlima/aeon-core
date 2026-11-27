@@ -13,7 +13,7 @@ New installs start in shadow mode, and `aeon init` writes `mode = "shadow"`.
 
 ## Why this order
 
-An axiom is code you wrote about what is safe. The first time it meets real traffic it will be wrong somewhere. In shadow mode a wrong rule costs a log line. In `BLOCK` it stops an agent. The [budget](budget.md) is worse: its defaults gave false-positive rates of up to 73% on the simulated agent (see the [blog post](../blog/first-unfavourable-result.md)), so run it at `ALERT` first and calibrate.
+An axiom is code you wrote about what is safe. The first time it meets real traffic it will be wrong somewhere. In shadow mode a wrong rule costs a log line. In `BLOCK` it stops an agent. The [budget](budget.md) is worse: its defaults gave false-positive rates of up to 70% on the simulated agent (see the [blog post](../blog/first-unfavourable-result.md)), so run it at `ALERT` first and calibrate.
 
 Shadow mode also shows what you would have caught. In the committed shadow campaign, 385 unapproved destructive actions ran across 30 fault runs while the gate recorded a `BLOCK` for each. That is the number shadow mode prevents you from guessing.
 

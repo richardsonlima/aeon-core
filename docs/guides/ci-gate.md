@@ -26,10 +26,10 @@ jobs:
 
 ## Read this before you add it
 
-- **The shipped campaigns do not pass `--strict`.** On the committed run, seven of the eight shipped campaigns had a hypothesis that was not supported, mostly because the default budget raises false positives on clean traffic of the simulated agent ([numbers](../evidence/benchmarks.md)). Do not point CI at them as they are. Write your own campaign with thresholds you have reached on your own runs, and set `max_false_positive_rate` honestly.
+- **The shipped campaigns do not pass `--strict`.** On the committed run, eight of the nine shipped campaigns (all eight enforce ones) had a hypothesis that was not supported, mostly because the default budget raises false positives on clean traffic of the simulated agent ([numbers](../evidence/benchmarks.md)). Do not point CI at them as they are. Write your own campaign with thresholds you have reached on your own runs, and set `max_false_positive_rate` honestly.
 - **Exit codes.** `0` supported, `1` not supported (only with `--strict`), `2` usage error such as an unknown fault or a blast radius above the ceiling.
 - **Determinism.** Seeds are fixed, but the simulated agent sleeps for a few milliseconds per call and the faults add delays, so latency-based results can move from run to run. Leave margin between your threshold and what you measured, and use enough runs (30 is the shipped size, and its 95% interval is wide).
-- **Cost.** Each shipped campaign took about 7 to 9 seconds on the reference machine for 30 fault runs and 30 controls.
+- **Cost.** Each shipped campaign took about 8 to 10 seconds on the reference machine for 30 fault runs and 30 controls.
 - **Scope.** The campaign exercises the gate and your axioms against a simulated agent. It does not test your real agent or model. See [Known limits](../known-limits.md).
 
 ## A gate you can trust

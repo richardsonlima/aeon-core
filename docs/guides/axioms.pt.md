@@ -47,13 +47,19 @@ Eles rodam no caminho de decisão, na thread de quem chamou. Não faça E/S nem 
 `aeon.axioms.builtin` devolve regras prontas. Atribua-as no nível do módulo de um arquivo de axiomas para o `aeon axioms list` encontrá-las:
 
 ```python
-from aeon.axioms.builtin import allow_tools, deny_arg_pattern, deny_tools, rate_limit, require_approval
+from aeon.axioms.builtin import (
+    allow_tools,
+    deny_arg_pattern,
+    deny_tools,
+    rate_limit,
+    require_approval,
+)
 
-no_delete = deny_tools(["delete_file"], unless_approved=True)       # BLOCK
-only_these = allow_tools(["read_file", "search_docs"])              # BLOCK para qualquer outra ferramenta
-no_secrets = deny_arg_pattern(r"AKIA[0-9A-Z]{16}", level="BLOCK")   # regex sobre args de texto
-deploys = require_approval(["deploy"])                               # LIMIT sem aprovação
-slow_down = rate_limit(30, 60, tools=["send_email"])                 # LIMIT após 30 chamadas em 60 s
+no_delete = deny_tools(["delete_file"], unless_approved=True)  # BLOCK
+only_these = allow_tools(["read_file", "search_docs"])  # BLOCK para qualquer outra ferramenta
+no_secrets = deny_arg_pattern(r"AKIA[0-9A-Z]{16}", level="BLOCK")  # regex sobre args de texto
+deploys = require_approval(["deploy"])  # LIMIT sem aprovação
+slow_down = rate_limit(30, 60, tools=["send_email"])  # LIMIT após 30 chamadas em 60 s
 ```
 
 `rate_limit` usa tempo de relógio e conta decisões, então uma chamada negada também conta. É inadequado para um agente simulado rápido: as campanhas o deixam de fora de propósito.

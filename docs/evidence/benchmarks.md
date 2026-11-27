@@ -26,7 +26,7 @@ One `Gate.decide` call, decision path only, audit off, Python's GC left on so pa
 | 1 | enforce | off | 11.9 | 12.1 | 12.5 | 53.1 |
 <!-- END GENERATED: gate -->
 
-Read the max column. The median is about 10 µs, and single calls in the run took up to 462.6 µs. Latency also grows with the number of axioms that apply: p99 is 12.6 µs with 10 axioms and 41.9 µs with 100.
+Read the max column. The median is 12 to 36 µs depending on the number of axioms, and single calls in the run took up to 195 µs. Latency also grows with the number of axioms that apply: p99 is 15.0 µs with 10 axioms and 38.1 µs with 100.
 
 ## Audit
 
@@ -42,12 +42,9 @@ Cost on the decision path, durability lag and verify speed. "Durable lag" is the
 `Gate.decide` without audit: p50 11.8 µs, p99 12.4 µs, max 65 µs. With a JSONL audit log: p50 16.3 µs, p99 438.0 µs, max 3399 µs. Chain verify: 159061 records/s (47921 records).
 <!-- END GENERATED: audit -->
 
-The burst row is the unfavourable one: 20,000 events with no pause overran the queue and 3,856 were dropped. At a paced 1,000 events/s none were. One emit in the burst stalled for about 29 ms, most likely from contention with the writer thread. With the audit log on, `Gate.decide` showed a p99 of 187 µs and a worst call of 3.7 ms, against 42.5 µs and 5.2 ms with it off in the same file: the maxima in both runs are noise from the machine and are not reproducible.
+The burst row is the unfavourable one: 50,000 events with no pause overran the queue and 2,081 were dropped. At a paced 1,000 events/s none were. One emit in the burst stalled for about 77 ms, most likely from contention with the writer thread. With the audit log on, `Gate.decide` showed a p99 of 438 µs and a worst call of 3.4 ms, against 12.4 µs and 65 µs with it off in the same file: the maxima are noise from the machine and are not reproducible to the digit.
 
 ## Detection campaigns
-
-!!! note "Regenerated at release"
-    The committed detection results are from 2026-11-27 and were produced before the detection rate was redefined to count only runs where the fault fired. The tables below are regenerated from `benchmarks/results/` whenever that data is, and the plain-text summary is [`benchmarks/results/summary.md`](https://github.com/richardsonlima/aeon-core/blob/main/benchmarks/results/summary.md).
 
 Pre-registered campaigns on the simulated `ops-assistant` scenario: a seeded, scripted agent, **not an LLM**. 30 fault runs and 30 control runs each. Confidence intervals are 95% Wilson intervals.
 
@@ -65,7 +62,7 @@ Pre-registered campaigns on the simulated `ops-assistant` scenario: a seeded, sc
 | `tool-timeout` (enforce) | LIMIT | 100% [89, 100] | 20% [10, 37] | 70% | 0 | 2 / 7 / 9 | NOT supported |
 <!-- END GENERATED: detection -->
 
-Seven of the eight hypotheses were **not supported**. The campaigns detect the faults, and in enforce mode no unapproved destructive action ran, but the default budget raises false positives on clean traffic: up to 73%. The reports with every unfavourable result are in [`benchmarks/results/campaigns/`](https://github.com/richardsonlima/aeon-core/tree/main/benchmarks/results/campaigns). A worked reading is in [How to read an unfavourable result](../kb/unfavourable-result.md).
+Eight of the nine hypotheses were **not supported**: all eight enforce campaigns, six on false positives (the default budget raises the alarm on 20% to 70% of clean control runs) and two on the Safe State check. The campaigns detect the faults. Detection counts only runs where the fault fired, and "no unapproved destructive action ran" is only evidence in the campaigns where one was attempted. The reports with every unfavourable result are in [`benchmarks/results/campaigns/`](https://github.com/richardsonlima/aeon-core/tree/main/benchmarks/results/campaigns). A worked reading is in [How to read an unfavourable result](../kb/unfavourable-result.md).
 
 ## How these relate to claims
 

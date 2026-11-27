@@ -41,7 +41,7 @@ O log de auditoria nunca escreve na thread de quem chamou. `emit` carimba o even
 
 ## Quanto custa
 
-Na execução de benchmark versionada (Apple M1, Python 3.12.14, 2026-11-27, auditoria desligada) um `decide` levou p50 de 10 a 12 µs com 1 a 10 axiomas e p99 de 12,6 µs com 10 axiomas. Com 100 axiomas o p99 foi 41,9 µs e a pior chamada 462,6 µs. Com o log JSONL ligado, o p99 subiu para 187 µs e a pior chamada para 3,7 ms. Esses números descrevem só aquela máquina. As tabelas completas, com p99 e máximo, estão em [Benchmarks](../evidence/benchmarks.md).
+Na execução de benchmark versionada (Apple M1, Python 3.10.21, 2026-11-27, auditoria desligada) um `decide` levou p50 de 11,9 a 14,1 µs com 1 a 10 axiomas e p99 de 15,0 a 15,4 µs com 10 axiomas. Com 100 axiomas o p99 foi 38,2 µs. A pior chamada em qualquer linha foi 195 µs. Com o log JSONL ligado, o p99 subiu para 438 µs e a pior chamada para 3,4 ms (12,4 µs e 65 µs com a auditoria desligada nessa execução). Esses números descrevem só aquela máquina. As tabelas completas, com p99 e máximo, estão em [Benchmarks](../evidence/benchmarks.md).
 
 ## O limite do gate
 

@@ -8,7 +8,7 @@ In `shadow` mode the gate runs every axiom and the budget, records the verdict a
 
 ## What the repository's own numbers say
 
-- **Rules and budgets misfire.** With the default budget, clean control runs of the simulated agent raised an alarm in 23% to 73% of runs in six of the eight campaigns (see [How to read an unfavourable result](unfavourable-result.md)). If those had been `BLOCK`, the agent would have been stopped for no reason. In shadow they are log lines.
+- **Rules and budgets misfire.** With the default budget, clean control runs of the simulated agent raised an alarm in 20% to 70% of runs in six of the eight enforce campaigns (see [How to read an unfavourable result](unfavourable-result.md)). If those had been `BLOCK`, the agent would have been stopped for no reason. In shadow they are log lines.
 - **Shadow shows the exposure.** In the committed shadow campaign, 385 unapproved destructive actions ran across 30 fault runs while the gate recorded a `BLOCK` for each of them, and its false-positive rate on controls was 3.3% (1 of 30). You learn what you would have caught before you let it act.
 - **It has a cost you should know.** Shadow does not protect. Those 385 actions ran. If a tool must never run unreviewed, put a small `BLOCK` rule on it from day one and keep the rest in shadow.
 

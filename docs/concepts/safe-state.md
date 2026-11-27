@@ -15,7 +15,7 @@ Safe State is where an agent is held after an enforced `BLOCK`. It is per agent 
 Safe State does not expire. Someone releases it:
 
 ```python
-gate.reset("my-agent")        # returns True if the agent was held
+gate.reset("my-agent")  # returns True if the agent was held
 ```
 
 or `POST /v1/safe-state/{agent}/reset` on the [runtime](../guides/runtime.md). Releasing also clears the agent's accumulated deviation, its rolling window and its cost and token totals (the calibrated baseline stays). A `safe_state` audit event with `entered: false` is recorded.

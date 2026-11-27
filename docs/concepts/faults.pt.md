@@ -45,7 +45,9 @@ from aeon.axioms import enforce
 from aeon.chaos import inject
 
 tool = inject(read_logs, "gateway-latency", seed=1, blast_radius="dev", delay_ms=50)
-tool = enforce(tool, gate=gate)   # injete primeiro, depois enforce, para o gate ver o comportamento com falha
+tool = enforce(
+    tool, gate=gate
+)  # injete primeiro, depois enforce, para o gate ver o comportamento com falha
 ```
 
 Para um experimento com semente, pré-registrado e com execuções de controle, use uma [campanha](../guides/campaigns.md).

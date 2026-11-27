@@ -23,7 +23,7 @@ Inspirado no framework MECADE (engenharia do caos para confiabilidade); um proje
 | Adaptadores para Python simples, OpenAI, Anthropic e LangGraph (duck typing) | Certificação de qualquer tipo (IEC 61508, DO-178C e semelhantes são só inspiração e roteiro) |
 | Runtime HTTP local, painel de controle, servidores MCP para o gate e para a documentação | Uma imagem de contêiner publicada |
 
-**Leia os [Limites conhecidos](https://www.richardsonlima.com.br/aeon/docs/pt/known-limits/) antes de depender dele.** A versão curta: o gate só cobre ações que passam pelo executor envolvido, axiomas não julgam o significado de texto livre, e nas campanhas versionadas o orçamento padrão gerou falsos positivos em até 73% das execuções de controle limpas de um agente simulado (sete de oito hipóteses pré-registradas não foram suportadas).
+**Leia os [Limites conhecidos](https://www.richardsonlima.com.br/aeon/docs/pt/known-limits/) antes de depender dele.** A versão curta: o gate só cobre ações que passam pelo executor envolvido, axiomas não julgam o significado de texto livre, e nas campanhas versionadas o orçamento padrão gerou falsos positivos em até 70% das execuções de controle limpas de um agente simulado (oito de nove hipóteses pré-registradas não foram suportadas).
 
 ## Instalação
 
@@ -65,8 +65,10 @@ from aeon.axioms import ActionBlocked, enforce
 
 @enforce
 def run_tool(tool, args):
-    return {"read_file": lambda path: f"contents of {path}",
-            "delete_file": lambda path: f"deleted {path}"}[tool](**args)
+    return {
+        "read_file": lambda path: f"contents of {path}",
+        "delete_file": lambda path: f"deleted {path}",
+    }[tool](**args)
 
 
 for tool, args in [("read_file", {"path": "notes.txt"}), ("delete_file", {"path": "prod.db"})]:

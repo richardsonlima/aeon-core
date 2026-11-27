@@ -12,7 +12,7 @@ The v0.5.0 rewrite. Nothing is published yet: there is no PyPI release and no ta
 - `aeon.axioms.builtin`: `deny_tools`, `allow_tools`, `rate_limit`, `deny_arg_pattern` and `require_approval`.
 - `aeon.baseline`: per-agent behavioural baseline, clipped one-sided z-scores, Jensen-Shannon tool drift, a CUSUM accumulator, and an absolute envelope (`p99_ms`, `error_rate`, `max_cost`, `max_tokens`). `ChaosBudget` is an alias of `Budget`.
 - `aeon.audit`: append-only, hash-chained audit log written off the decision path, with JSONL, SQLite and in-memory backends, `audit.gap` and `audit.backend_error` records, and `aeon audit verify|tail|export`.
-- `aeon.chaos`: a catalog of eight faults with a blast-radius guard (`dev`, `staging`, `prod-shadow`), pre-registered TOML campaigns with control runs and Wilson intervals, a simulated `ops-assistant` scenario, and `aeon chaos list|run` and `aeon report`. Eight campaigns ship in `campaigns/`.
+- `aeon.chaos`: a catalog of eight faults with a blast-radius guard (`dev`, `staging`, `prod-shadow`), pre-registered TOML campaigns with control runs and Wilson intervals, a simulated `ops-assistant` scenario, and `aeon chaos list|run` and `aeon report`. Nine campaigns ship in `campaigns/`.
 - `aeon.adapters`: `ToolBox` for plain Python, and helpers for OpenAI (Chat Completions and Responses), Anthropic Messages and LangGraph tools. The adapters import no SDK.
 - `aeon` command: `init`, `doctor`, `axioms list|check`, `run`, `chaos`, `report`, `audit`, `runtime start` (alias `serve`), `runtime mcp`, `ui`, `docs mcp` and `version`. Every data command accepts `--json`.
 - Configuration through `aeon.toml` (or `[tool.aeon]`) and `AEON_*` variables.
@@ -38,7 +38,7 @@ The v0.5.0 rewrite. Nothing is published yet: there is no PyPI release and no ta
 
 ### Known issues
 
-See `docs/known-limits.md`. Highlights: the default budget raised false positives in up to 73% of clean control runs on the simulated agent, so seven of eight pre-registered campaigns did not meet their hypothesis; the audit queue dropped 3,856 of 20,000 events in a burst test; there is no audit signing and no Postgres backend; and all campaign results come from a scripted simulated agent, not an LLM.
+See `docs/known-limits.md`. Highlights: the default budget raised false positives in up to 70% of clean control runs on the simulated agent, so eight of nine pre-registered campaigns did not meet their hypothesis; the audit queue dropped 2,081 of 50,000 events in a burst test; there is no audit signing and no Postgres backend; and all campaign results come from a scripted simulated agent, not an LLM.
 
 ## [0.4.0-ULTRA] - 2026-02-18
 

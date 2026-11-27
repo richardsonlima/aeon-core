@@ -22,7 +22,7 @@ aeon audit verify --file path.jsonl
 aeon audit verify --expect-head <hash>  # also detects removal from the end
 ```
 
-Verification recomputes every hash and checks `seq` and `prev`. It stops at the first broken link and reports the line and the sequence number. On the committed run it verified about 179,000 records per second (one machine, see [Benchmarks](../evidence/benchmarks.md)).
+Verification recomputes every hash and checks `seq` and `prev`. It stops at the first broken link and reports the line and the sequence number. On the committed run it verified about 159,000 records per second (47,921 records) (one machine, see [Benchmarks](../evidence/benchmarks.md)).
 
 ## What it detects, and what it does not
 
@@ -41,7 +41,7 @@ There is no signing and no external anchor yet. They are on the roadmap, and not
 
 `emit` puts the event on a bounded queue (10,000 by default) and returns. One writer thread seals and appends in batches. Consequences:
 
-- If the queue is full, the event is dropped, counted, and an `audit.gap` record is written later. In the committed burst test (20,000 events with no pause) 3,856 were dropped. Paced at 1,000 events/s none were.
+- If the queue is full, the event is dropped, counted, and an `audit.gap` record is written later. In the committed burst test (50,000 events with no pause) 2,081 were dropped. Paced at 1,000 events/s none were.
 - If storage fails, records wait in memory (bounded), the writer retries with backoff, and when storage returns it first writes an `audit.backend_error` record, so the outage is part of the chain.
 - JSONL appends are all-or-nothing: if a write or fsync fails, the partial batch is truncated away. A missing trailing newline is repaired when the file is reopened, and new files are created with mode `0600`.
 - One writer process per log file. Two processes appending to one file will fork the chain.

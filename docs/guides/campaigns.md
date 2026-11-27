@@ -14,7 +14,7 @@ A fault name or alias creates an ad-hoc campaign with id `adhoc-<fault>`, defaul
 
 ## Run a pre-registered campaign
 
-The repository ships eight in `campaigns/`. Run one by id or by file:
+The repository ships nine in `campaigns/` (eight enforce, one shadow). Run one by id or by file:
 
 ```bash
 aeon chaos run rate-limit
@@ -64,4 +64,4 @@ Detection is computed only over fault runs where the fault fired at least once. 
 
 ## Results
 
-Each run saves JSON under `.aeon/campaigns/<id>/` and `latest.json`. Read it with [`aeon report`](reports.md). The committed results of the eight shipped campaigns are in [`benchmarks/results/campaigns/`](https://github.com/richardsonlima/aeon-core/tree/main/benchmarks/results/campaigns), including the ones where the hypothesis was not supported.
+Each run saves JSON under `.aeon/campaigns/<id>/` and `latest.json`. Read it with [`aeon report`](reports.md). The committed results of the nine shipped campaigns are in [`benchmarks/results/campaigns/`](https://github.com/richardsonlima/aeon-core/tree/main/benchmarks/results/campaigns), including the ones where the hypothesis was not supported.

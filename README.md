@@ -23,7 +23,7 @@ Inspired by the MECADE framework (chaos engineering for dependability); an indep
 | Adapters for plain Python, OpenAI, Anthropic and LangGraph (duck-typed) | Certification of any kind (IEC 61508, DO-178C and similar are inspiration and roadmap only) |
 | Local HTTP runtime, control plane UI, MCP servers for the gate and the docs | A published container image |
 
-**Read [Known limits](https://www.richardsonlima.com.br/aeon/docs/known-limits/) before you rely on it.** The short version: the gate only covers actions that pass through the wrapped executor, axioms do not judge the meaning of free text, and on the committed campaigns the default budget raised false positives in up to 73% of clean control runs of a simulated agent (seven of eight pre-registered hypotheses were not supported).
+**Read [Known limits](https://www.richardsonlima.com.br/aeon/docs/known-limits/) before you rely on it.** The short version: the gate only covers actions that pass through the wrapped executor, axioms do not judge the meaning of free text, and on the committed campaigns the default budget raised false positives in up to 70% of clean control runs of a simulated agent (eight of nine pre-registered hypotheses were not supported).
 
 ## Install
 
@@ -65,8 +65,10 @@ from aeon.axioms import ActionBlocked, enforce
 
 @enforce
 def run_tool(tool, args):
-    return {"read_file": lambda path: f"contents of {path}",
-            "delete_file": lambda path: f"deleted {path}"}[tool](**args)
+    return {
+        "read_file": lambda path: f"contents of {path}",
+        "delete_file": lambda path: f"deleted {path}",
+    }[tool](**args)
 
 
 for tool, args in [("read_file", {"path": "notes.txt"}), ("delete_file", {"path": "prod.db"})]:

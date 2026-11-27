@@ -22,7 +22,7 @@ aeon audit verify --file caminho.jsonl
 aeon audit verify --expect-head <hash>  # também detecta remoção no fim
 ```
 
-A verificação recalcula todos os hashes e confere `seq` e `prev`. Ela para no primeiro elo quebrado e informa a linha e o número de sequência. Na execução versionada verificou cerca de 179 mil registros por segundo (uma máquina, veja [Benchmarks](../evidence/benchmarks.md)).
+A verificação recalcula todos os hashes e confere `seq` e `prev`. Ela para no primeiro elo quebrado e informa a linha e o número de sequência. Na execução versionada verificou cerca de 159 mil registros por segundo (47.921 registros) (uma máquina, veja [Benchmarks](../evidence/benchmarks.md)).
 
 ## O que detecta e o que não detecta
 
@@ -41,7 +41,7 @@ Ainda não há assinatura nem âncora externa. Estão no roteiro, e não foram c
 
 `emit` coloca o evento numa fila limitada (10.000 por padrão) e retorna. Uma thread de escrita sela e grava em lotes. Consequências:
 
-- Se a fila encher, o evento é descartado, contado, e um registro `audit.gap` é escrito depois. No teste de rajada versionado (20.000 eventos sem pausa) 3.856 foram descartados. A 1.000 eventos/s nenhum foi.
+- Se a fila encher, o evento é descartado, contado, e um registro `audit.gap` é escrito depois. No teste de rajada versionado (50.000 eventos sem pausa) 2.081 foram descartados. A 1.000 eventos/s nenhum foi.
 - Se o armazenamento falhar, os registros esperam em memória (limitada), a thread tenta de novo com espera crescente e, quando o armazenamento volta, ela escreve primeiro um registro `audit.backend_error`, então a queda fica na cadeia.
 - Acréscimos JSONL são tudo ou nada: se uma escrita ou fsync falhar, o lote parcial é truncado. Uma quebra de linha final ausente é reparada quando o arquivo é reaberto, e arquivos novos são criados com modo `0600`.
 - Um processo de escrita por arquivo de log. Dois processos acrescentando ao mesmo arquivo bifurcam a cadeia.

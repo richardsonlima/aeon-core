@@ -34,10 +34,10 @@ Você envolve a função pela qual o agente executa ferramentas. Antes de cada c
 
 ## Evidências, com as más notícias
 
-Todo número desta documentação vem de resultados versionados de uma máquina (Apple M1, Python 3.12.14, 2026-11-27), e cada página diz isso. Eles descrevem só aquela máquina.
+Todo número desta documentação vem de resultados versionados de uma máquina (Apple M1, Python 3.10.21, 2026-11-27), e cada página diz isso. Eles descrevem só aquela máquina.
 
-- Uma decisão do gate: p99 de 12,6 µs com 10 axiomas, mas a pior chamada da execução foi 462,6 µs e a fila de auditoria descartou 3.856 de 20.000 eventos num teste de rajada.
-- De oito campanhas pré-registradas, **sete não atingiram a hipótese**, principalmente porque o orçamento padrão gerou falsos positivos em tráfego limpo do agente simulado (até 73%). Nenhuma ação destrutiva sem aprovação rodou em modo enforce.
+- Uma decisão do gate: p99 de 15,0 µs com 10 axiomas, mas a pior chamada da execução foi 195 µs, e a fila de auditoria descartou 2.081 de 50.000 eventos num teste de rajada.
+- De nove campanhas pré-registradas (oito enforce, uma shadow), **oito não atingiram a hipótese**: seis por falsos positivos (de 20% a 70% das execuções de controle limpas do agente simulado dispararam o alarme) e duas na verificação de Safe State. Nas campanhas enforce em que uma ação destrutiva foi tentada, nenhuma rodou.
 
 Veja [Benchmarks](evidence/benchmarks.md), [Alegações](claims.md) e o [primeiro resultado desfavorável](blog/first-unfavourable-result.md).
 

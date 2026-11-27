@@ -22,7 +22,7 @@ python benchmarks/run_all.py --quick       # fewer samples, a smoke check
 
 ## The machine caveat
 
-The committed results come from one machine: Apple M1, 8 CPUs, macOS (Darwin 25.6.0), CPython 3.12.14, Æon 0.5.0.dev0, run on 2026-11-27. **These numbers describe that machine only.** Latency maxima in particular are noise from the scheduler and the garbage collector, and do not reproduce.
+The committed results come from one machine: Apple M1, 8 CPUs, macOS (Darwin 25.6.0), CPython 3.10.21, Æon 0.5.0.dev0, run on 2026-11-27. **These numbers describe that machine only.** Latency maxima in particular are noise from the scheduler and the garbage collector, and do not reproduce.
 
 ## Unfavourable results
 

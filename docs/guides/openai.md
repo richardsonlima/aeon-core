@@ -30,6 +30,7 @@ def delete_file(path: str) -> str:
     """Delete a file."""
     return f"deleted {path}"
 
+
 # client = OpenAI()   # reads OPENAI_API_KEY
 messages = [{"role": "user", "content": "Summarise notes.txt"}]
 specs = tool_specs(box)

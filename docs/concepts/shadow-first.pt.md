@@ -13,7 +13,7 @@ Instalações novas começam em modo shadow, e `aeon init` escreve `mode = "shad
 
 ## Por que nessa ordem
 
-Um axioma é código que você escreveu sobre o que é seguro. Na primeira vez que encontrar tráfego real, ele vai estar errado em algum ponto. Em shadow, uma regra errada custa uma linha de log. Em `BLOCK`, ela para um agente. O [orçamento](budget.md) é pior: os padrões deram taxas de falso positivo de até 73% no agente simulado (veja o [post](../blog/first-unfavourable-result.md)), então rode em `ALERT` primeiro e calibre.
+Um axioma é código que você escreveu sobre o que é seguro. Na primeira vez que encontrar tráfego real, ele vai estar errado em algum ponto. Em shadow, uma regra errada custa uma linha de log. Em `BLOCK`, ela para um agente. O [orçamento](budget.md) é pior: os padrões deram taxas de falso positivo de até 70% no agente simulado (veja o [post](../blog/first-unfavourable-result.md)), então rode em `ALERT` primeiro e calibre.
 
 O shadow também mostra o que você teria pego. Na campanha shadow versionada, 385 ações destrutivas sem aprovação rodaram em 30 execuções com falha enquanto o gate registrava um `BLOCK` para cada uma. É o número que o shadow evita que você chute.
 

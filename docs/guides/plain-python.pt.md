@@ -62,11 +62,13 @@ from aeon.adapters import ToolBox
 
 box = ToolBox(gate=gate, agent="support-bot")
 
+
 @box.tool
 def read_file(path: str) -> str: ...
 
-box.call("read_file", {"path": "notes.txt"})      # levanta ActionBlocked se negado
-box.safe_call("read_file", {"path": "notes.txt"}) # devolve texto para o modelo em vez de levantar
+
+box.call("read_file", {"path": "notes.txt"})  # levanta ActionBlocked se negado
+box.safe_call("read_file", {"path": "notes.txt"})  # devolve texto para o modelo em vez de levantar
 ```
 
 ## 4. Dê nome aos agentes

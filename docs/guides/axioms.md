@@ -47,13 +47,19 @@ They run on the decision path, in the caller's thread. Do not do I/O or call a m
 `aeon.axioms.builtin` returns ready-made rules. Assign them at module level in an axiom file so `aeon axioms list` finds them:
 
 ```python
-from aeon.axioms.builtin import allow_tools, deny_arg_pattern, deny_tools, rate_limit, require_approval
+from aeon.axioms.builtin import (
+    allow_tools,
+    deny_arg_pattern,
+    deny_tools,
+    rate_limit,
+    require_approval,
+)
 
-no_delete = deny_tools(["delete_file"], unless_approved=True)       # BLOCK
-only_these = allow_tools(["read_file", "search_docs"])              # BLOCK for any other tool
-no_secrets = deny_arg_pattern(r"AKIA[0-9A-Z]{16}", level="BLOCK")   # regex over string args
-deploys = require_approval(["deploy"])                               # LIMIT unless approved
-slow_down = rate_limit(30, 60, tools=["send_email"])                 # LIMIT after 30 calls in 60 s
+no_delete = deny_tools(["delete_file"], unless_approved=True)  # BLOCK
+only_these = allow_tools(["read_file", "search_docs"])  # BLOCK for any other tool
+no_secrets = deny_arg_pattern(r"AKIA[0-9A-Z]{16}", level="BLOCK")  # regex over string args
+deploys = require_approval(["deploy"])  # LIMIT unless approved
+slow_down = rate_limit(30, 60, tools=["send_email"])  # LIMIT after 30 calls in 60 s
 ```
 
 `rate_limit` uses wall-clock time and counts decisions, so a denied call still counts. It is unsuitable for a fast simulated agent: the campaigns leave it out on purpose.
