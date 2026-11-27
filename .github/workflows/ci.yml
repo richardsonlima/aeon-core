@@ -48,17 +48,12 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Install from the lockfile (core only, no runtime extra)
         shell: bash
-        run: |
-          uv sync --locked --group dev
-          if [ "$RUNNER_OS" = "Windows" ]; then
-            echo "$PWD/.venv/Scripts" >> "$GITHUB_PATH"
-          else
-            echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
-          fi
+        run: uv sync --locked --group dev
       - name: Test (core, runtime extra absent)
         # runtime modules are not importable here, so the coverage floor is checked
         # in test-runtime, where the whole package runs
-        run: pytest --cov --cov-report=xml --cov-fail-under=0
+        # uv run finds the venv on every OS (Git Bash paths in GITHUB_PATH break pwsh)
+        run: uv run --no-sync pytest --cov --cov-report=xml --cov-fail-under=0
       - uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ matrix.os }}-py${{ matrix.python }}
@@ -151,7 +146,7 @@ jobs:
           cd "$WORK"
           uv venv venv
           if [ "$RUNNER_OS" = "Windows" ]; then BIN="$WORK/venv/Scripts"; else BIN="$WORK/venv/bin"; fi
-          uv pip install --python "$BIN/python" "$WHEEL"
+          uv pip install --python "$WORK/venv" "$WHEEL"   # the venv dir works on every OS
           mkdir project
           cd project
           "$BIN/aeon" doctor
