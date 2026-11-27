@@ -108,16 +108,39 @@ class JsonlBackend:
     def append(self, records: list[dict[str, Any]]) -> None:
         """Append one line per record, flushing (and fsyncing if enabled) before returning."""
         if self._fh is None:
-            self.path.parent.mkdir(parents=True, exist_ok=True)
-            self._fh = open(self.path, "a", encoding="utf-8")  # noqa: SIM115
+            self._open()
         data = "".join(
             json.dumps(r, ensure_ascii=False, separators=(",", ":"), default=str) + "\n"
             for r in records
         )
-        self._fh.write(data)
-        self._fh.flush()
-        if self.fsync:
-            os.fsync(self._fh.fileno())
+        start = self._fh.tell()
+        try:
+            self._fh.write(data)
+            self._fh.flush()
+            if self.fsync:
+                os.fsync(self._fh.fileno())
+        except BaseException:
+            # all-or-nothing: drop a partial or unsynced batch so a retry cannot duplicate it
+            with contextlib.suppress(OSError):
+                self._fh.seek(start)
+                self._fh.truncate(start)
+                self._fh.flush()
+            raise
+
+    def _open(self) -> None:
+        """Open for append (created 0600) and terminate a last line that lacks a newline."""
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        fd = os.open(self.path, os.O_RDWR | os.O_CREAT | os.O_APPEND, 0o600)
+        fh = os.fdopen(fd, "a+", encoding="utf-8")
+        size = fh.seek(0, os.SEEK_END)
+        if size:
+            with open(self.path, "rb") as raw:
+                raw.seek(size - 1)
+                last = raw.read(1)
+            if last != b"\n":
+                fh.write("\n")
+                fh.flush()
+        self._fh = fh
 
     def entries(self) -> Iterator[Entry]:
         """Yield each line of the file as a record or a ``ParseFailure``."""
