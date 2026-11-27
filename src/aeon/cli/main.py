@@ -274,7 +274,8 @@ def cmd_run(args: argparse.Namespace) -> int:
     script = Path(args.script)
     if not script.is_file():
         raise CLIError(f"script not found: {script}", "pass the path to a Python file")
-    os.environ["AEON_MODE"] = args.mode
+    if args.mode is not None:  # otherwise keep the mode from aeon.toml / AEON_MODE
+        os.environ["AEON_MODE"] = args.mode
     set_default_gate(None)
     sys.argv = [str(script), *args.script_args]
     sys.path.insert(0, str(script.resolve().parent))
@@ -394,6 +395,10 @@ def cmd_chaos_run(args: argparse.Namespace) -> int:
     except (ValueError, KeyError) as exc:
         raise CLIError(f"invalid campaign: {exc}", "see docs/guides/campaigns.md") from None
     _apply_overrides(c, args)
+    try:
+        c.__post_init__()  # re-validate after command-line overrides
+    except ValueError as exc:
+        raise CLIError(str(exc), "check --runs, --controls and --seed", EXIT_USAGE) from None
 
     def progress(kind: str, i: int, n: int) -> None:
         if not args.json and sys.stderr.isatty():
@@ -489,22 +494,32 @@ def cmd_audit_tail(args: argparse.Namespace) -> int:
     from aeon.audit import read
 
     spec = _audit_spec(args)
-    recs = list(read(spec))[-args.n :]
-    if args.type:
-        recs = [r for r in recs if r["type"] == args.type]
-
-    def fmt(r: dict[str, Any]) -> str:
-        d = r["data"]
-        if r["type"] == "decision":
-            return (
-                f"{r['seq']:>6} {r['ts']} {d['verdict']:<5} {d['agent']}/{d['tool']} "
-                f"{'allowed' if d['allowed'] else 'DENIED'} ({d['mode']})"
-                + (f" - {'; '.join(f['reason'] for f in d['findings'])}" if d["findings"] else "")
-            )
-        return f"{r['seq']:>6} {r['ts']} {r['type']} {json.dumps(d, default=str)}"
-
-    out(args, recs, lambda: "\n".join(fmt(r) for r in recs) or "audit log is empty")
+    recs = [r for r in read(spec) if not args.type or r.get("type") == args.type]
+    recs = recs[-args.n :] if args.n > 0 else []
+    out(args, recs, lambda: "\n".join(_fmt_record(r) for r in recs) or "audit log is empty")
     return EXIT_OK
+
+
+def _fmt_record(r: dict[str, Any]) -> str:
+    """One line per audit record; tolerant of records with missing fields."""
+    d = r.get("data") if isinstance(r.get("data"), dict) else {}
+    head = f"{r.get('seq', '?'):>6} {r.get('ts', '?')}"
+    if r.get("type") == "decision":
+        findings = d.get("findings") or []
+        reasons = "; ".join(str(f.get("reason", "")) for f in findings if isinstance(f, dict))
+        return (
+            f"{head} {d.get('verdict', '?'):<5} {d.get('agent', '?')}/{d.get('tool', '?')} "
+            f"{'allowed' if d.get('allowed') else 'DENIED'} ({d.get('mode', '?')})"
+            + (f" - {reasons}" if reasons else "")
+        )
+    return f"{head} {r.get('type')} {json.dumps(d, default=str)}"
+
+
+def _csv_safe(value: Any) -> Any:
+    """Neutralise spreadsheet formulas in exported text cells."""
+    if isinstance(value, str) and value[:1] in ("=", "+", "-", "@", "\t", "\r"):
+        return "'" + value
+    return value
 
 
 def cmd_audit_export(args: argparse.Namespace) -> int:
@@ -522,20 +537,10 @@ def cmd_audit_export(args: argparse.Namespace) -> int:
         w = csv.writer(buf)
         w.writerow(["seq", "ts", "type", "agent", "tool", "verdict", "allowed", "mode", "hash"])
         for r in recs:
-            d = r["data"]
-            w.writerow(
-                [
-                    r["seq"],
-                    r["ts"],
-                    r["type"],
-                    d.get("agent", ""),
-                    d.get("tool", ""),
-                    d.get("verdict", ""),
-                    d.get("allowed", ""),
-                    d.get("mode", ""),
-                    r["hash"],
-                ]
-            )
+            d = r.get("data") if isinstance(r.get("data"), dict) else {}
+            row = [r.get("seq"), r.get("ts"), r.get("type")]
+            row += [d.get(k, "") for k in ("agent", "tool", "verdict", "allowed", "mode")]
+            w.writerow([_csv_safe(v) for v in [*row, r.get("hash")]])
         body = buf.getvalue()
     if args.output:
         Path(args.output).write_text(body, "utf-8")
@@ -631,7 +636,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     sp = add("run", cmd_run, "run a Python agent script under the gate", json_flag=False)
     sp.add_argument("script")
-    sp.add_argument("--mode", choices=["shadow", "enforce"], default="shadow")
+    sp.add_argument(
+        "--mode",
+        choices=["shadow", "enforce"],
+        help="override the configured mode (default: from aeon.toml, else shadow)",
+    )
     sp.add_argument(
         "script_args",
         nargs="*",
