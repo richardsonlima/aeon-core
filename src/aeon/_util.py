@@ -51,3 +51,10 @@ def env_flag(name: str, default: bool = False) -> bool:
 
 def freeze(mapping: Mapping[str, Any] | None) -> dict[str, Any]:
     return dict(mapping) if mapping else {}
+
+
+def csv_safe(value: Any) -> Any:
+    """Neutralise spreadsheet formulas in exported text cells (``=``, ``+``, ``-``, ``@``)."""
+    if isinstance(value, str) and value[:1] in ("=", "+", "-", "@", "\t", "\r"):
+        return "'" + value
+    return value

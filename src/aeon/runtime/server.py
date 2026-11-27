@@ -31,6 +31,19 @@ def is_loopback(host: str) -> bool:
         return False
 
 
+def allowed_hosts(host: str) -> list[str]:
+    """Host names accepted in requests: ``AEON_RUNTIME_ALLOWED_HOSTS`` or loopback names.
+
+    Returns an empty list (no Host check) only for a non-loopback bind without the variable.
+    """
+    raw = os.environ.get("AEON_RUNTIME_ALLOWED_HOSTS", "")
+    if raw.strip():
+        return [h.strip() for h in raw.split(",") if h.strip()]
+    if is_loopback(host):
+        return ["localhost", "127.0.0.1", "[::1]", "::1"]
+    return []
+
+
 def check_bind_host(host: str) -> None:
     """Refuse a non-loopback bind unless ``AEON_RUNTIME_ALLOW_REMOTE=1``."""
     if is_loopback(host) or os.environ.get("AEON_RUNTIME_ALLOW_REMOTE") == "1":
@@ -82,17 +95,22 @@ def serve(host: str, port: int, config: str | None, open_ui: bool) -> int:
     except ConfigError as exc:
         raise _cli_error(str(exc), "check aeon.toml or pass --config") from None
     _check_port_free(host, port)
-    token, where = resolve_token(None, cfg.root)
+    try:
+        token, where = resolve_token(None, cfg.root)
+    except PermissionError as exc:
+        raise _cli_error(str(exc), "remove the link and let the runtime create the file") from None
     try:
         app = create_app(config=cfg, token=token)
     except ConfigError as exc:
         raise _cli_error(str(exc), "check the axiom files listed in aeon.toml") from None
+    # DNS rebinding guard: only these Host names may address the runtime
+    hosts = allowed_hosts(host)
+    if hosts:
+        app.add_middleware(TrustedHostMiddleware, allowed_hosts=hosts)
     if not is_loopback(host):
         print("warning: bound to a non-loopback address; traffic is plain HTTP", flush=True)
-    else:  # DNS rebinding guard: only loopback host names may address the runtime
-        app.add_middleware(
-            TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "[::1]", "::1"]
-        )
+    for f in cfg.axioms:  # axiom files are Python and run with your privileges
+        print(f"axioms: {(cfg.root / f).resolve()}", flush=True)
 
     shown = f"[{host}]" if ":" in host else host
     base = f"http://{shown}:{port}"

@@ -69,6 +69,9 @@ class Campaign:
             raise ValueError(f"campaign {self.id!r}: start_step must be in [0, steps)")
         if self.runs < 1 or self.controls < 0:
             raise ValueError(f"campaign {self.id!r}: runs must be >= 1 and controls >= 0")
+        for name in ("probability", "gullibility"):
+            if not 0.0 <= getattr(self, name) <= 1.0:
+                raise ValueError(f"campaign {self.id!r}: {name} must be within [0, 1]")
         Level.parse(self.detect_level)
         BlastRadius.parse(self.blast_radius)
 
@@ -447,7 +450,11 @@ def list_results(root: Path | None = None) -> list[dict[str, Any]]:
         for d in sorted(base.iterdir()):
             latest = d / "latest.json"
             if latest.is_file():
-                doc = json.loads(latest.read_text("utf-8"))
+                try:
+                    doc = json.loads(latest.read_text("utf-8"))
+                    doc["summary"]["detection_rate"]
+                except (OSError, ValueError, KeyError, TypeError):
+                    continue  # one damaged result must not hide the others
                 out.append(
                     {
                         "id": d.name,
