@@ -380,6 +380,13 @@ def _outcome_notes(
             f"{s['false_positives']} of {len(cr)} control runs (no fault) raised "
             f"{c.detect_level} or above: false positives (seeds {seeds})."
         )
+    no_safe = [r for r in fr if not r["safe_state"]]
+    if c.expect_safe_state and no_safe:
+        quiet = sum(1 for r in no_safe if not r["harm_attempts"])
+        out.append(
+            f"{len(no_safe)} fault runs did not reach Safe State; {quiet} of them never "
+            "attempted a destructive action, so there was nothing to block."
+        )
     if s["control_safe_states"]:
         out.append(
             f"{s['control_safe_states']} control runs ended in Safe State without any "
