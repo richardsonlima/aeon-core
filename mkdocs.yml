@@ -1,0 +1,188 @@
+site_name: Æon Core
+site_description: Gate the actions of LLM agents and inject controlled faults to check that they fail safe.
+site_url: https://www.richardsonlima.com.br/aeon/docs/
+site_author: Richardson Lima
+repo_url: https://github.com/richardsonlima/aeon-core
+repo_name: richardsonlima/aeon-core
+edit_uri: edit/main/docs/
+copyright: Apache-2.0. Inspired by the MECADE framework; an independent project.
+docs_dir: docs
+strict: true
+
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+  anchors: warn
+
+theme:
+  name: material
+  language: en
+  font: false
+  palette:
+    scheme: default
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - search.highlight
+    - content.code.copy
+    - toc.follow
+
+extra_css:
+  - stylesheets/aeon.css
+
+plugins:
+  - search
+  - i18n:
+      docs_structure: suffix
+      fallback_to_default: true
+      reconfigure_material: true
+      reconfigure_search: true
+      languages:
+        - locale: en
+          default: true
+          name: English
+          build: true
+        - locale: pt
+          name: Português
+          build: true
+          nav_translations:
+            Welcome: Boas-vindas
+            Get started: Primeiros passos
+            Install: Instalação
+            Quickstart (5 minutes): Início rápido (5 minutos)
+            Prompt for a coding agent: Prompt para um agente de código
+            Where it runs: Onde roda
+            Concepts: Conceitos
+            Gate and observation path: Gate e caminho de observação
+            Autonomy levels: Níveis de autonomia
+            Safe State: Safe State (estado seguro)
+            Budget and deviation: Orçamento e desvio
+            Fault catalog: Catálogo de falhas
+            Audit chain: Cadeia de auditoria
+            Shadow-first adoption: Adoção shadow-first
+            Guides: Guias
+            Wrap a plain Python agent: Proteger um agente Python simples
+            Wrap an OpenAI agent: Proteger um agente OpenAI
+            Wrap an Anthropic agent: Proteger um agente Anthropic
+            Wrap a LangGraph agent: Proteger um agente LangGraph
+            Write an axiom: Escrever um axioma
+            Run a campaign: Rodar uma campanha
+            Read a report: Ler um relatório
+            Roll out in shadow mode: Implantar em modo shadow
+            CI resilience gate: Gate de resiliência no CI
+            Runtime, control plane and Docker: Runtime, painel de controle e Docker
+            Reference: Referência
+            Python API: API Python
+            CLI: CLI
+            HTTP API: API HTTP
+            MCP tools: Ferramentas MCP
+            Configuration: Configuração
+            KB: Base de conhecimento
+            Why shadow first: Por que shadow primeiro
+            What BLOCK guarantees: O que o BLOCK garante
+            What it does not guarantee: O que não garante
+            How to calibrate a budget: Como calibrar um orçamento
+            How to read an unfavourable result: Como ler um resultado desfavorável
+            Evidence: Evidências
+            Benchmarks: Benchmarks
+            Claims: Alegações
+            Known limits: Limites conhecidos
+            Security: Segurança
+            Project: Projeto
+            Audit of v0.4: Auditoria da v0.4
+            Decisions: Decisões
+            Changelog: Changelog
+            Blog: Blog
+            Site changes: Mudanças no site
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: google
+            show_source: false
+            show_root_heading: true
+            show_root_full_path: true
+            members_order: source
+            heading_level: 3
+            show_signature_annotations: true
+            separate_signature: true
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: false
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.snippets:
+      base_path: ["."]
+      check_paths: true
+  - pymdownx.tabbed:
+      alternate_style: true
+
+nav:
+  - Welcome: index.md
+  - Get started:
+      - Install: get-started/install.md
+      - Quickstart (5 minutes): get-started/quickstart.md
+      - Prompt for a coding agent: get-started/coding-agent.md
+      - Where it runs: get-started/where-it-runs.md
+  - Concepts:
+      - Gate and observation path: concepts/gate.md
+      - Autonomy levels: concepts/autonomy-levels.md
+      - Safe State: concepts/safe-state.md
+      - Budget and deviation: concepts/budget.md
+      - Fault catalog: concepts/faults.md
+      - Audit chain: concepts/audit-chain.md
+      - Shadow-first adoption: concepts/shadow-first.md
+  - Guides:
+      - Wrap a plain Python agent: guides/plain-python.md
+      - Wrap an OpenAI agent: guides/openai.md
+      - Wrap an Anthropic agent: guides/anthropic.md
+      - Wrap a LangGraph agent: guides/langgraph.md
+      - Write an axiom: guides/axioms.md
+      - Run a campaign: guides/campaigns.md
+      - Read a report: guides/reports.md
+      - Roll out in shadow mode: guides/shadow-rollout.md
+      - CI resilience gate: guides/ci-gate.md
+      - Runtime, control plane and Docker: guides/runtime.md
+  - Reference:
+      - Python API: reference/python-api.md
+      - CLI: reference/cli.md
+      - HTTP API: reference/http-api.md
+      - MCP tools: reference/mcp.md
+      - Configuration: reference/config.md
+  - KB:
+      - Why shadow first: kb/why-shadow-first.md
+      - What BLOCK guarantees: kb/what-block-guarantees.md
+      - What it does not guarantee: kb/what-it-does-not-guarantee.md
+      - How to calibrate a budget: kb/calibrate-budget.md
+      - How to read an unfavourable result: kb/unfavourable-result.md
+  - Evidence:
+      - Benchmarks: evidence/benchmarks.md
+      - Claims: claims.md
+      - Known limits: known-limits.md
+      - Security: security.md
+  - Project:
+      - Audit of v0.4: audit.md
+      - Decisions:
+          - "001 Rewrite for v0.5.0": decisions/001-rewrite-v0.5.md
+          - "002 Python practices": decisions/002-python-practices.md
+          - "003 Operator token and axiom trust": decisions/003-operator-token-and-axiom-trust.md
+      - Changelog: changelog.md
+      - Blog:
+          - blog/index.md
+          - blog/why-gate-agent-actions.md
+          - blog/shadow-mode-method.md
+          - blog/first-unfavourable-result.md
+      - Site changes: site-changes.md
+
+extra:
+  generator: false

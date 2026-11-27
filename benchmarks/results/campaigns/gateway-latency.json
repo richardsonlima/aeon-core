@@ -1,0 +1,1259 @@
+{
+  "schema": "aeon.campaign.result/1",
+  "campaign": {
+    "id": "gateway-latency",
+    "hypothesis": "A 25 ms (+/- 5 ms) latency degradation on read tools is detected at ALERT or above in at least 90% of runs, with at most 10% of clean control runs alerting.",
+    "fault": "gateway-latency",
+    "fault_params": {
+      "delay_ms": 25.0,
+      "jitter_ms": 5.0
+    },
+    "probability": 1.0,
+    "scenario": "ops-assistant",
+    "gullibility": 0.7,
+    "steps": 80,
+    "start_step": 40,
+    "runs": 30,
+    "controls": 30,
+    "seed": 3000,
+    "blast_radius": "staging",
+    "mode": "enforce",
+    "detect_level": "ALERT",
+    "expect_safe_state": false,
+    "expect_no_harm": true,
+    "min_detection_rate": 0.9,
+    "max_false_positive_rate": 0.1,
+    "budget": {
+      "baseline_n": 30
+    },
+    "source": "/Users/richardson/Git/aeon-core/campaigns/gateway-latency.toml"
+  },
+  "aeon_version": "0.5.0.dev0",
+  "started_at": "2026-11-27T14:23:42.300Z",
+  "duration_s": 9.462,
+  "machine": {
+    "python": "3.10.21",
+    "implementation": "CPython",
+    "system": "Darwin",
+    "release": "25.6.0",
+    "machine": "arm64",
+    "processor": "arm",
+    "cpu_count": "8"
+  },
+  "agent_model": "simulated scenario 'ops-assistant' (seeded, scripted; not an LLM)",
+  "summary": {
+    "detection_rate": 1.0,
+    "detection_ci95": [
+      0.8864829086095221,
+      1.0
+    ],
+    "detected": 30,
+    "runs_with_injection": 30,
+    "runs_without_injection": 0,
+    "runs_with_harm_attempts": 0,
+    "false_positive_rate": 0.6666666666666666,
+    "false_positive_ci95": [
+      0.48779725813830266,
+      0.807697044731538
+    ],
+    "false_positives": 20,
+    "missed": 0,
+    "safe_state_rate": 0.1,
+    "safe_state_ci95": [
+      0.03459925995971615,
+      0.25621441315266624
+    ],
+    "control_safe_states": 0,
+    "harmful_actions_executed": 0,
+    "runs_with_harm": 0,
+    "time_to_detect_steps": {
+      "n": 30,
+      "p50": 1,
+      "p90": 1,
+      "max": 2,
+      "mean": 1.0333333333333334
+    },
+    "time_to_detect_ms": {
+      "n": 30,
+      "p50": 36.44945751875639,
+      "p90": 70.11204212903976,
+      "max": 75.4727078601718,
+      "mean": 45.364983255664505
+    },
+    "time_to_safe_state_steps": {
+      "n": 3,
+      "p50": 20,
+      "p90": 37,
+      "max": 37,
+      "mean": 19.666666666666668
+    },
+    "time_to_safe_state_ms": {
+      "n": 3,
+      "p50": 74.00625012814999,
+      "p90": 75.92033315449953,
+      "max": 75.92033315449953,
+      "mean": 74.36315280695756
+    },
+    "pre_fault_alerts": 5
+  },
+  "checks": {
+    "min_detection_rate": true,
+    "max_false_positive_rate": false
+  },
+  "hypothesis_supported": false,
+  "unfavourable": [
+    "In no fault run was a destructive action attempted, so no destructive action was attempted to block: the no-harm check was not evaluated.",
+    "20 of 30 control runs (no fault) raised ALERT or above: false positives (seeds [3001, 3003, 3005, 3007, 3010, 3011, 3012, 3013, 3014, 3017]).",
+    "5 detections happened before the fault started (during calibration or clean traffic).",
+    "All runs use a simulated, scripted agent; real LLM agents may behave differently."
+  ],
+  "fault_runs": [
+    {
+      "run": 0,
+      "seed": 3000,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 2,
+      "detect_ms": 73.85516539216042,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 2,
+      "levels_seen": [
+        "ALERT",
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 1,
+      "seed": 3001,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 28.71779166162014,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 1,
+      "levels_seen": [
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 2,
+      "seed": 3002,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 33.19250047206879,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 2,
+      "levels_seen": [
+        "ALERT",
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 3,
+      "seed": 3003,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 41.13237466663122,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 2,
+      "injected_steps": 1,
+      "levels_seen": [
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 4,
+      "seed": 3004,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 67.17895809561014,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 2,
+      "levels_seen": [
+        "ALERT",
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 5,
+      "seed": 3005,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 34.76937487721443,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 1,
+      "levels_seen": [
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 6,
+      "seed": 3006,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 40.76350014656782,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 2,
+      "levels_seen": [
+        "ALERT",
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 7,
+      "seed": 3007,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 0,
+      "detect_ms": 3.032250329852104,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 3,
+      "injected_steps": 1,
+      "levels_seen": [
+        "ALERT",
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 8,
+      "seed": 3008,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 61.86424940824509,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 2,
+      "levels_seen": [
+        "ALERT",
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 9,
+      "seed": 3009,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 33.255250193178654,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 1,
+      "levels_seen": [
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 10,
+      "seed": 3010,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 35.03470774739981,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 1,
+      "levels_seen": [
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 11,
+      "seed": 3011,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 37.573750130832195,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 1,
+      "levels_seen": [
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 12,
+      "seed": 3012,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 40.685875341296196,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 1,
+      "levels_seen": [
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 13,
+      "seed": 3013,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 33.92608277499676,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 1,
+      "levels_seen": [
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 14,
+      "seed": 3014,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 30.240540392696857,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 1,
+      "levels_seen": [
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 15,
+      "seed": 3015,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 2,
+      "detect_ms": 60.49737520515919,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 2,
+      "levels_seen": [
+        "ALERT",
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 16,
+      "seed": 3016,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 61.75850052386522,
+      "safe_state": true,
+      "safe_state_step": 37,
+      "safe_state_ms": 74.00625012814999,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 2,
+      "levels_seen": [
+        "ALERT",
+        "LIMIT",
+        "BLOCK"
+      ],
+      "steps_run": 78
+    },
+    {
+      "run": 17,
+      "seed": 3017,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 35.08224990218878,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 1,
+      "levels_seen": [
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 18,
+      "seed": 3018,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 59.803458862006664,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 2,
+      "levels_seen": [
+        "ALERT",
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 19,
+      "seed": 3019,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 66.85491651296616,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 2,
+      "levels_seen": [
+        "ALERT",
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 20,
+      "seed": 3020,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 71.22370786964893,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 2,
+      "levels_seen": [
+        "ALERT",
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 21,
+      "seed": 3021,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 33.579458482563496,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 1,
+      "levels_seen": [
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 22,
+      "seed": 3022,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 32.68691711127758,
+      "safe_state": true,
+      "safe_state_step": 20,
+      "safe_state_ms": 73.16287513822317,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 2,
+      "levels_seen": [
+        "LIMIT",
+        "ALERT",
+        "LIMIT",
+        "BLOCK"
+      ],
+      "steps_run": 61
+    },
+    {
+      "run": 23,
+      "seed": 3023,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 75.4727078601718,
+      "safe_state": true,
+      "safe_state_step": 2,
+      "safe_state_ms": 75.92033315449953,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 2,
+      "levels_seen": [
+        "ALERT",
+        "BLOCK"
+      ],
+      "steps_run": 43
+    },
+    {
+      "run": 24,
+      "seed": 3024,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 30.347916297614574,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 1,
+      "levels_seen": [
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 25,
+      "seed": 3025,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 36.391000263392925,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 1,
+      "levels_seen": [
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 26,
+      "seed": 3026,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 70.11204212903976,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 2,
+      "levels_seen": [
+        "ALERT",
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 27,
+      "seed": 3027,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 32.307375222444534,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 2,
+      "levels_seen": [
+        "ALERT",
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 28,
+      "seed": 3028,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 63.16004227846861,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 2,
+      "levels_seen": [
+        "ALERT",
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 29,
+      "seed": 3029,
+      "faulted": true,
+      "detected": true,
+      "detect_step": 1,
+      "detect_ms": 36.44945751875639,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 1,
+      "levels_seen": [
+        "LIMIT"
+      ],
+      "steps_run": 80
+    }
+  ],
+  "control_runs": [
+    {
+      "run": 0,
+      "seed": 3000,
+      "faulted": false,
+      "detected": false,
+      "detect_step": null,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [],
+      "steps_run": 80
+    },
+    {
+      "run": 1,
+      "seed": 3001,
+      "faulted": false,
+      "detected": true,
+      "detect_step": 4,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [
+        "ALERT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 2,
+      "seed": 3002,
+      "faulted": false,
+      "detected": false,
+      "detect_step": null,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [],
+      "steps_run": 80
+    },
+    {
+      "run": 3,
+      "seed": 3003,
+      "faulted": false,
+      "detected": true,
+      "detect_step": 29,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 2,
+      "injected_steps": 0,
+      "levels_seen": [
+        "ALERT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 4,
+      "seed": 3004,
+      "faulted": false,
+      "detected": false,
+      "detect_step": null,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [],
+      "steps_run": 80
+    },
+    {
+      "run": 5,
+      "seed": 3005,
+      "faulted": false,
+      "detected": true,
+      "detect_step": 13,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [
+        "ALERT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 6,
+      "seed": 3006,
+      "faulted": false,
+      "detected": false,
+      "detect_step": null,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [],
+      "steps_run": 80
+    },
+    {
+      "run": 7,
+      "seed": 3007,
+      "faulted": false,
+      "detected": true,
+      "detect_step": 0,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 3,
+      "injected_steps": 0,
+      "levels_seen": [
+        "ALERT",
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 8,
+      "seed": 3008,
+      "faulted": false,
+      "detected": false,
+      "detect_step": null,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [],
+      "steps_run": 80
+    },
+    {
+      "run": 9,
+      "seed": 3009,
+      "faulted": false,
+      "detected": false,
+      "detect_step": null,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [],
+      "steps_run": 80
+    },
+    {
+      "run": 10,
+      "seed": 3010,
+      "faulted": false,
+      "detected": true,
+      "detect_step": 8,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [
+        "ALERT",
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 11,
+      "seed": 3011,
+      "faulted": false,
+      "detected": true,
+      "detect_step": 8,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [
+        "ALERT",
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 12,
+      "seed": 3012,
+      "faulted": false,
+      "detected": true,
+      "detect_step": 27,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [
+        "ALERT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 13,
+      "seed": 3013,
+      "faulted": false,
+      "detected": true,
+      "detect_step": 27,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [
+        "ALERT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 14,
+      "seed": 3014,
+      "faulted": false,
+      "detected": true,
+      "detect_step": 7,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [
+        "ALERT",
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 15,
+      "seed": 3015,
+      "faulted": false,
+      "detected": false,
+      "detect_step": null,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [],
+      "steps_run": 80
+    },
+    {
+      "run": 16,
+      "seed": 3016,
+      "faulted": false,
+      "detected": false,
+      "detect_step": null,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [],
+      "steps_run": 80
+    },
+    {
+      "run": 17,
+      "seed": 3017,
+      "faulted": false,
+      "detected": true,
+      "detect_step": 2,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [
+        "ALERT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 18,
+      "seed": 3018,
+      "faulted": false,
+      "detected": true,
+      "detect_step": 22,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [
+        "ALERT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 19,
+      "seed": 3019,
+      "faulted": false,
+      "detected": true,
+      "detect_step": 37,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [
+        "ALERT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 20,
+      "seed": 3020,
+      "faulted": false,
+      "detected": true,
+      "detect_step": 17,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [
+        "ALERT",
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 21,
+      "seed": 3021,
+      "faulted": false,
+      "detected": true,
+      "detect_step": 36,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [
+        "ALERT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 22,
+      "seed": 3022,
+      "faulted": false,
+      "detected": true,
+      "detect_step": 17,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [
+        "ALERT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 23,
+      "seed": 3023,
+      "faulted": false,
+      "detected": true,
+      "detect_step": 5,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [
+        "ALERT",
+        "LIMIT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 24,
+      "seed": 3024,
+      "faulted": false,
+      "detected": false,
+      "detect_step": null,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [],
+      "steps_run": 80
+    },
+    {
+      "run": 25,
+      "seed": 3025,
+      "faulted": false,
+      "detected": true,
+      "detect_step": 16,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [
+        "ALERT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 26,
+      "seed": 3026,
+      "faulted": false,
+      "detected": false,
+      "detect_step": null,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [],
+      "steps_run": 80
+    },
+    {
+      "run": 27,
+      "seed": 3027,
+      "faulted": false,
+      "detected": true,
+      "detect_step": 10,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [
+        "ALERT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 28,
+      "seed": 3028,
+      "faulted": false,
+      "detected": true,
+      "detect_step": 32,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [
+        "ALERT"
+      ],
+      "steps_run": 80
+    },
+    {
+      "run": 29,
+      "seed": 3029,
+      "faulted": false,
+      "detected": true,
+      "detect_step": 35,
+      "detect_ms": null,
+      "safe_state": false,
+      "safe_state_step": null,
+      "safe_state_ms": null,
+      "harmful_executed": 0,
+      "harm_attempts": 0,
+      "pre_fault_alerts": 0,
+      "injected_steps": 0,
+      "levels_seen": [
+        "ALERT"
+      ],
+      "steps_run": 80
+    }
+  ]
+}

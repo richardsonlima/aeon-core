@@ -1,0 +1,208 @@
+{
+  "claims": [
+    {
+      "id": "gate-before-execution",
+      "text": "Every call through an enforced executor is decided by the gate before the executor runs; a BLOCK verdict in enforce mode prevents the call.",
+      "status": "implemented",
+      "evidence": [
+        "tests/test_gate.py::test_block_stops_action_and_enters_safe_state",
+        "tests/test_gate.py::test_enforce_function_tool",
+        "docs/concepts/gate.md"
+      ],
+      "last_checked": "2026-11-27"
+    },
+    {
+      "id": "safe-state",
+      "text": "After BLOCK the agent is held in Safe State and every later action of that agent is blocked until it is reset.",
+      "status": "implemented",
+      "evidence": [
+        "tests/test_gate.py::test_block_stops_action_and_enters_safe_state"
+      ],
+      "last_checked": "2026-11-27"
+    },
+    {
+      "id": "shadow-default",
+      "text": "New installs run in shadow mode: verdicts are recorded and never enforced.",
+      "status": "implemented",
+      "evidence": [
+        "tests/test_gate.py::test_new_gate_defaults_to_shadow",
+        "tests/test_gate.py::test_shadow_never_enforces",
+        "tests/test_cli.py::test_init_is_shadow_and_does_not_overwrite"
+      ],
+      "last_checked": "2026-11-27"
+    },
+    {
+      "id": "fail-closed",
+      "text": "If an axiom or the gate itself raises, the action is blocked in enforce mode and allowed but logged in shadow mode.",
+      "status": "implemented",
+      "evidence": [
+        "tests/test_gate.py::test_axiom_raising_blocks_in_enforce",
+        "tests/test_gate.py::test_axiom_raising_allows_and_logs_in_shadow",
+        "tests/test_gate.py::test_gate_internal_error_fails_closed"
+      ],
+      "last_checked": "2026-11-27"
+    },
+    {
+      "id": "kill-switch",
+      "text": "The kill-switch blocks every action of every agent, in shadow and enforce mode.",
+      "status": "implemented",
+      "evidence": [
+        "tests/test_gate.py::test_kill_switch_blocks_everything_even_in_shadow"
+      ],
+      "last_checked": "2026-11-27"
+    },
+    {
+      "id": "audit-tamper-evident",
+      "text": "`aeon audit verify` detects a changed, removed, reordered or corrupted record and reports the first broken link.",
+      "status": "implemented",
+      "evidence": [
+        "tests/test_audit.py::test_detects_modified_record",
+        "tests/test_audit.py::test_detects_deleted_record",
+        "tests/test_audit.py::test_detects_reordered_records",
+        "tests/test_audit.py::test_detects_corrupted_line",
+        "tests/test_audit.py::test_property_any_single_change_is_detected",
+        "tests/test_cli.py::test_audit_verify_pinpoints_tampering"
+      ],
+      "last_checked": "2026-11-27"
+    },
+    {
+      "id": "audit-truncation",
+      "text": "Removing records from the end of the log is detected only when the expected head hash is supplied (`--expect-head`).",
+      "status": "implemented",
+      "evidence": [
+        "tests/test_audit.py::test_truncation_needs_expected_head",
+        "docs/known-limits.md"
+      ],
+      "last_checked": "2026-11-27"
+    },
+    {
+      "id": "audit-off-path",
+      "text": "Audit writing happens on a background thread; a storage outage does not change decisions and is itself recorded once storage recovers.",
+      "status": "implemented",
+      "evidence": [
+        "tests/test_audit.py::test_backend_outage_is_recorded_and_recovered",
+        "tests/test_gate.py::test_audit_sink_failure_does_not_break_decisions"
+      ],
+      "last_checked": "2026-11-27"
+    },
+    {
+      "id": "gate-p99-100us",
+      "text": "Gate decision latency p99 is under 100 µs with 10 axioms (reference machine, audit off).",
+      "status": "measured",
+      "evidence": [
+        "benchmarks/results/gate_latency.json"
+      ],
+      "last_checked": "2026-11-27",
+      "value": "p99 15.38 µs with 10 axioms (limit 100 µs)"
+    },
+    {
+      "id": "gate-p99-100us-100-axioms",
+      "text": "Gate decision latency p99 is under 100 µs with 100 axioms (reference machine, audit off).",
+      "status": "measured",
+      "evidence": [
+        "benchmarks/results/gate_latency.json"
+      ],
+      "last_checked": "2026-11-27",
+      "value": "p99 38.21 µs with 100 axioms (limit 100 µs)"
+    },
+    {
+      "id": "gate-max-1ms",
+      "text": "No single gate decision took 1 ms or more in the benchmark (reference machine, audit off).",
+      "status": "measured",
+      "evidence": [
+        "benchmarks/results/gate_latency.json"
+      ],
+      "last_checked": "2026-11-27",
+      "value": "worst max 195.0 µs over all rows (limit 1000 µs)"
+    },
+    {
+      "id": "audit-emit-cheap",
+      "text": "Emitting an audit event costs under 10 µs at the median on the decision path.",
+      "status": "measured",
+      "evidence": [
+        "benchmarks/results/audit_overhead.json"
+      ],
+      "last_checked": "2026-11-27",
+      "value": "emit p50 2.50 µs at 1000/s; burst max 76697.2 µs"
+    },
+    {
+      "id": "audit-no-drop-paced",
+      "text": "At 1000 events/s the audit queue drops no events.",
+      "status": "measured",
+      "evidence": [
+        "benchmarks/results/audit_overhead.json"
+      ],
+      "last_checked": "2026-11-27",
+      "value": "0 dropped at 1000/s paced; burst dropped 2081"
+    },
+    {
+      "id": "no-harm-injection",
+      "text": "In enforce mode, prompt-injected and conflicting instructions in tool output led to no executed unapproved destructive action (simulated agent).",
+      "status": "measured",
+      "evidence": [
+        "tests/test_chaos.py::test_poisoned_output_is_blocked_and_reaches_safe_state",
+        "benchmarks/results/detection.json"
+      ],
+      "last_checked": "2026-11-27",
+      "value": "0 unapproved destructive actions executed in 60 fault runs"
+    },
+    {
+      "id": "false-positives-10pct",
+      "text": "Target: clean control runs raise the campaign's detection level in at most 10% of runs (simulated agent).",
+      "status": "implemented",
+      "evidence": [
+        "benchmarks/results/detection.json"
+      ],
+      "last_checked": "2026-11-27",
+      "value": "worst false positive rate 70% (broken-schema, level ALERT); target 10%",
+      "note": "target not met: worst false positive rate 70% (broken-schema, level ALERT); target 10%"
+    },
+    {
+      "id": "blast-radius",
+      "text": "Faults refuse to run above their declared blast radius or the configured ceiling; prod-shadow requires shadow mode.",
+      "status": "implemented",
+      "evidence": [
+        "tests/test_chaos.py::test_blast_radius_rules",
+        "tests/test_cli.py::test_chaos_run_guards"
+      ],
+      "last_checked": "2026-11-27"
+    },
+    {
+      "id": "no-telemetry",
+      "text": "Æon sends no telemetry. Nothing leaves the machine unless your own code sends it.",
+      "status": "specified",
+      "evidence": [
+        "docs/security.md"
+      ],
+      "last_checked": "2026-11-27"
+    },
+    {
+      "id": "runtime-local-token",
+      "text": "The runtime requires a bearer token on /v1 routes and refuses to bind a non-loopback address unless explicitly allowed.",
+      "status": "implemented",
+      "evidence": [
+        "tests/test_runtime.py::test_v1_requires_token",
+        "tests/test_runtime.py::test_remote_bind_refused"
+      ],
+      "last_checked": "2026-11-27"
+    },
+    {
+      "id": "mcp-tools",
+      "text": "The runtime exposes aeon_check_action, aeon_status, aeon_audit_verify and aeon_run_campaign over MCP (stdio).",
+      "status": "implemented",
+      "evidence": [
+        "tests/test_mcp.py::test_tools_list_names_and_schemas"
+      ],
+      "last_checked": "2026-11-27"
+    },
+    {
+      "id": "audit-signing",
+      "text": "Roadmap: signed audit records and an external anchor for the chain head. Not implemented.",
+      "status": "specified",
+      "evidence": [
+        "docs/known-limits.md"
+      ],
+      "last_checked": "2026-11-27"
+    }
+  ]
+}

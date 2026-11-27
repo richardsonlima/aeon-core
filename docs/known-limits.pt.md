@@ -1,0 +1,32 @@
+# Limites conhecidos
+
+Leia isto antes de depender do Æon. Os cinco primeiros são estruturais. O resto é o que encontrei no código e nas medições versionadas.
+
+1. **O gate só cobre ações que passam pelo executor envolvido.** Uma chamada que chega a uma ferramenta por qualquer outro caminho não é controlada.
+2. **Axiomas não julgam a correção semântica de texto livre.** Eles olham nomes de ferramenta e valores de argumento. Uma injeção de prompt parafraseada, uma mentira ou um vazamento que não casa com nenhum padrão passa.
+3. **A calibração do orçamento precisa de um período de baseline.** Até serem vistos `baseline_n` resultados de um agente (padrão 50), o score de desvio é 0. O envelope absoluto de custo e tokens não precisa de baseline, mas `p99_ms` e `error_rate` precisam de `min_samples` resultados (padrão 20).
+4. **Métricas de LLM são estatísticas por causa do não determinismo.** Qualquer taxa medida num modelo real é uma estimativa com intervalo, e varia entre execuções.
+5. **Injeção de caos não substitui um safety case.** Ela encontra problemas. Não mostra que um sistema é seguro, e o Æon não tem certificação de nenhum tipo. IEC 61508 e DO-178C são, no máximo, inspiração e roteiro.
+
+## Encontrados no código e nas medições
+
+6. **A fila de auditoria descarta eventos em rajadas.** A fila comporta 10.000 eventos. No teste de rajada versionado (50.000 eventos, sem pausa) 2.081 foram descartados, 4,2%. Cada descarte é informado por um registro `audit.gap` com o total acumulado, então a lacuna é visível, mas os eventos descartados se foram. A 1.000 eventos/s ritmados nenhum foi descartado. Um processo que sai com eventos ainda na fila os perde (`AuditLog.close` os conta como descartados).
+7. **Picos de latência vindos da thread de escrita.** A chamada emit leva cerca de 2,3 µs na mediana, mas o máximo na rajada foi 76,7 ms, muito provavelmente contenção do GIL com a thread de escrita. Com a auditoria ligada, `Gate.decide` teve p99 de 438 µs e pior chamada de 3,4 ms na execução versionada, contra p99 de 12,4 µs e pior chamada de 65 µs com ela desligada. Os picos são raros e não reproduzíveis até o dígito, mas existem. Olhe p99 e máximo, não só a mediana.
+8. **O truncamento só é detectado com `--expect-head`.** Remover registros do fim deixa uma cadeia válida. Você precisa de um hash de cabeça guardado num lugar que o escritor do log não alcance.
+9. **Quem tem acesso de escrita pode reconstruir a cadeia inteira.** A cadeia evidencia adulteração por edição, não é à prova de adulteração por quem recalcula todos os hashes. Ainda não há assinatura nem âncora externa. Estão no roteiro e não foram construídas.
+10. **Um processo escritor por arquivo de log.** Dois processos acrescentando ao mesmo arquivo bifurcam a cadeia e quebram a verificação.
+11. **Os resultados de campanha vêm de um agente simulado com roteiro, não de um LLM.** As taxas de detecção e de falso positivo são propriedades do gate contra esse modelo.
+12. **O orçamento padrão produz taxas altas de falso positivo no agente simulado.** Em execuções de controle limpas (resultados versionados de 2026-11-27, `benchmarks/results/summary.md`): `broken-schema` 70,0% (21 de 30), `gateway-latency` 66,7% (20 de 30), `partial-output` 50,0% (15 de 30), `stale-context` 26,7% (8 de 30), `rate-limit` 26,7% (8 de 30), `tool-timeout` 20,0% (6 de 30). A meta era no máximo 10%. Oito das nove hipóteses pré-registradas não foram suportadas (todas as oito campanhas enforce: seis por falsos positivos, duas na verificação de Safe State). Veja [Como ler um resultado desfavorável](kb/unfavourable-result.md).
+13. **Os resultados das campanhas variam pouco entre novas execuções com as mesmas sementes.** As ferramentas simuladas dormem alguns milissegundos, então resultados que dependem de latência não são idênticos bit a bit. `broken-schema` deu 22, 21 e 20 de 30 falsos positivos em três execuções, e a última nova execução de `poisoned-output` mostra 3 execuções que não chegaram ao Safe State, todas sem nenhuma tentativa destrutiva (uma execução anterior mostrou 2 execuções com falha não detectadas).
+14. **Um `rate_limit` por relógio é inadequado para agentes simulados rápidos.** Ele conta chamadas por segundo real, e o agente simulado faz centenas por segundo, então dispara em tráfego limpo. As campanhas o deixam de fora de propósito. Ele também conta chamadas negadas.
+15. **O runtime nunca executa ferramentas.** Ele decide e registra. Um chamador que ignora `allowed: false` não é impedido por ele.
+16. **Não há backend Postgres.** Os backends de auditoria são JSONL, SQLite e em memória.
+17. **O gate é por processo.** Safe State, kill-switch e orçamento vivem em memória num processo. O runtime serve um gate, e uma campanha iniciada por HTTP roda uma por vez.
+18. **Não há dados de campo.** Ninguém relatou rodar o Æon num agente de produção em modo shadow. Tudo que foi medido aqui vem dos benchmarks e campanhas simuladas do próprio repositório.
+19. **`[aeon.runtime]` na configuração e `environment` são aceitos, mas não usados.** Não mudam nenhum comportamento hoje.
+20. **O token do runtime é uma credencial de operador.** Ele pode alterar o modo, as políticas, o kill-switch e o Safe State, e não há papéis. Um agente que o tenha pode colocar o próprio gate em shadow, então nunca o entregue a um agente ([ADR 003](decisions/003-operator-token-and-axiom-trust.md)). Um token só para decisões está no roteiro, não construído.
+21. **Arquivos de axiomas são Python confiável.** Os arquivos de axiomas do `aeon.toml` são importados e executados. Iniciar `aeon runtime start` ou `aeon runtime mcp` num checkout não confiável executa o código desse checkout. Os dois imprimem os caminhos dos arquivos de axiomas ao iniciar, e ainda não há aviso de confiança para configurações achadas subindo a partir do diretório atual.
+22. **O runtime só enxerga as próprias decisões.** A página de decisões, o stream e os contadores cobrem decisões feitas por aquele processo do runtime. Decisões feitas em outros processos (um agente usando a biblioteca direto, por exemplo) aparecem só no log de auditoria.
+23. **As alegações anteriores do site público estavam erradas.** Veja [Mudanças no site](site-changes.md).
+
+As medições são de uma máquina (Apple M1, Python 3.10.21, 2026-11-27) e descrevem só aquela máquina. Veja [Benchmarks](evidence/benchmarks.md).

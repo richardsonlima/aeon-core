@@ -1,0 +1,168 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "feature/**", "fix/**"]
+    tags-ignore: ["v*"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_NO_PROGRESS: "1"
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - name: Install from the lockfile
+        run: |
+          uv sync --locked --group dev --extra runtime
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: mypy --strict
+
+  test:
+    name: test (${{ matrix.os }}, py${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install from the lockfile (core only, no runtime extra)
+        shell: bash
+        run: uv sync --locked --group dev
+      - name: Test (core, runtime extra absent)
+        # runtime modules are not importable here, so the coverage floor is checked
+        # in test-runtime, where the whole package runs
+        # uv run finds the venv on every OS (Git Bash paths in GITHUB_PATH break pwsh)
+        run: uv run --no-sync pytest --cov --cov-report=xml --cov-fail-under=0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.os }}-py${{ matrix.python }}
+          path: coverage.xml
+          if-no-files-found: error
+
+  test-runtime:
+    name: test with runtime extra (ubuntu, py3.12)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - name: Install from the lockfile with the runtime extra
+        run: |
+          uv sync --locked --group dev --extra runtime
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+      - name: Full suite with the runtime installed (coverage floor from pyproject)
+        run: pytest --cov --cov-report=xml --cov-report=term
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-runtime-ubuntu-py3.12
+          path: coverage.xml
+          if-no-files-found: error
+
+  security:
+    name: dependency audit and secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - name: pip-audit on the locked dependencies (all extras)
+        run: |
+          uv export --frozen --all-extras --no-emit-project --no-hashes -o requirements-audit.txt
+          uvx pip-audit --strict -r requirements-audit.txt
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - run: uv build
+      - name: twine check
+        run: uvx twine check --strict dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  smoke:
+    name: smoke (${{ matrix.os }}, py${{ matrix.python }})
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.10", "3.13"]
+    steps:
+      # The repo is checked out only to copy the quickstart example. The package is
+      # imported from the wheel in a fresh venv, from a temp directory.
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - name: Install the wheel in a fresh venv and run the CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          WHEEL="$(ls "$PWD"/dist/*.whl)"
+          WORK="$(mktemp -d)"
+          cp -r examples/quickstart "$WORK/quickstart"
+          cd "$WORK"
+          uv venv venv
+          if [ "$RUNNER_OS" = "Windows" ]; then BIN="$WORK/venv/Scripts"; else BIN="$WORK/venv/bin"; fi
+          uv pip install --python "$WORK/venv" "$WHEEL"   # the venv dir works on every OS
+          mkdir project
+          cd project
+          "$BIN/aeon" doctor
+          "$BIN/aeon" init
+          cp "$WORK/quickstart/main.py" main.py
+          "$BIN/python" main.py
+          "$BIN/aeon" audit verify
+      - name: uvx from the wheel (ubuntu)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          cd "$(mktemp -d)"
+          uvx --from "$GITHUB_WORKSPACE"/dist/*.whl aeon doctor
+      - name: pipx run from the wheel (ubuntu)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          cd "$(mktemp -d)"
+          pipx run --spec "$GITHUB_WORKSPACE"/dist/*.whl aeon version

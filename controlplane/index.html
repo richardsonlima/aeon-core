@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="light">
+<title>Æon Control Plane</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<a class="skip" href="#main" data-i18n="skip">Skip to content</a>
+<header class="topbar" role="banner">
+  <div class="brand"><span class="mark" aria-hidden="true"></span><span class="brand-name">Æon</span><span class="brand-sub" data-i18n="brand_sub">Control Plane</span></div>
+  <nav id="nav" aria-label="Main" data-i18n-label="nav_label">
+    <ul>
+      <li><a href="#/overview" data-route="overview" data-i18n="nav_overview">Overview</a></li>
+      <li><a href="#/decisions" data-route="decisions" data-i18n="nav_decisions">Decisions</a></li>
+      <li><a href="#/campaigns" data-route="campaigns" data-i18n="nav_campaigns">Campaigns</a></li>
+      <li><a href="#/audit" data-route="audit" data-i18n="nav_audit">Audit</a></li>
+      <li><a href="#/claims" data-route="claims" data-i18n="nav_claims">Claims</a></li>
+    </ul>
+  </nav>
+  <div class="tools">
+    <button type="button" id="lang-btn" class="btn btn-quiet" data-i18n="lang_switch">Mudar para Português</button>
+    <button type="button" id="forget-btn" class="btn btn-quiet" data-i18n="forget_token">Forget token</button>
+  </div>
+</header>
+<div id="alerts" class="alerts" role="alert" aria-live="assertive" aria-atomic="true"></div>
+<main id="main" tabindex="-1"></main>
+<footer class="foot" role="contentinfo"><span data-i18n="footer">Served by your local runtime. This page makes no third-party requests.</span></footer>
+
+<dialog id="token-dialog" aria-labelledby="token-title">
+  <form method="dialog" id="token-form" class="dlg">
+    <h2 id="token-title" data-i18n="token_title">Runtime token</h2>
+    <p data-i18n="token_help">Paste the bearer token printed by `aeon runtime start`. It is kept in this tab only.</p>
+    <label for="token-input" data-i18n="token_label">Token</label>
+    <input id="token-input" type="password" autocomplete="off" spellcheck="false" required>
+    <p id="token-error" class="err" role="alert"></p>
+    <div class="row"><button type="submit" class="btn btn-primary" data-i18n="token_save">Connect</button></div>
+  </form>
+</dialog>
+
+<dialog id="confirm-dialog" aria-labelledby="confirm-title" aria-describedby="confirm-body">
+  <form method="dialog" id="confirm-form" class="dlg">
+    <h2 id="confirm-title"></h2>
+    <p id="confirm-body"></p>
+    <div class="row">
+      <button type="button" id="confirm-no" class="btn" data-i18n="cancel">Cancel</button>
+      <button type="submit" id="confirm-yes" class="btn btn-danger" data-i18n="confirm">Confirm</button>
+    </div>
+  </form>
+</dialog>
+<script type="module" src="app.js"></script>
+</body>
+</html>

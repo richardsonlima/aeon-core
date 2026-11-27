@@ -1,0 +1,32 @@
+name: Bug report
+description: Something does not behave as documented
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, what you got.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: Commands or a short script.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Output of `aeon doctor` and `aeon version`
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: OS and Python version
+    validations:
+      required: true
