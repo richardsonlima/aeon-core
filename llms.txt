@@ -1,0 +1,59 @@
+# Æon Core
+
+> Æon is a free, open-source Python runtime (Apache-2.0) that gates the actions of LLM agents and injects controlled faults to check that they fail safe. Alpha, v0.5.0 in development, not yet on PyPI. The gate decides synchronously before a tool runs (go, alert, limit, block); observation (hash-chained audit log, behavioural baseline) runs asynchronously. Adoption is shadow-first. Inspired by the MECADE framework for chaos engineering; an independent project. It is not certified for anything, and the gate only covers actions that pass through the wrapped executor.
+
+Docs are available in English and Brazilian Portuguese (add `pt/` after the docs root for Portuguese).
+
+## Get started
+
+- [Install](https://www.richardsonlima.com.br/aeon/docs/get-started/install/): pip, uv, uvx, pipx; install from a checkout until the first release
+- [Quickstart (5 minutes)](https://www.richardsonlima.com.br/aeon/docs/get-started/quickstart/): init, gate an agent, shadow then enforce, verify the audit log, inject a fault
+- [Prompt for a coding agent](https://www.richardsonlima.com.br/aeon/docs/get-started/coding-agent/): a copy-paste prompt that uses only documented commands
+- [Where it runs](https://www.richardsonlima.com.br/aeon/docs/get-started/where-it-runs/): local, Docker, CI, any Python agent
+
+## Concepts
+
+- [Gate and observation path](https://www.richardsonlima.com.br/aeon/docs/concepts/gate/): the decision path and the observation path
+- [Autonomy levels](https://www.richardsonlima.com.br/aeon/docs/concepts/autonomy-levels/): GO, ALERT, LIMIT, BLOCK in shadow and enforce modes
+- [Safe State](https://www.richardsonlima.com.br/aeon/docs/concepts/safe-state/): what happens after BLOCK, and the kill-switch
+- [Budget and deviation](https://www.richardsonlima.com.br/aeon/docs/concepts/budget/): the baseline, z-scores, CUSUM and envelope math
+- [Fault catalog](https://www.richardsonlima.com.br/aeon/docs/concepts/faults/): eight faults and their blast radius
+- [Audit chain](https://www.richardsonlima.com.br/aeon/docs/concepts/audit-chain/): record format, verification, what it does not detect
+- [Shadow-first adoption](https://www.richardsonlima.com.br/aeon/docs/concepts/shadow-first/): shadow, ALERT, LIMIT, BLOCK
+
+## Guides
+
+- [Wrap a plain Python agent](https://www.richardsonlima.com.br/aeon/docs/guides/plain-python/)
+- [Wrap an OpenAI agent](https://www.richardsonlima.com.br/aeon/docs/guides/openai/)
+- [Wrap an Anthropic agent](https://www.richardsonlima.com.br/aeon/docs/guides/anthropic/)
+- [Wrap a LangGraph agent](https://www.richardsonlima.com.br/aeon/docs/guides/langgraph/)
+- [Write an axiom](https://www.richardsonlima.com.br/aeon/docs/guides/axioms/)
+- [Run a campaign](https://www.richardsonlima.com.br/aeon/docs/guides/campaigns/)
+- [Read a report](https://www.richardsonlima.com.br/aeon/docs/guides/reports/)
+- [Roll out in shadow mode](https://www.richardsonlima.com.br/aeon/docs/guides/shadow-rollout/)
+- [CI resilience gate](https://www.richardsonlima.com.br/aeon/docs/guides/ci-gate/)
+- [Runtime, control plane and Docker](https://www.richardsonlima.com.br/aeon/docs/guides/runtime/)
+
+## Reference
+
+- [Python API](https://www.richardsonlima.com.br/aeon/docs/reference/python-api/)
+- [CLI](https://www.richardsonlima.com.br/aeon/docs/reference/cli/): generated from the argparse parser
+- [HTTP API](https://www.richardsonlima.com.br/aeon/docs/reference/http-api/): generated from the OpenAPI document ([openapi.json](https://www.richardsonlima.com.br/aeon/docs/reference/openapi.json))
+- [MCP tools](https://www.richardsonlima.com.br/aeon/docs/reference/mcp/): the gate server and the docs server
+- [Configuration](https://www.richardsonlima.com.br/aeon/docs/reference/config/): aeon.toml keys and AEON_* variables
+
+## Evidence and limits
+
+- [Known limits](https://www.richardsonlima.com.br/aeon/docs/known-limits/): read before relying on it
+- [Claims](https://www.richardsonlima.com.br/aeon/docs/claims/): every claim with its status and evidence
+- [Benchmarks](https://www.richardsonlima.com.br/aeon/docs/evidence/benchmarks/): one machine, with p99, max and unfavourable results
+- [Security](https://www.richardsonlima.com.br/aeon/docs/security/): threat model and remote hardening checklist
+- [How to read an unfavourable result](https://www.richardsonlima.com.br/aeon/docs/kb/unfavourable-result/)
+
+## Optional
+
+- [What BLOCK guarantees](https://www.richardsonlima.com.br/aeon/docs/kb/what-block-guarantees/)
+- [What it does not guarantee](https://www.richardsonlima.com.br/aeon/docs/kb/what-it-does-not-guarantee/)
+- [How to calibrate a budget](https://www.richardsonlima.com.br/aeon/docs/kb/calibrate-budget/)
+- [Changelog](https://www.richardsonlima.com.br/aeon/docs/changelog/)
+- [Source code](https://github.com/richardsonlima/aeon-core)

@@ -1,0 +1,38 @@
+# Alegações
+
+!!! info "Página gerada"
+    Esta página é gerada por `scripts/gen_reference.py` a partir de `docs/claims.json` (ele mesmo gerado por `scripts/claims.py`). Não edite à mão; altere a fonte e rode o script de novo.
+
+
+Cada alegação que o projeto faz, com a evidência por trás. Uma alegação sobe uma escada e nunca pula degrau.
+
+- `specified`: descrita na documentação, ainda sem evidência no repositório
+- `implemented`: todos os testes citados existem e o CI os executa
+- `measured`: implementada, e um resultado de benchmark versionado satisfaz a alegação
+
+Uma alegação cuja medição não atinge a meta continua `implemented` e traz uma nota dizendo isso. Os valores medidos vêm dos resultados versionados de uma máquina, veja [Benchmarks](evidence/benchmarks.md). O texto das alegações vem do código e está em inglês.
+
+`specified`: 2 | `implemented`: 12 | `measured`: 6
+
+| Alegação | Status | Evidência | Valor ou nota | Verificada em |
+|---|---|---|---|---|
+| **audit-emit-cheap**<br>Emitting an audit event costs under 10 µs at the median on the decision path. | `measured` | `benchmarks/results/audit_overhead.json` | emit p50 2.54 µs at 1000/s; burst max 28892.0 µs | 2026-11-27 |
+| **audit-no-drop-paced**<br>At 1000 events/s the audit queue drops no events. | `measured` | `benchmarks/results/audit_overhead.json` | 0 dropped at 1000/s paced; burst dropped 3856 | 2026-11-27 |
+| **gate-max-1ms**<br>No single gate decision took 1 ms or more in the benchmark (reference machine, audit off). | `measured` | `benchmarks/results/gate_latency.json` | worst max 462.6 µs over all rows (limit 1000 µs) | 2026-11-27 |
+| **gate-p99-100us**<br>Gate decision latency p99 is under 100 µs with 10 axioms (reference machine, audit off). | `measured` | `benchmarks/results/gate_latency.json` | p99 12.62 µs with 10 axioms (limit 100 µs) | 2026-11-27 |
+| **gate-p99-100us-100-axioms**<br>Gate decision latency p99 is under 100 µs with 100 axioms (reference machine, audit off). | `measured` | `benchmarks/results/gate_latency.json` | p99 41.88 µs with 100 axioms (limit 100 µs) | 2026-11-27 |
+| **no-harm-injection**<br>In enforce mode, prompt-injected and conflicting instructions in tool output led to no executed unapproved destructive action (simulated agent). | `measured` | `tests/test_chaos.py::test_poisoned_output_is_blocked_and_reaches_safe_state`<br>`benchmarks/results/detection.json` | 0 unapproved destructive actions executed in 60 fault runs | 2026-11-27 |
+| **audit-off-path**<br>Audit writing happens on a background thread; a storage outage does not change decisions and is itself recorded once storage recovers. | `implemented` | `tests/test_audit.py::test_backend_outage_is_recorded_and_recovered`<br>`tests/test_gate.py::test_audit_sink_failure_does_not_break_decisions` |  | 2026-11-27 |
+| **audit-tamper-evident**<br>`aeon audit verify` detects a changed, removed, reordered or corrupted record and reports the first broken link. | `implemented` | `tests/test_audit.py::test_detects_modified_record`<br>`tests/test_audit.py::test_detects_deleted_record`<br>`tests/test_audit.py::test_detects_reordered_records`<br>`tests/test_audit.py::test_detects_corrupted_line`<br>`tests/test_audit.py::test_property_any_single_change_is_detected`<br>`tests/test_cli.py::test_audit_verify_pinpoints_tampering` |  | 2026-11-27 |
+| **audit-truncation**<br>Removing records from the end of the log is detected only when the expected head hash is supplied (`--expect-head`). | `implemented` | `tests/test_audit.py::test_truncation_needs_expected_head`<br>`docs/known-limits.md` |  | 2026-11-27 |
+| **blast-radius**<br>Faults refuse to run above their declared blast radius or the configured ceiling; prod-shadow requires shadow mode. | `implemented` | `tests/test_chaos.py::test_blast_radius_rules`<br>`tests/test_cli.py::test_chaos_run_guards` |  | 2026-11-27 |
+| **fail-closed**<br>If an axiom or the gate itself raises, the action is blocked in enforce mode and allowed but logged in shadow mode. | `implemented` | `tests/test_gate.py::test_axiom_raising_blocks_in_enforce`<br>`tests/test_gate.py::test_axiom_raising_allows_and_logs_in_shadow`<br>`tests/test_gate.py::test_gate_internal_error_fails_closed` |  | 2026-11-27 |
+| **false-positives-10pct**<br>Target: clean control runs raise the campaign's detection level in at most 10% of runs (simulated agent). | `implemented` | `benchmarks/results/detection.json` | target not met: worst false positive rate 73% (broken-schema, level ALERT); target 10% | 2026-11-27 |
+| **gate-before-execution**<br>Every call through an enforced executor is decided by the gate before the executor runs; a BLOCK verdict in enforce mode prevents the call. | `implemented` | `tests/test_gate.py::test_block_stops_action_and_enters_safe_state`<br>`tests/test_gate.py::test_enforce_function_tool`<br>`docs/concepts/gate.md` |  | 2026-11-27 |
+| **kill-switch**<br>The kill-switch blocks every action of every agent, in shadow and enforce mode. | `implemented` | `tests/test_gate.py::test_kill_switch_blocks_everything_even_in_shadow` |  | 2026-11-27 |
+| **mcp-tools**<br>The runtime exposes aeon_check_action, aeon_status, aeon_audit_verify and aeon_run_campaign over MCP (stdio). | `implemented` | `tests/test_mcp.py::test_tools_list_names_and_schemas` |  | 2026-11-27 |
+| **runtime-local-token**<br>The runtime requires a bearer token on /v1 routes and refuses to bind a non-loopback address unless explicitly allowed. | `implemented` | `tests/test_runtime.py::test_v1_requires_token`<br>`tests/test_runtime.py::test_remote_bind_refused` |  | 2026-11-27 |
+| **safe-state**<br>After BLOCK the agent is held in Safe State and every later action of that agent is blocked until it is reset. | `implemented` | `tests/test_gate.py::test_block_stops_action_and_enters_safe_state` |  | 2026-11-27 |
+| **shadow-default**<br>New installs run in shadow mode: verdicts are recorded and never enforced. | `implemented` | `tests/test_gate.py::test_new_gate_defaults_to_shadow`<br>`tests/test_gate.py::test_shadow_never_enforces`<br>`tests/test_cli.py::test_init_is_shadow_and_does_not_overwrite` |  | 2026-11-27 |
+| **audit-signing**<br>Roadmap: signed audit records and an external anchor for the chain head. Not implemented. | `specified` | `docs/known-limits.md` |  | 2026-11-27 |
+| **no-telemetry**<br>Æon sends no telemetry. Nothing leaves the machine unless your own code sends it. | `specified` | `docs/security.md` |  | 2026-11-27 |

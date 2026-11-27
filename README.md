@@ -1,241 +1,101 @@
-# Æon Framework (Core)
+# Æon Core
 
-<div align="center">
+[English](README.md) | [Português](README.pt.md)
 
-[![Version](https://img.shields.io/badge/version-v0.4.0--ULTRA-blue.svg)](https://github.com/richardsonlima/aeon-core)
-[![Python Versions](https://img.shields.io/badge/python-3.10+-blue.svg)](https://github.com/richardsonlima/aeon-core)
-[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/status-research--preview-orange.svg)](https://github.com/richardsonlima/aeon-core)
-[![Architecture](https://img.shields.io/badge/architecture-neuro--symbolic-purple.svg)](https://github.com/richardsonlima/aeon-core)
-[![UV Compatible](https://img.shields.io/badge/UV-Compatible-5C63FF.svg)](https://github.com/astral-sh/uv)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+![version](https://img.shields.io/badge/version-0.5.0.dev0-blue) ![license](https://img.shields.io/badge/license-Apache--2.0-green) ![python](https://img.shields.io/badge/python-3.10%2B-blue)
 
-  <p>
-      <a href="README.md">English</a> | <a href="README_pt.md">Português</a>
-  </p>
-  
-**The Deterministic Runtime for Safety-Critical AI Agents with Autonomous Native Capabilities**
+Æon is a free, open-source Python runtime that **gates the actions of LLM agents** and **injects controlled faults** to check that they fail safe.
 
-</div>
+You wrap the function through which your agent runs tools. Before each call, a small synchronous gate decides: go, alert, limit or block. After the call, an asynchronous path writes a hash-chained audit log and compares the agent with its own baseline. Chaos campaigns then break things on purpose (a timeout, a poisoned tool output, a 429) and report whether the gate caught it, false positives and misses included.
 
-## 🌟 Overview
+Inspired by the MECADE framework (chaos engineering for dependability); an independent project with no relation to any academic program.
 
-Æon is a comprehensive, production-ready framework for building **Neuro-Symbolic AI agents**. Unlike stochastic-only systems, Æon combines the intuitive reasoning of LLMs (**System 1**) with the deterministic safety and control of code-level axioms (**System 2**).
+## Status
 
-It establishes a standard "Trust Stack" that enables agents to be **Safety-Native**, **Protocol-First**, and **Extensible by Design**. With deep integration of the **Agent-to-Agent (A2A)** and **Model Context Protocol (MCP)**, Æon allows you to build interoperable agent ecosystems that can collaborate safely in high-stakes environments.
+**Alpha. Nothing is published to PyPI yet, and there is no 0.5.0 tag.** This is a ground-up rewrite of v0.4 (see [`CHANGELOG.md`](CHANGELOG.md) and the [audit](https://www.richardsonlima.com.br/aeon/docs/audit/)).
 
-## 📋 What's New in v0.4.0 (ULTRA)
+| Implemented and tested | Not built |
+|---|---|
+| Gate, axioms, autonomy levels, Safe State, kill-switch, shadow mode | Signed audit records and an external anchor for the chain |
+| Hash-chained audit log (JSONL, SQLite) and `aeon audit verify` | A Postgres audit backend |
+| Behavioural baseline, deviation score, CUSUM and envelope | Any test against a real LLM, and any field data |
+| Eight faults with a blast-radius guard, pre-registered campaigns | Multi-process audit writers |
+| Adapters for plain Python, OpenAI, Anthropic and LangGraph (duck-typed) | Certification of any kind (IEC 61508, DO-178C and similar are inspiration and roadmap only) |
+| Local HTTP runtime, control plane UI, MCP servers for the gate and the docs | A published container image |
 
-- **🔌 Autonomous Native Engine**: Built-in support for browser automation (Playwright), persistent event-sourced memory (SQLite), and granular Trust Levels.
-- **🏗️ Developer First CLI**: Transform from scripts to projects with the new `aeon` command. Scaffold, run, and serve agents in seconds.
-- **🚀 Declarative Runtime**: Define agents via `aeon.yaml` and launch a full **Gateway Server** for production deployments.
-- **🛡️ Enhanced Safety executive**: Improved SIL-4 compliant axioms with TMR (Triple Modular Redundancy) reasoning for mission-critical reliability.
-- **🔄 Deep Persistence**: Event-sourced memory system that survives reboots and provides a complete audit trail of agent thoughts and actions.
-- **⏰ Temporal Capabilities**: Native scheduling for cron jobs and delayed tasks, enabling agents to act autonomously over time.
+**Read [Known limits](https://www.richardsonlima.com.br/aeon/docs/known-limits/) before you rely on it.** The short version: the gate only covers actions that pass through the wrapped executor, axioms do not judge the meaning of free text, and on the committed campaigns the default budget raised false positives in up to 73% of clean control runs of a simulated agent (seven of eight pre-registered hypotheses were not supported).
 
-## 📋 What's New in v0.3.0 (ULTRA Phase)
+## Install
 
-- **Routing Layer**: Intelligent pattern-based message routing with 5 distinct strategies (Priority, Weighted, etc.).
-- **Gateway Layer**: Centralized communication hub with session management and TTL support.
-- **Security Layer**: Policy-based access control, AES encryption, and multi-provider authentication.
-- **Health Layer**: Real-time system monitoring, metrics collection (Counter, Gauge, etc.), and diagnostics.
+Requires Python 3.10 or newer. The core has no third-party dependencies.
 
-## ✨ Why Choose Æon?
-
-- **Deterministic Safety**: Stop begging the model to be safe. Enforce safety at the runtime level with **Axioms**.
-- **Neuro-Symbolic Core**: The perfect balance between LLM intuition and hard-coded rules.
-- **Protocol-First**: Native support for **A2A** (Agent-to-Agent) and **MCP** (Model Context Protocol).
-- **Enterprise Ready**: Built with observability, economics (cost tracking), and health monitoring from the ground up.
-- **Local-First & Private**: Run entirely on your hardware with Ollama or connect to premium cloud providers.
-- **Stark visual Feedback**: Terminal-native UI components for monitoring agent execution in real-time.
-
-## 📦 Installation
-
-### Using UV (Recommended)
-
-[UV](https://github.com/astral-sh/uv) is the fastest way to manage Æon dependencies:
+Not on PyPI yet, so install from a checkout of this repository:
 
 ```bash
-# Clone the repository
-git clone https://github.com/richardsonlima/aeon-core.git
 cd aeon-core
-
-# Create environment and install
-uv sync
+pip install .                # or: pip install ".[runtime]" for the HTTP runtime
+uv pip install .             # with uv
+pipx install .               # as a command-line tool
 ```
 
-### Using pip
+Once the branch is on GitHub: `pip install "aeon-core @ git+https://github.com/richardsonlima/aeon-core@<branch>"`.
+
+After the first release:
 
 ```bash
 pip install aeon-core
+uv add aeon-core
+uvx --from aeon-core aeon version
+pipx install aeon-core
 ```
 
-## 🚀 Quick Start Examples
-
-### 1. Developer Workflow (CLI)
-
-From zero to agent in three commands:
+## Quickstart
 
 ```bash
-# Initialize a new project
-aeon init my-safety-agent
-
-# Configure your model in aeon.yaml
-# (Default: google/gemini-2.0-flash-001)
-
-# Run a task interactively
-aeon run "Check reactor thermal status"
-
-# Start the production gateway
-aeon serve --port 8000
+mkdir my-agent && cd my-agent
+aeon init            # writes aeon.toml (shadow mode) and aeon_axioms.py
+aeon doctor
 ```
 
-### 2. Create a Safety-Native Agent (Code)
+Save as `agent.py`:
 
 ```python
-from aeon import Agent
-from aeon.protocols import A2A, MCP
+from aeon.axioms import ActionBlocked, enforce
 
-# Initialize the agent with the Trust Stack
-agent = Agent(
-    name="Sentinel",
-    model="google/gemini-2.0-flash-001",
-    protocols=[A2A(port=8000), MCP(servers=["industrial_tools.py"])]
-)
 
-# Define an Unbreakable Axiom (System 2)
-@agent.axiom(on_violation="OVERRIDE")
-def safety_limit(command: dict) -> bool | dict:
-    """SAFETY RULE: Power output cannot exceed 100%."""
-    if command.get("power", 0) > 100:
-        return {"power": 100, "warning": "AXIOM_LIMIT_REACHED"}
-    return True
+@enforce
+def run_tool(tool, args):
+    return {"read_file": lambda path: f"contents of {path}",
+            "delete_file": lambda path: f"deleted {path}"}[tool](**args)
 
-if __name__ == "__main__":
-    agent.start()
+
+for tool, args in [("read_file", {"path": "notes.txt"}), ("delete_file", {"path": "prod.db"})]:
+    try:
+        print(tool, "->", run_tool(tool, args))
+    except ActionBlocked as exc:
+        print(tool, "-> blocked:", exc)
 ```
 
-### 3. Autonomous Browser Workflow
-
-```python
-from aeon import Agent
-from aeon.core.config import TrustLevel
-
-agent = Agent(name="Researcher", trust_level=TrustLevel.FULL)
-
-async def main():
-    # Agent can autonomously browse and remember
-    response = await agent.run("Find the latest paper on SIL-4 safety and save the summary.")
-    print(f"Agent Action: {response.last_thought}")
-
-# Run via CLI: aeon run ...
+```bash
+aeon run agent.py                  # shadow: delete_file runs, the BLOCK verdict is recorded
+aeon run agent.py --mode enforce   # enforce: delete_file is blocked
+aeon audit tail
+aeon audit verify                  # ok: 8 records, chain intact
+aeon chaos run "poisoned output" --runs 10 --controls 10
 ```
 
-## 🔌 Enhanced MCP (Model Context Protocol) v2.0
+Start in shadow mode, read the log, and move one rule at a time to `ALERT`, `LIMIT`, then `BLOCK`.
 
-Æon now features a completely redesigned MCP implementation that provides robust, production-ready integration with external tools:
+## Documentation
 
-- **Synapse Layer**: Unified tool discovery and invocation.
-- **Standard Support**: Full compliance with the latest MCP specification.
-- **Multi-Server**: Connect to multiple MCP servers simultaneously (Stdio, SSE).
-- **Type Safety**: Automatic parameter validation for tool calls.
+- Docs: <https://www.richardsonlima.com.br/aeon/docs/> (English and Portuguese; also `docs/` in this repository, `aeon docs mcp` to serve it to a coding agent, and [`llms.txt`](llms.txt))
+- [5-minute quickstart](https://www.richardsonlima.com.br/aeon/docs/get-started/quickstart/) and a [prompt for a coding agent](https://www.richardsonlima.com.br/aeon/docs/get-started/coding-agent/)
+- [Claims](https://www.richardsonlima.com.br/aeon/docs/claims/): every claim with its evidence status
+- [Known limits](https://www.richardsonlima.com.br/aeon/docs/known-limits/)
+- [Benchmarks](benchmarks/README.md): how to reproduce, what they do not mean, and the unfavourable results. Every number describes one machine only.
+- [Security](https://www.richardsonlima.com.br/aeon/docs/security/) and [`SECURITY.md`](SECURITY.md)
+- [Contributing](CONTRIBUTING.md), [Release guide](RELEASE.md), [Changelog](CHANGELOG.md)
 
-## 📖 Architecture: The 16 Subsystems
+## License
 
-Æon is organized into 4 distinct layers, each providing critical functionality for advanced agents:
-
-### 1. CORE (System 1 & 2)
-- **Cortex**: Neuro-reasoning via LLMs.
-- **Executive**: Deterministic control via Axioms.
-- **Hive**: Standardized communication (A2A).
-- **Synapse**: Tool integration (MCP).
-
-### 2. INTEGRATION
-- **Integrations**: Multi-platform connectivity (Telegram, Discord, Slack).
-- **Extensions**: Dynamic capability loading.
-- **Dialogue**: Persistent, event-sourced conversation history.
-- **Dispatcher**: Event-driven pub/sub architecture.
-- **Automation**: Temporal task scheduling (Cron/Interval).
-
-### 3. ADVANCED
-- **Observability**: Life-cycle hooks and audit trails.
-- **Economics**: Real-time token tracking and cost calculation.
-- **CLI**: Premium developer interface.
-
-### 4. ULTRA (Enterprise)
-- **Routing**: High-performance message distribution.
-- **Gateway**: Centralized session and transport management.
-- **Security**: Authentication, authorization, and encryption.
-- **Health**: System diagnostics and metrics.
-
-## 🧪 Hello World: Industrial Overseer
-
-```python
-from aeon import Agent
-from aeon.protocols import A2A, MCP
-
-controller = Agent(
-    name="Reactor_Overseer_01",
-    role="Industrial Automation Monitor",
-    model="gemini-1.5-flash",
-    protocols=[
-        A2A(port=8000),
-        MCP(servers=["mcp-server-industrial"])
-    ]
-)
-
-@controller.axiom(on_violation="REJECT")
-def enforce_safety(command: dict):
-    # Any command attempting to disable cooling is rejected
-    if command.get("action") == "DISABLE_COOLING":
-        return False
-    return True
-
-if __name__ == "__main__":
-    controller.start()
-```
-
-## 🖥 Terminal Output (Visual Feedback)
-
-```plaintext
-🚀 Æon Core v0.4.0-ULTRA initialized
-├── 📡 A2A Server: Online at http://0.0.0.0:8000 (Unified Standard)
-├── 🔌 MCP Client: Connected (4 tools loaded: read_sensor, adjust_valve...)
-├── 🛡️ Axioms: 2 Active (enforce_safety, thermal_limit)
-└── 🧠 Brain: Gemini-2.0-Flash (Ready)
-```
-
-## 🤝 Community & Support
-
-- **[GitHub Issues](https://github.com/richardsonlima/aeon-core/issues)**: Report bugs or request features.
-- **[Aeon Landing Page](https://www.richardsonlima.com.br/aeon/)**: Visit our landing page for deep dives.
-- **[Contributing Guide](CONTRIBUTING.md)**: Learn how to join the mission.
-
-## 📝 Citing this Project
-
-If you use Æon in your research, please cite it as:
-
-```bibtex
-@software{richardsonlima-aeon-framework,
-  author = {LIMA, Richardson Edson de},
-  title = {Aeon Framework: The Neuro-Symbolic Runtime for Deterministic AI Agents},
-  url = {https://github.com/richardsonlima/aeon-core},
-  version = {0.4.0-ULTRA},
-  year = {2026},
-}
-```
-
-## 👨💻 Author
-
-**Richardson Lima (Rick) **
-
-- GitHub: [richardsonlima](https://github.com/richardsonlima)
-- LinkedIn: [richardsonlima](https://www.linkedin.com/in/richardsonlima)
-
-## 📄 License
-
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
-
----
-
-Made with ❤️ for AI Safety by Richardson Lima.
+Apache-2.0. See [`LICENSE`](LICENSE).

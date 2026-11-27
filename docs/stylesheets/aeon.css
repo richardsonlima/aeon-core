@@ -1,0 +1,57 @@
+/* Fonts are local or system only: this site makes no third-party requests. */
+:root {
+  --rl-violet-500: #6600ff;
+  --rl-cyan-500: #00d0dd;
+  --rl-green-500: #57ad68;
+  --rl-ink: #1a1a17;
+  --rl-paper: #fff;
+  --aurora: linear-gradient(100deg, #6600ff 0%, #9a5cff 35%, #00d0dd 72%, #57ad68 100%);
+
+  --md-primary-fg-color: var(--rl-violet-500);
+  --md-primary-fg-color--light: #9a5cff;
+  --md-primary-fg-color--dark: #4c00bd;
+  --md-accent-fg-color: var(--rl-violet-500);
+  --md-default-fg-color: var(--rl-ink);
+  --md-text-font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --md-code-font: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.md-header {
+  background: var(--aurora);
+  color: var(--rl-paper);
+}
+
+.md-tabs {
+  background: var(--rl-ink);
+}
+
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3 {
+  font-family: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-weight: 700;
+  color: var(--rl-ink);
+}
+
+.md-typeset a {
+  color: var(--rl-violet-500);
+}
+
+.md-typeset .admonition.info,
+.md-typeset details.info {
+  border-color: var(--rl-cyan-500);
+}
+
+.md-typeset .admonition.warning,
+.md-typeset details.warning {
+  border-color: #d9822b;
+}
+
+.md-typeset table:not([class]) th {
+  background: #f4efff;
+  color: var(--rl-ink);
+}
+
+.md-typeset code {
+  color: var(--rl-ink);
+}
