@@ -62,6 +62,8 @@ plugins:
             Fault catalog: Catálogo de falhas
             Audit chain: Cadeia de auditoria
             Shadow-first adoption: Adoção shadow-first
+            Roadmap: Roteiro
+            Agent SDK: SDK de agentes
             Guides: Guias
             Wrap a plain Python agent: Proteger um agente Python simples
             Wrap an OpenAI agent: Proteger um agente OpenAI
@@ -165,6 +167,8 @@ nav:
       - What it does not guarantee: kb/what-it-does-not-guarantee.md
       - How to calibrate a budget: kb/calibrate-budget.md
       - How to read an unfavourable result: kb/unfavourable-result.md
+  - Roadmap:
+      - Agent SDK: roadmap/agent-sdk.md
   - Evidence:
       - Benchmarks: evidence/benchmarks.md
       - Claims: claims.md
