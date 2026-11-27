@@ -1,6 +1,6 @@
 # Æon Core
 
-[English](README.md) | [Português](README.pt.md)
+[English](https://github.com/richardsonlima/aeon-core/blob/main/README.md) | [Português](https://github.com/richardsonlima/aeon-core/blob/main/README.pt.md)
 
 ![version](https://img.shields.io/badge/version-0.5.0-blue) ![license](https://img.shields.io/badge/license-Apache--2.0-green) ![python](https://img.shields.io/badge/python-3.10%2B-blue)
 
@@ -12,7 +12,7 @@ Inspirado no framework MECADE (engenharia do caos para confiabilidade); um proje
 
 ## Status
 
-**Alfa.** Instale com `pip install aeon-core`. É uma reescrita do zero da v0.4 (veja o [`CHANGELOG.md`](CHANGELOG.md) e a [auditoria](https://www.richardsonlima.com.br/aeon/docs/pt/audit/)).
+**Alfa.** Instale com `pip install aeon-core`. É uma reescrita do zero da v0.4 (veja o [`CHANGELOG.md`](https://github.com/richardsonlima/aeon-core/blob/main/CHANGELOG.md) e a [auditoria](https://www.richardsonlima.com.br/aeon/docs/pt/audit/)).
 
 | Implementado e testado | Não construído |
 |---|---|
@@ -85,18 +85,18 @@ uv sync --group dev --extra runtime
 uv run --no-sync pytest
 ```
 
-O [`CONTRIBUTING.md`](CONTRIBUTING.md) (em inglês) tem todas as verificações do CI (lint, tipos, testes, smoke do pacote, auditoria de dependências, docs), os benchmarks, como rodar o painel de controle na porta 8787 e as regras de branches, commits e alegações.
+O [`CONTRIBUTING.md`](https://github.com/richardsonlima/aeon-core/blob/main/CONTRIBUTING.md) (em inglês) tem todas as verificações do CI (lint, tipos, testes, smoke do pacote, auditoria de dependências, docs), os benchmarks, como rodar o painel de controle na porta 8787 e as regras de branches, commits e alegações.
 
 ## Documentação
 
-- Docs: <https://www.richardsonlima.com.br/aeon/docs/pt/> (português e inglês; também `docs/` neste repositório, `aeon docs mcp` para servi-la a um agente de código, e o [`llms.txt`](llms.txt))
+- Docs: <https://www.richardsonlima.com.br/aeon/docs/pt/> (português e inglês; também `docs/` neste repositório, `aeon docs mcp` para servi-la a um agente de código, e o [`llms.txt`](https://github.com/richardsonlima/aeon-core/blob/main/llms.txt))
 - [Início rápido de 5 minutos](https://www.richardsonlima.com.br/aeon/docs/pt/get-started/quickstart/) e um [prompt para um agente de código](https://www.richardsonlima.com.br/aeon/docs/pt/get-started/coding-agent/)
 - [Alegações](https://www.richardsonlima.com.br/aeon/docs/pt/claims/): cada alegação com o status da evidência
 - [Limites conhecidos](https://www.richardsonlima.com.br/aeon/docs/pt/known-limits/)
-- [Benchmarks](benchmarks/README.md): como reproduzir, o que não significam, e os resultados desfavoráveis. Todo número descreve uma máquina apenas.
-- [Segurança](https://www.richardsonlima.com.br/aeon/docs/pt/security/) e [`SECURITY.md`](SECURITY.md)
-- [Contribuindo](CONTRIBUTING.md), [Guia de release](RELEASE.md), [Changelog](CHANGELOG.md)
+- [Benchmarks](https://github.com/richardsonlima/aeon-core/blob/main/benchmarks/README.md): como reproduzir, o que não significam, e os resultados desfavoráveis. Todo número descreve uma máquina apenas.
+- [Segurança](https://www.richardsonlima.com.br/aeon/docs/pt/security/) e [`SECURITY.md`](https://github.com/richardsonlima/aeon-core/blob/main/SECURITY.md)
+- [Contribuindo](https://github.com/richardsonlima/aeon-core/blob/main/CONTRIBUTING.md), [Guia de release](https://github.com/richardsonlima/aeon-core/blob/main/RELEASE.md), [Changelog](https://github.com/richardsonlima/aeon-core/blob/main/CHANGELOG.md)
 
 ## Licença
 
-Apache-2.0. Veja [`LICENSE`](LICENSE).
+Apache-2.0. Veja [`LICENSE`](https://github.com/richardsonlima/aeon-core/blob/main/LICENSE).
