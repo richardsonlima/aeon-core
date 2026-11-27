@@ -9,6 +9,7 @@ services:
     env_file: aeon.env          # holds AEON_RUNTIME_TOKEN; never commit it
     environment:
       AEON_RUNTIME_ALLOW_REMOTE: "1"   # container-internal bind; host side stays loopback below
+      AEON_RUNTIME_ALLOWED_HOSTS: "localhost,127.0.0.1"   # Host header allowlist (DNS rebinding)
     ports:
       - "127.0.0.1:8787:8787"   # loopback on the host only
     volumes:

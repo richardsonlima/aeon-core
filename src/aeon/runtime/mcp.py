@@ -28,6 +28,7 @@ from aeon.runtime._common import (
 PROTOCOL_VERSION = "2025-06-18"
 SUPPORTED_VERSIONS = (PROTOCOL_VERSION, "2025-03-26", "2024-11-05")
 
+MAX_LINE = 4 * 1024 * 1024  # longest JSON-RPC line accepted on stdin, in characters
 PARSE_ERROR = -32700
 INVALID_REQUEST = -32600
 METHOD_NOT_FOUND = -32601
@@ -142,7 +143,7 @@ class JsonRpcServer:
         """Decode one JSON line and handle it; reply with a parse error if it is not JSON."""
         try:
             message = json.loads(line)
-        except ValueError:
+        except (ValueError, RecursionError):  # RecursionError: absurdly nested input
             return self._error(None, PARSE_ERROR, "parse error")
         return self.handle(message)
 
@@ -209,15 +210,26 @@ class JsonRpcServer:
 
     def serve_streams(self, stdin: IO[str], stdout: IO[str]) -> int:
         """Serve newline-delimited JSON-RPC from ``stdin`` to ``stdout`` until EOF; return 0."""
-        for line in stdin:
-            line = line.strip()
+        while True:
+            line = stdin.readline(MAX_LINE + 1)
             if not line:
-                continue
-            response = self.handle_line(line)
+                return 0
+            if len(line) > MAX_LINE and not line.endswith("\n"):
+                while True:  # discard the rest of the oversized line without buffering it
+                    rest = stdin.readline(MAX_LINE)
+                    if not rest or rest.endswith("\n"):
+                        break
+                response: dict[str, Any] | None = self._error(
+                    None, PARSE_ERROR, f"message larger than {MAX_LINE} bytes"
+                )
+            else:
+                line = line.strip()
+                if not line:
+                    continue
+                response = self.handle_line(line)
             if response is not None:
                 stdout.write(json.dumps(response, default=str) + "\n")
                 stdout.flush()
-        return 0
 
 
 # -- the gate as an MCP server ----------------------------------------------------------
@@ -367,5 +379,7 @@ def serve_stdio(config: str | None) -> int:
         from aeon.cli.main import CLIError
 
         raise CLIError(str(exc), "check aeon.toml or pass --config") from None
+    for f in cfg.axioms:  # axiom files are Python and run with your privileges
+        log(f"axioms: {(cfg.root / f).resolve()}")
     log(f"ready ({server.name} {server.version}, mode {server.gate.mode.value})")
     return server.serve_streams(sys.stdin, sys.stdout)

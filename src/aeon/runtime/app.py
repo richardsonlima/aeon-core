@@ -12,6 +12,7 @@ import dataclasses
 import hmac
 import io
 import json
+import logging
 import os
 import secrets
 import threading
@@ -29,7 +30,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
-from aeon._util import new_id, utc_now_iso
+from aeon._util import csv_safe, new_id, utc_now_iso
 from aeon._version import __version__
 from aeon.axioms import Decision, Gate, Level, Mode
 from aeon.axioms._gate import AxiomSpec
@@ -48,7 +49,19 @@ MAX_DECISIONS = 5000
 CLIENT_QUEUE_SIZE = 256
 HEARTBEAT_S = 15.0
 TOKEN_FILE = ".aeon/runtime.token"  # noqa: S105
+logger = logging.getLogger(__name__)
 STREAM_PATH = "/v1/decisions/stream"
+MAX_STREAM_CLIENTS = 16  # concurrent SSE clients
+MAX_RECORD_ARGS = 16 * 1024  # serialized args kept per buffered decision, in characters
+SECURITY_HEADERS = (
+    (b"x-content-type-options", b"nosniff"),
+    (b"x-frame-options", b"DENY"),
+    (b"referrer-policy", b"no-referrer"),
+    (
+        b"content-security-policy",
+        b"default-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'",
+    ),
+)
 
 
 # -- token ------------------------------------------------------------------------------
@@ -62,11 +75,14 @@ def resolve_token(token: str | None = None, root: Path | None = None) -> tuple[s
     if env:
         return env, "env AEON_RUNTIME_TOKEN"
     path = (root or Path.cwd()) / TOKEN_FILE
+    if path.is_symlink():
+        raise PermissionError(f"{path} is a symlink; refusing to read a token through it")
     try:
         existing = path.read_text("utf-8").strip()
     except FileNotFoundError:
         existing = ""
     if existing:
+        _check_token_file(path)
         return existing, str(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     fresh = secrets.token_urlsafe(32)
@@ -75,6 +91,36 @@ def resolve_token(token: str | None = None, root: Path | None = None) -> tuple[s
         fh.write(fresh + "\n")
     os.chmod(path, 0o600)
     return fresh, str(path)
+
+
+def _check_token_file(path: Path) -> None:
+    """Tighten a token file readable by group or others back to 0600."""
+    if os.name != "posix":
+        return
+    mode = path.stat().st_mode & 0o777
+    if mode & 0o077:
+        logger.warning("%s had mode %o; resetting it to 600", path, mode)
+        os.chmod(path, 0o600)
+
+
+class SecurityHeadersMiddleware:
+    """Add nosniff, frame denial, no-referrer and a strict CSP to every HTTP response."""
+
+    def __init__(self, app: Any) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Any, receive: Any, send: Any) -> None:
+        """ASGI entry point: decorate ``http.response.start`` messages."""
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        async def send_with_headers(message: Any) -> None:
+            if message["type"] == "http.response.start":
+                message["headers"] = [*message.get("headers", []), *SECURITY_HEADERS]
+            await send(message)
+
+        await self.app(scope, receive, send_with_headers)
 
 
 # -- body size cap ----------------------------------------------------------------------
@@ -178,6 +224,11 @@ class DecisionHub:
         with self._lock:
             self._clients.append((asyncio.get_running_loop(), q))
         return q
+
+    def client_count(self) -> int:
+        """Number of attached SSE clients."""
+        with self._lock:
+            return len(self._clients)
 
     def detach(self, q: asyncio.Queue[dict[str, Any]]) -> None:
         """Unregister the client that owns ``q``."""
@@ -368,6 +419,7 @@ def create_app(  # noqa: C901 - route factory: each nested route function counts
         openapi_url=None,
     )
     app.add_middleware(BodyLimitMiddleware)
+    app.add_middleware(SecurityHeadersMiddleware)
     app.state.gate = g
     app.state.hub = hub
     app.state.token = secret
@@ -533,6 +585,8 @@ def create_app(  # noqa: C901 - route factory: each nested route function counts
 
     @api.get("/decisions/stream")
     async def decisions_stream(request: Request) -> StreamingResponse:
+        if hub.client_count() >= MAX_STREAM_CLIENTS:
+            raise HTTPException(429, f"at most {MAX_STREAM_CLIENTS} stream clients")
         return StreamingResponse(
             sse_events(hub, request.is_disconnected),
             media_type="text/event-stream",
@@ -671,13 +725,18 @@ def create_app(  # noqa: C901 - route factory: each nested route function counts
 
 
 def _publish(hub: DecisionHub, gate: Gate, decision: Decision) -> None:
-    hub.publish(decision.to_record(include_args=gate.include_args))
+    record = decision.to_record(include_args=gate.include_args)
+    if "args" in record:  # bound memory: the ring buffer and SSE queues keep records
+        size = len(json.dumps(record["args"], default=str))
+        if size > MAX_RECORD_ARGS:
+            record["args"] = {"_truncated": True, "chars": size}
+    hub.publish(record)
 
 
 def _csv_rows(records: Iterator[dict[str, Any]]) -> Iterator[str]:
     def line(row: list[Any]) -> str:
         buf = io.StringIO()
-        csv.writer(buf).writerow(row)
+        csv.writer(buf).writerow([csv_safe(v) for v in row])
         return buf.getvalue()
 
     yield line(["seq", "ts", "type", "agent", "tool", "verdict", "allowed", "mode", "hash"])

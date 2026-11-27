@@ -15,6 +15,7 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any
 
+from aeon._util import csv_safe
 from aeon._version import __version__
 
 EXIT_OK, EXIT_FAIL, EXIT_USAGE = 0, 1, 2
@@ -521,13 +522,6 @@ def _fmt_record(r: dict[str, Any]) -> str:
     return f"{head} {r.get('type')} {json.dumps(d, default=str)}"
 
 
-def _csv_safe(value: Any) -> Any:
-    """Neutralise spreadsheet formulas in exported text cells."""
-    if isinstance(value, str) and value[:1] in ("=", "+", "-", "@", "\t", "\r"):
-        return "'" + value
-    return value
-
-
 def cmd_audit_export(args: argparse.Namespace) -> int:
     """``aeon audit export``: write the audit records as JSONL or CSV."""
     import csv
@@ -547,7 +541,7 @@ def cmd_audit_export(args: argparse.Namespace) -> int:
             d: dict[str, Any] = raw if isinstance(raw, dict) else {}
             row = [r.get("seq"), r.get("ts"), r.get("type")]
             row += [d.get(k, "") for k in ("agent", "tool", "verdict", "allowed", "mode")]
-            w.writerow([_csv_safe(v) for v in [*row, r.get("hash")]])
+            w.writerow([csv_safe(v) for v in [*row, r.get("hash")]])
         body = buf.getvalue()
     if args.output:
         Path(args.output).write_text(body, "utf-8")

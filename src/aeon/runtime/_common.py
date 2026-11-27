@@ -123,12 +123,25 @@ def _apply_overrides(
             setattr(c, name, value)
 
 
+MAX_TOTAL_STEPS = 50_000  # simulated tool calls per campaign request (about a minute)
+MAX_FAULT_MS = 5_000  # longest injected delay accepted from the API
+
+
 def _check_limits(c: Any) -> None:
     """Raise ``InvalidRequest`` if the campaign id or size is outside the allowed bounds."""
     if not CAMPAIGN_ID_RE.match(c.id):
         raise InvalidRequest("campaign id must match [A-Za-z0-9][A-Za-z0-9_-]{0,63}")
     if c.runs > MAX_RUNS or c.controls > MAX_RUNS or c.steps > MAX_STEPS:
         raise InvalidRequest(f"runs and controls are capped at {MAX_RUNS}, steps at {MAX_STEPS}")
+    if (c.runs + c.controls) * c.steps > MAX_TOTAL_STEPS:
+        raise InvalidRequest(f"(runs + controls) x steps is capped at {MAX_TOTAL_STEPS}")
+    for key, value in c.fault_params.items():
+        if (
+            isinstance(value, (int, float))
+            and key.endswith("_ms")
+            and not 0 <= value <= MAX_FAULT_MS
+        ):
+            raise InvalidRequest(f"fault param {key!r} must be within 0..{MAX_FAULT_MS} ms")
 
 
 def _from_target(cfg: Config, target: str, campaign_cls: Any, resolve: Any) -> Any:
