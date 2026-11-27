@@ -41,7 +41,7 @@ all = ["aeon-core[runtime,ui,openai,anthropic,langgraph]"]
 # Development tools are not part of the published package metadata.
 dev = [
     "pytest>=8",
-    "pytest-cov>=5",
+    "pytest-cov>=7.1.0",
     "hypothesis>=6.100",
     "mypy==2.4.1",
     "ruff==0.17.6",
